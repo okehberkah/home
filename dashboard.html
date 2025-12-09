@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - EggTrack Admin</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --primary: #4361ee;
+            --secondary: #3f37c9;
+            --success: #4cc9f0;
+            --light: #f8f9fa;
+            --dark: #212529;
+            --gray: #6c757d;
+        }
+        
+        body {
+            background-color: #f5f7fb;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+        }
+        
+        .sidebar {
+            background: linear-gradient(180deg, var(--primary), var(--secondary));
+            color: white;
+            height: 100vh;
+            position: fixed;
+            padding-top: 20px;
+            z-index: 1000;
+            width: 250px;
+            box-shadow: 5px 0 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        .sidebar .nav-link {
+            color: rgba(255, 255, 255, 0.8);
+            padding: 12px 20px;
+            text-decoration: none;
+            display: block;
+            transition: all 0.3s;
+            border-left: 4px solid transparent;
+        }
+        
+        .sidebar .nav-link:hover, .sidebar .nav-link.active {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            border-left: 4px solid var(--success);
+        }
+        
+        .sidebar .nav-link i {
+            margin-right: 15px;
+            font-size: 1.1rem;
+        }
+        
+        .sidebar .nav-link .notification-badge {
+            position: absolute;
+            top: 5px;
+            right: 10px;
+            background-color: #dc3545;
+            color: white;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            font-size: 0.7rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .main-content {
+            margin-left: 250px;
+            padding: 20px;
+            min-height: 100vh;
+            background: #f8f9fa;
+        }
+        
+        .card {
+            border-radius: 15px;
+            box-shadow: 0 5px 25px rgba(0, 0, 0, 0.08);
+            border: none;
+            margin-bottom: 25px;
+            transition: transform 0.3s, box-shadow 0.3s;
+            overflow: hidden;
+        }
+        
+        .card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 12px 35px rgba(0, 0, 0, 0.15);
+        }
+        
+        .header {
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            color: white;
+            padding: 25px;
+            border-radius: 15px;
+            margin-bottom: 25px;
+            box-shadow: 0 5px 15px rgba(67, 97, 238, 0.3);
+        }
+        
+        .stat-card {
+            text-align: center;
+            padding: 25px 20px;
+            height: 100%;
+            border-radius: 15px;
+        }
+        
+        .stat-card i {
+            font-size: 2.8rem;
+            margin-bottom: 15px;
+            color: var(--primary);
+        }
+        
+        .chart-container {
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.05);
+            margin-bottom: 25px;
+            height: 350px;
+        }
+        
+        .integrated-stats {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 25px;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+        
+        .integrated-stat-card {
+            flex: 1;
+            min-width: 200px;
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.05);
+            text-align: center;
+            transition: all 0.3s ease;
+            border: 1px solid rgba(0,0,0,0.05);
+        }
+
+        .integrated-stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+        
+        .integrated-stat-card h4 {
+            margin: 0;
+            font-size: 2rem;
+            color: var(--primary);
+            font-weight: 700;
+        }
+        
+        .integrated-stat-card p {
+            margin: 8px 0 0;
+            color: var(--gray);
+            font-size: 0.95rem;
+            font-weight: 500;
+        }
+
+        .loading-spinner {
+            width: 50px;
+            height: 50px;
+            border: 4px solid rgba(67, 97, 238, 0.2);
+            border-top: 4px solid var(--primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .data-flow-indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 8px;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(0.95); opacity: 0.7; }
+            50% { transform: scale(1.1); opacity: 1; }
+            100% { transform: scale(0.95); opacity: 0.7; }
+        }
+        
+        .flow-positive {
+            background-color: #28a745;
+        }
+        
+        .flow-negative {
+            background-color: #dc3545;
+        }
+        
+        .flow-neutral {
+            background-color: #ffc107;
+        }
+
+        .search-box {
+            position: relative;
+        }
+        
+        .search-box i {
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--gray);
+            z-index: 2;
+        }
+        
+        .search-box input {
+            padding-left: 40px;
+            border-radius: 10px;
+        }
+
+        .status-indicator {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+        
+        .status-connected {
+            background-color: #28a745;
+            animation: pulse 2s infinite;
+        }
+        
+        .status-disconnected {
+            background-color: #dc3545;
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 100%;
+                height: auto;
+                position: relative;
+            }
+            
+            .main-content {
+                margin-left: 0;
+                padding: 15px;
+            }
+            
+            .integrated-stats {
+                flex-direction: column;
+            }
+            
+            .integrated-stat-card {
+                min-width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Sidebar -->
+    <div class="sidebar col-md-3">
+        <div class="text-center mb-4 pt-3">
+            <i class="bi bi-egg-fried" style="font-size: 3rem;"></i>
+            <h4 class="mt-2">EggTrack</h4>
+            <p id="userRoleDisplay" class="text-light">Administrator</p>
+        </div>
+        
+        <nav class="nav flex-column">
+            <a href="dashboard.html" class="nav-link active">
+                <i class="bi bi-speedometer2"></i>
+                <span>Dashboard Utama</span>
+                <span class="notification-badge" id="dashboardNotifications" style="display: none;">0</span>
+            </a>
+            <a href="production.html" class="nav-link">
+                <i class="bi bi-egg-fried"></i>
+                <span>Manajemen Produksi</span>
+                <span class="notification-badge" id="productionNotifications" style="display: none;">0</span>
+            </a>
+            <a href="sales.html" class="nav-link">
+                <i class="bi bi-cart"></i>
+                <span>Penjualan & Order</span>
+                <span class="notification-badge" id="salesNotifications" style="display: none;">0</span>
+            </a>
+            <a href="expenses.html" class="nav-link">
+                <i class="bi bi-cash-coin"></i>
+                <span>Pengeluaran</span>
+                <span class="notification-badge" id="expensesNotifications" style="display: none;">0</span>
+            </a>
+            <!-- Menu HPP Baru -->
+            <a href="hpp.html" class="nav-link">
+                <i class="bi bi-calculator"></i>
+                <span>Perhitungan HPP</span>
+                <span class="notification-badge" id="hppNotifications" style="display: none;">0</span>
+            </a>
+            <a href="inventory.html" class="nav-link">
+                <i class="bi bi-box-seam"></i>
+                <span>Inventaris Stok</span>
+                <span class="notification-badge" id="inventoryNotifications" style="display: none;">0</span>
+            </a>
+            <a href="customer.html" class="nav-link">
+                <i class="bi bi-people"></i>
+                <span>Manajemen Pelanggan</span>
+                <span class="notification-badge" id="customerNotifications" style="display: none;">0</span>
+            </a>
+            <a href="reports.html" class="nav-link">
+                <i class="bi bi-graph-up"></i>
+                <span>Laporan & Analisis</span>
+                <span class="notification-badge" id="reportsNotifications" style="display: none;">0</span>
+            </a>
+            <a href="settings.html" class="nav-link">
+                <i class="bi bi-gear"></i>
+                <span>Pengaturan Sistem</span>
+                <span class="notification-badge" id="settingsNotifications" style="display: none;">0</span>
+            </a>
+            <a href="#" class="nav-link mt-4" id="logoutBtn">
+                <i class="bi bi-box-arrow-right"></i>
+                <span>Keluar Sistem</span>
+            </a>
+        </nav>
+    </div>
+    
+    <!-- Main Content -->
+    <div class="main-content col-md-9">
+        <!-- Connection Status -->
+        <div class="connection-status mb-4" id="dashboardConnectionStatus">
+            <div class="status-indicator status-disconnected"></div>
+            <span id="connectionStatusText">Menyambungkan ke server...</span>
+            <button id="refreshBtn" class="btn btn-outline-light btn-sm ms-3">
+                <i class="bi bi-arrow-clockwise"></i> Muat Ulang Data
+            </button>
+        </div>
+
+        <!-- Header -->
+        <div class="header">
+            <h2><i class="bi bi-speedometer2 me-2"></i>Dashboard Terintegrasi EggTrack</h2>
+            <p class="mb-0">Selamat datang! Semua modul saling terkait - perubahan di satu bagian langsung terlihat di bagian lain secara real-time</p>
+        </div>
+
+        <!-- Ringkasan Terintegrasi -->
+        <div class="integrated-stats">
+            <div class="integrated-stat-card">
+                <h4 id="totalProduction">0</h4>
+                <p>Total Produksi</p>
+                <small><span class="data-flow-indicator flow-positive"></span> Meningkat</small>
+            </div>
+            <div class="integrated-stat-card">
+                <h4 id="totalSales">0</h4>
+                <p>Total Penjualan</p>
+                <small><span class="data-flow-indicator flow-positive"></span> Meningkat</small>
+            </div>
+            <div class="integrated-stat-card">
+                <h4 id="totalRevenue">Rp 0</h4>
+                <p>Total Pendapatan</p>
+                <small><span class="data-flow-indicator flow-positive"></span> Meningkat</small>
+            </div>
+            <div class="integrated-stat-card">
+                <h4 id="totalExpenses">Rp 0</h4>
+                <p>Total Pengeluaran</p>
+                <small><span class="data-flow-indicator flow-negative"></span> Menurun</small>
+            </div>
+            <div class="integrated-stat-card">
+                <h4 id="totalInventory">0</h4>
+                <p>Stok Tersedia</p>
+                <small><span class="data-flow-indicator flow-negative"></span> Menurun</small>
+            </div>
+            <div class="integrated-stat-card">
+                <h4 id="profitMargin">0%</h4>
+                <p>Margin Keuntungan</p>
+                <small><span class="data-flow-indicator flow-neutral"></span> Stabil</small>
+            </div>
+        </div>
+
+        <!-- Charts -->
+        <div class="row">
+            <div class="col-md-8">
+                <div class="chart-container">
+                    <h5 class="mb-4"><i class="bi bi-graph-up me-2"></i>Grafik Produksi & Penjualan (7 Hari Terakhir)</h5>
+                    <canvas id="productionChart"></canvas>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="chart-container">
+                    <h5 class="mb-4"><i class="bi bi-pie-chart me-2"></i>Distribusi Produk</h5>
+                    <canvas id="productChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Aktivitas Terbaru -->
+        <div class="row mt-4">
+            <div class="col-md-12">
+                <div class="card">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0"><i class="bi bi-clock-history me-2"></i>Aktivitas Terbaru</h5>
+                        <div class="search-box">
+                            <i class="bi bi-search"></i>
+                            <input type="text" class="form-control" id="activitySearch" placeholder="Cari aktivitas...">
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Tanggal</th>
+                                        <th>Produk</th>
+                                        <th>Jenis</th>
+                                        <th>Jumlah</th>
+                                        <th>Status</th>
+                                        <th>Pengaruh Stok</th>
+                                        <th>Aksi</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="recentActivity">
+                                    <tr>
+                                        <td colspan="7" class="text-center py-4">
+                                            <div class="loading-spinner mx-auto"></div>
+                                            <div class="loading-text mt-2">Memuat data aktivitas...</div>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Produk Terlaris & Notifikasi -->
+        <div class="row mt-4">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0"><i class="bi bi-trophy me-2"></i>Produk Terlaris</h5>
+                    </div>
+                    <div class="card-body">
+                        <div id="bestSellingProducts">
+                            <div class="text-center py-4">
+                                <div class="loading-spinner mx-auto"></div>
+                                <div class="loading-text mt-2">Memuat data produk...</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0"><i class="bi bi-bell me-2"></i>Notifikasi Sistem</h5>
+                    </div>
+                    <div class="card-body">
+                        <div id="integratedNotifications">
+                            <div class="alert alert-info">
+                                <i class="bi bi-info-circle me-2"></i>
+                                Sistem sedang memuat data terintegrasi...
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="dashboard.js"></script>
+</body>
+</html>

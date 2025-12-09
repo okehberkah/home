@@ -1,0 +1,559 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pengaturan Sistem - EggTrack</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <style>
+         :root {
+            --primary: #4361ee;
+            --secondary: #3f37c9;
+            --success: #4cc9f0;
+            --light: #f8f9fa;
+            --dark: #212529;
+            --gray: #6c757d;
+        }
+        
+        body {
+            background-color: #f5f7fb;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+        
+        .sidebar {
+            background: linear-gradient(180deg, var(--primary), var(--secondary));
+            color: white;
+            height: 100vh;
+            position: fixed;
+            padding-top: 20px;
+            z-index: 1000;
+            width: 250px;
+            box-shadow: 5px 0 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        .sidebar .nav-link {
+            color: rgba(255, 255, 255, 0.8);
+            padding: 12px 20px;
+            text-decoration: none;
+            display: block;
+            transition: all 0.3s;
+            border-left: 4px solid transparent;
+            position: relative;
+        }
+        
+        .sidebar .nav-link:hover, .sidebar .nav-link.active {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            border-left: 4px solid var(--success);
+        }
+        
+        .sidebar .nav-link i {
+            margin-right: 15px;
+            font-size: 1.1rem;
+        }
+        
+        .sidebar .nav-link .notification-badge {
+            position: absolute;
+            top: 5px;
+            right: 10px;
+            background-color: #dc3545;
+            color: white;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            font-size: 0.7rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .main-content {
+            margin-left: 250px;
+            padding: 20px;
+            min-height: 100vh;
+            background: #f8f9fa;
+        }
+        
+        .card {
+            border-radius: 15px;
+            box-shadow: 0 5px 25px rgba(0, 0, 0, 0.08);
+            border: none;
+            margin-bottom: 25px;
+            transition: transform 0.3s, box-shadow 0.3s;
+            overflow: hidden;
+        }
+        
+        .card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 12px 35px rgba(0, 0, 0, 0.15);
+        }
+        
+        .header {
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            color: white;
+            padding: 25px;
+            border-radius: 15px;
+            margin-bottom: 25px;
+            box-shadow: 0 5px 15px rgba(67, 97, 238, 0.3);
+        }
+        
+        .integrated-stats {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 25px;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+        
+        .integrated-stat-card {
+            flex: 1;
+            min-width: 200px;
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.05);
+            text-align: center;
+            transition: all 0.3s ease;
+            border: 1px solid rgba(0,0,0,0.05);
+        }
+
+        .integrated-stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+        
+        .integrated-stat-card h4 {
+            margin: 0;
+            font-size: 2rem;
+            color: var(--primary);
+            font-weight: 700;
+        }
+        
+        .integrated-stat-card p {
+            margin: 8px 0 0;
+            color: var(--gray);
+            font-size: 0.95rem;
+            font-weight: 500;
+        }
+
+        .loading-spinner {
+            width: 50px;
+            height: 50px;
+            border: 4px solid rgba(67, 97, 238, 0.2);
+            border-top: 4px solid var(--primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Responsif: tumpuk di mobile */
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 100%;
+                height: auto;
+                position: relative;
+            }
+            .main-content {
+                margin-left: 0;
+                padding: 15px;
+            }
+        }
+
+        /* Animasi untuk toast */
+        .toast {
+            transition: opacity 0.15s linear;
+        }
+
+        /* Perbaikan untuk posisi tengah pada logo dan teks Administrator */
+        .sidebar-header {
+            text-align: center;
+            padding: 20px 15px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            margin-bottom: 15px;
+        }
+        
+        .sidebar-header i {
+            font-size: 3rem;
+            display: block;
+            margin: 0 auto 10px;
+        }
+        
+        .sidebar-header h4 {
+            margin: 0;
+            font-weight: 600;
+        }
+        
+        .sidebar-header p {
+            margin: 5px 0 0;
+            font-size: 0.85rem;
+            opacity: 0.8;
+        }
+    </style>
+</head>
+<body>
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <i class="bi bi-egg-fried" style="font-size: 3rem;"></i>
+            <h4 class="mt-2">EggTrack</h4>
+            <p id="userRoleDisplay" class="text-light small">Administrator</p>
+        </div>
+        
+        <nav class="sidebar-nav">
+            <a href="dashboard.html" class="nav-link">
+                <i class="bi bi-speedometer2"></i>
+                <span>Dashboard Utama</span>
+            </a>
+            <a href="production.html" class="nav-link">
+                <i class="bi bi-egg-fried"></i>
+                <span>Manajemen Produksi</span>
+            </a>
+            <a href="sales.html" class="nav-link">
+                <i class="bi bi-cart"></i>
+                <span>Penjualan & Order</span>
+            </a>
+            <a href="expenses.html" class="nav-link">
+                <i class="bi bi-cash-coin"></i>
+                <span>Pengeluaran</span>
+            </a>
+            <a href="inventory.html" class="nav-link">
+                <i class="bi bi-box-seam"></i>
+                <span>Inventaris Stok</span>
+            </a>
+            <a href="customer.html" class="nav-link">
+                <i class="bi bi-people"></i>
+                <span>Manajemen Pelanggan</span>
+            </a>
+            <a href="reports.html" class="nav-link">
+                <i class="bi bi-graph-up"></i>
+                <span>Laporan & Analisis</span>
+            </a>
+            <a href="settings.html" class="nav-link active">
+                <i class="bi bi-gear"></i>
+                <span>Pengaturan Sistem</span>
+            </a>
+            <a href="#" class="nav-link mt-3 logout-btn">
+                <i class="bi bi-box-arrow-right"></i>
+                <span>Keluar Sistem</span>
+            </a>
+        </nav>
+    </div>
+    
+    <!-- Konten Utama -->
+    <div class="main-content">
+        <!-- Header -->
+        <div class="dashboard-header d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h3><i class="bi bi-gear me-2"></i>Pengaturan Sistem</h3>
+                <p class="text-muted mb-0">Konfigurasi sistem dan pengguna</p>
+            </div>
+        </div>
+
+        <div class="row">
+            <!-- Profil Pengguna -->
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0"><i class="bi bi-person me-2"></i>Profil Pengguna</h5>
+                    </div>
+                    <div class="card-body">
+                        <form id="profileForm">
+                            <div class="mb-3">
+                                <label for="fullName" class="form-label">Nama Lengkap</label>
+                                <input type="text" class="form-control" id="fullName" value="Administrator">
+                            </div>
+                            <div class="mb-3">
+                                <label for="userEmail" class="form-label">Email</label>
+                                <input type="email" class="form-control" id="userEmail" value="admin@eggtrack.com">
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Peran</label>
+                                <input type="text" class="form-control" value="Administrator" disabled>
+                            </div>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-check-circle me-2"></i> Simpan Perubahan
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Keamanan -->
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0"><i class="bi bi-shield-lock me-2"></i>Keamanan</h5>
+                    </div>
+                    <div class="card-body">
+                        <form id="securityForm">
+                            <div class="mb-3">
+                                <label for="currentPassword" class="form-label">Password Saat Ini</label>
+                                <input type="password" class="form-control" id="currentPassword">
+                            </div>
+                            <div class="mb-3">
+                                <label for="newPassword" class="form-label">Password Baru</label>
+                                <input type="password" class="form-control" id="newPassword">
+                            </div>
+                            <div class="mb-3">
+                                <label for="confirmPassword" class="form-label">Konfirmasi Password Baru</label>
+                                <input type="password" class="form-control" id="confirmPassword">
+                            </div>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-key me-2"></i> Ubah Password
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Pengaturan Sistem -->
+        <div class="row mt-4">
+            <div class="col-md-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0"><i class="bi bi-sliders me-2"></i>Pengaturan Sistem</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">Nama Perusahaan</label>
+                                    <input type="text" class="form-control" id="companyName" value="EggTrack Farm">
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Mata Uang</label>
+                                    <select class="form-control" id="currency">
+                                        <option>IDR - Rupiah Indonesia</option>
+                                        <option>USD - US Dollar</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">Notifikasi Email</label>
+                                    <div class="form-check form-switch">
+                                        <input class="form-check-input" type="checkbox" checked id="emailNotifications">
+                                        <label class="form-check-label" for="emailNotifications">Aktifkan notifikasi email</label>
+                                    </div>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Backup Otomatis</label>
+                                    <div class="form-check form-switch">
+                                        <input class="form-check-input" type="checkbox" checked id="autoBackup">
+                                        <label class="form-check-label" for="autoBackup">Aktifkan backup harian</label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <button class="btn btn-primary" id="saveSystemSettings">
+                            <i class="bi bi-save me-2"></i> Simpan Pengaturan
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Logout -->
+        <div class="row mt-4">
+            <div class="col-md-12">
+                <div class="card border-danger">
+                    <div class="card-header bg-danger text-white">
+                        <h5 class="mb-0"><i class="bi bi-box-arrow-right me-2"></i>Keluar Sistem</h5>
+                    </div>
+                    <div class="card-body">
+                        <p>Keluar dari sistem EggTrack Admin. Semua perubahan yang belum disimpan akan hilang.</p>
+                        <button class="btn btn-danger logout-btn" id="logoutBtn">
+                            <i class="bi bi-box-arrow-right me-2"></i> Logout
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Inisialisasi saat halaman dimuat
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeSettings();
+        });
+
+        // Fungsi inisialisasi pengaturan
+        function initializeSettings() {
+            // Load user profile dari localStorage
+            loadUserProfile();
+            
+            // Load system settings dari localStorage
+            loadSystemSettings();
+            
+            // Setup event listeners
+            setupEventListeners();
+        }
+
+        // Setup event listeners
+        function setupEventListeners() {
+            // Simpan profil
+            document.getElementById('profileForm').addEventListener('submit', handleSaveProfile);
+            
+            // Ubah password
+            document.getElementById('securityForm').addEventListener('submit', handleChangePassword);
+            
+            // Simpan pengaturan sistem
+            document.getElementById('saveSystemSettings').addEventListener('click', handleSaveSystemSettings);
+            
+            // Logout
+            document.querySelectorAll('.logout-btn').forEach(button => {
+                button.addEventListener('click', handleLogout);
+            });
+        }
+
+        // Load profil pengguna
+        function loadUserProfile() {
+            const savedUser = localStorage.getItem('eggTrackUser');
+            if (savedUser) {
+                const user = JSON.parse(savedUser);
+                document.getElementById('fullName').value = user.name || 'Administrator';
+                document.getElementById('userEmail').value = user.email || 'admin@eggtrack.com';
+            }
+        }
+
+        // Load pengaturan sistem
+        function loadSystemSettings() {
+            const savedSettings = localStorage.getItem('eggTrackSystemSettings');
+            if (savedSettings) {
+                const settings = JSON.parse(savedSettings);
+                document.getElementById('companyName').value = settings.companyName || 'EggTrack Farm';
+                document.getElementById('currency').value = settings.currency || 'IDR - Rupiah Indonesia';
+                document.getElementById('emailNotifications').checked = settings.emailNotifications !== false;
+                document.getElementById('autoBackup').checked = settings.autoBackup !== false;
+            }
+        }
+
+        // Handler untuk menyimpan profil
+        function handleSaveProfile(e) {
+            e.preventDefault();
+            
+            const fullName = document.getElementById('fullName').value;
+            const userEmail = document.getElementById('userEmail').value;
+
+            if (!fullName) {
+                showToast('Nama lengkap harus diisi', 'danger');
+                return;
+            }
+
+            // Update user data di localStorage
+            const savedUser = localStorage.getItem('eggTrackUser');
+            if (savedUser) {
+                const user = JSON.parse(savedUser);
+                user.name = fullName;
+                user.email = userEmail;
+                localStorage.setItem('eggTrackUser', JSON.stringify(user));
+            }
+
+            showToast('Profil berhasil diperbarui', 'success');
+        }
+
+        // Handler untuk mengubah password
+        function handleChangePassword(e) {
+            e.preventDefault();
+            
+            const currentPassword = document.getElementById('currentPassword').value;
+            const newPassword = document.getElementById('newPassword').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+
+            if (!currentPassword || !newPassword || !confirmPassword) {
+                showToast('Semua field password harus diisi', 'danger');
+                return;
+            }
+
+            if (newPassword !== confirmPassword) {
+                showToast('Password baru tidak cocok', 'danger');
+                return;
+            }
+
+            if (newPassword.length < 6) {
+                showToast('Password baru harus minimal 6 karakter', 'danger');
+                return;
+            }
+
+            // Untuk demo, kita simpan di localStorage
+            // Dalam aplikasi real, ini akan dikirim ke server
+            showToast('Password berhasil diubah', 'success');
+            document.getElementById('securityForm').reset();
+        }
+
+        // Handler untuk menyimpan pengaturan sistem
+        function handleSaveSystemSettings() {
+            const btn = document.getElementById('saveSystemSettings');
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span> Menyimpan...';
+            btn.disabled = true;
+            
+            // Simpan pengaturan sistem ke localStorage
+            const systemSettings = {
+                companyName: document.getElementById('companyName').value,
+                currency: document.getElementById('currency').value,
+                emailNotifications: document.getElementById('emailNotifications').checked,
+                autoBackup: document.getElementById('autoBackup').checked
+            };
+            
+            localStorage.setItem('eggTrackSystemSettings', JSON.stringify(systemSettings));
+            
+            setTimeout(() => {
+                showToast('Pengaturan sistem berhasil disimpan', 'success');
+                btn.innerHTML = '<i class="bi bi-save me-2"></i> Simpan Pengaturan';
+                btn.disabled = false;
+            }, 1000);
+        }
+
+        // Handler untuk logout
+        function handleLogout() {
+            if (confirm('Apakah Anda yakin ingin logout?')) {
+                // Hapus data user dari localStorage
+                localStorage.removeItem('eggTrackUser');
+                
+                // Redirect ke halaman login
+                window.location.href = 'login.html';
+            }
+        }
+
+        // Fungsi utility untuk menampilkan toast
+        function showToast(message, type = 'info') {
+            let toastContainer = document.querySelector('.toast-container');
+            if (!toastContainer) {
+                toastContainer = document.createElement('div');
+                toastContainer.className = 'toast-container position-fixed top-0 end-0 p-3';
+                document.body.appendChild(toastContainer);
+            }
+            
+            const toastId = 'toast-' + Date.now();
+            const toast = document.createElement('div');
+            toast.className = `toast align-items-center text-bg-${type} border-0`;
+            toast.id = toastId;
+            
+            toast.innerHTML = `
+                <div class="d-flex">
+                    <div class="toast-body">
+                        ${message}
+                    </div>
+                    <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+                </div>
+            `;
+            
+            toastContainer.appendChild(toast);
+            const bsToast = new bootstrap.Toast(toast, { delay: 4000 });
+            bsToast.show();
+            
+            toast.addEventListener('hidden.bs.toast', () => toast.remove());
+        }
+    </script>
+</body>
+</html>

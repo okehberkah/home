@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manajemen Pengeluaran - EggTrack</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <style>
+         :root {
+            --primary: #4361ee;
+            --secondary: #3f37c9;
+            --success: #4cc9f0;
+            --light: #f8f9fa;
+            --dark: #212529;
+            --gray: #6c757d;
+        }
+        
+        body {
+            background-color: #f5f7fb;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+        
+        .sidebar {
+            background: linear-gradient(180deg, var(--primary), var(--secondary));
+            color: white;
+            height: 100vh;
+            position: fixed;
+            padding-top: 20px;
+            z-index: 1000;
+            width: 250px;
+            box-shadow: 5px 0 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        .sidebar .nav-link {
+            color: rgba(255, 255, 255, 0.8);
+            padding: 12px 20px;
+            text-decoration: none;
+            display: block;
+            transition: all 0.3s;
+            border-left: 4px solid transparent;
+            position: relative;
+        }
+        
+        .sidebar .nav-link:hover, .sidebar .nav-link.active {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            border-left: 4px solid var(--success);
+        }
+        
+        .sidebar .nav-link i {
+            margin-right: 15px;
+            font-size: 1.1rem;
+        }
+        
+        .sidebar .nav-link .notification-badge {
+            position: absolute;
+            top: 5px;
+            right: 10px;
+            background-color: #dc3545;
+            color: white;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            font-size: 0.7rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .main-content {
+            margin-left: 250px;
+            padding: 20px;
+            min-height: 100vh;
+            background: #f8f9fa;
+        }
+        
+        .card {
+            border-radius: 15px;
+            box-shadow: 0 5px 25px rgba(0, 0, 0, 0.08);
+            border: none;
+            margin-bottom: 25px;
+            transition: transform 0.3s, box-shadow 0.3s;
+            overflow: hidden;
+        }
+        
+        .card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 12px 35px rgba(0, 0, 0, 0.15);
+        }
+        
+        .header {
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            color: white;
+            padding: 25px;
+            border-radius: 15px;
+            margin-bottom: 25px;
+            box-shadow: 0 5px 15px rgba(67, 97, 238, 0.3);
+        }
+        
+        .integrated-stats {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 25px;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+        
+        .integrated-stat-card {
+            flex: 1;
+            min-width: 200px;
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.05);
+            text-align: center;
+            transition: all 0.3s ease;
+            border: 1px solid rgba(0,0,0,0.05);
+        }
+
+        .integrated-stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+        
+        .integrated-stat-card h4 {
+            margin: 0;
+            font-size: 2rem;
+            color: var(--primary);
+            font-weight: 700;
+        }
+        
+        .integrated-stat-card p {
+            margin: 8px 0 0;
+            color: var(--gray);
+            font-size: 0.95rem;
+            font-weight: 500;
+        }
+
+        .loading-spinner {
+            width: 50px;
+            height: 50px;
+            border: 4px solid rgba(67, 97, 238, 0.2);
+            border-top: 4px solid var(--primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Responsif: tumpuk di mobile */
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 100%;
+                height: auto;
+                position: relative;
+            }
+            .main-content {
+                margin-left: 0;
+                padding: 15px;
+            }
+        }
+
+        /* Animasi untuk toast */
+        .toast {
+            transition: opacity 0.15s linear;
+        }
+
+        /* Perbaikan untuk posisi tengah pada logo dan teks Administrator */
+        .sidebar-header {
+            text-align: center;
+            padding: 20px 15px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            margin-bottom: 15px;
+        }
+        
+        .sidebar-header i {
+            font-size: 3rem;
+            display: block;
+            margin: 0 auto 10px;
+        }
+        
+        .sidebar-header h4 {
+            margin: 0;
+            font-weight: 600;
+        }
+        
+        .sidebar-header p {
+            margin: 5px 0 0;
+            font-size: 0.85rem;
+            opacity: 0.8;
+        }
+        
+        /* Konten utama dengan jarak optimal */
+        .main-content {
+            margin-left: 260px; /* 250px sidebar + 10px jarak */
+            padding: 20px;
+        }
+
+        /* Responsif: tumpuk di mobile */
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 230px;
+            }
+            .main-content {
+                margin-left: 0;
+                padding: 15px;
+            }
+        }
+        .stat-card {
+            text-align: center;
+            padding: 25px 20px;
+            height: 100%;
+            border-radius: 15px;
+            box-shadow: 0 5px 25px rgba(0, 0, 0, 0.08);
+            margin-bottom: 25px;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 12px 35px rgba(0, 0, 0, 0.15);
+        }
+        
+        .stat-card i {
+            font-size: 2.8rem;
+            margin-bottom: 15px;
+            color: #4361ee;
+        }
+        
+        .search-box {
+            position: relative;
+        }
+        
+        .search-box i {
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #6c757d;
+            z-index: 2;
+        }
+        
+        .search-box input {
+            padding-left: 40px;
+            border-radius: 10px;
+        }
+        
+        .loading-spinner {
+            width: 50px;
+            height: 50px;
+            border: 4px solid rgba(67, 97, 238, 0.2);
+            border-top: 4px solid #4361ee;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+      <!-- Sidebar -->
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <i class="bi bi-egg-fried" style="font-size: 3rem;"></i>
+            <h4 class="mt-2">EggTrack</h4>
+            <p id="userRoleDisplay" class="text-light small">Administrator</p>
+        </div>
+        
+        <nav class="sidebar-nav">
+            <a href="dashboard.html" class="nav-link">
+                <i class="bi bi-speedometer2"></i>
+                <span>Dashboard Utama</span>
+                   </a>
+            <a href="production.html" class="nav-link">
+                <i class="bi bi-egg-fried"></i>
+                <span>Manajemen Produksi</span>
+                    </a>
+            <a href="sales.html" class="nav-link">
+                <i class="bi bi-cart"></i>
+                <span>Penjualan & Order</span>
+                    </a>
+            <a href="expenses.html" class="nav-link active">
+                <i class="bi bi-cash-coin"></i>
+                <span>Pengeluaran</span>
+                    </a>
+            <a href="inventory.html" class="nav-link">
+                <i class="bi bi-box-seam"></i>
+                <span>Inventaris Stok</span>
+                     </a>
+            <a href="customer.html" class="nav-link">
+                <i class="bi bi-people"></i>
+                <span>Manajemen Pelanggan</span>
+                     </a>
+            <a href="reports.html" class="nav-link">
+                <i class="bi bi-graph-up"></i>
+                <span>Laporan & Analisis</span>
+                     </a>
+            <a href="settings.html" class="nav-link">
+                <i class="bi bi-gear"></i>
+                <span>Pengaturan Sistem</span>
+                     </a>
+            <a href="#" class="nav-link mt-3 logout-btn">
+                <i class="bi bi-box-arrow-right"></i>
+                <span>Keluar Sistem</span>
+            </a>
+        </nav>
+    </div>
+
+    <div class="main-content">
+        <!-- Header -->
+        <div class="dashboard-header d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h3><i class="bi bi-cash-coin me-2"></i>Manajemen Pengeluaran</h3>
+                <p class="text-muted mb-0">Kelola data pengeluaran operasional</p>
+            </div>
+            <div class="d-flex">
+                <div class="search-box me-3">
+                    <i class="bi bi-search"></i>
+                    <input type="text" class="form-control" id="expensesSearch" placeholder="Cari pengeluaran...">
+                </div>
+                <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addExpensesModal">
+                    <i class="bi bi-plus-circle me-2"></i> Tambah Pengeluaran
+                </button>
+            </div>
+        </div>
+
+        <!-- Info Integrasi -->
+        <div class="alert alert-info mb-4">
+            <i class="bi bi-arrow-left-right me-2"></i>
+            <strong>Data Terintegrasi:</strong> Pengeluaran akan mempengaruhi margin keuntungan secara otomatis
+        </div>
+
+        <!-- Stat Cards -->
+        <div class="row mb-4">
+            <div class="col-md-3 col-6 mb-4">
+                <div class="card text-center stat-card">
+                    <div class="card-body">
+                        <i class="bi bi-calendar-check"></i>
+                        <h5>Pengeluaran Hari Ini</h5>
+                        <h3 id="todayExpenses">Rp 0</h3>
+                        <p class="text-muted">Total</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 col-6 mb-4">
+                <div class="card text-center stat-card">
+                    <div class="card-body">
+                        <i class="bi bi-calendar-week"></i>
+                        <h5>Pengeluaran Minggu Ini</h5>
+                        <h3 id="weekExpenses">Rp 0</h3>
+                        <p class="text-muted">Total</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 col-6 mb-4">
+                <div class="card text-center stat-card">
+                    <div class="card-body">
+                        <i class="bi bi-calendar-month"></i>
+                        <h5>Pengeluaran Bulan Ini</h5>
+                        <h3 id="monthExpenses">Rp 0</h3>
+                        <p class="text-muted">Total</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 col-6 mb-4">
+                <div class="card text-center stat-card">
+                    <div class="card-body">
+                        <i class="bi bi-graph-down"></i>
+                        <h5>Total Pengeluaran</h5>
+                        <h3 id="totalExpensesCard">Rp 0</h3>
+                        <p class="text-muted">Keseluruhan</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tabel Pengeluaran -->
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0"><i class="bi bi-list-ul me-2"></i>Daftar Pengeluaran</h5>
+                <button class="btn btn-outline-primary btn-sm" id="exportExpenses">
+                    <i class="bi bi-download me-1"></i> Export
+                </button>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Tanggal</th>
+                                <th>Kategori</th>
+                                <th>Deskripsi</th>
+                                <th>Jumlah</th>
+                                <th>Metode Bayar</th>
+                                <th>Status</th>
+                                <th>Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody id="expensesTableBody">
+                            <tr>
+                                <td colspan="7" class="text-center py-4">
+                                    <div class="loading-spinner mx-auto"></div>
+                                    <div class="loading-text mt-2">Memuat data pengeluaran...</div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Tambah Pengeluaran -->
+    <div class="modal fade" id="addExpensesModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="bi bi-plus-circle me-2"></i>Tambah Pengeluaran</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="expensesForm">
+                        <div class="mb-3">
+                            <label for="expensesDate" class="form-label">Tanggal Pengeluaran</label>
+                            <input type="date" class="form-control" id="expensesDate" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="expensesCategory" class="form-label">Kategori</label>
+                            <select class="form-control" id="expensesCategory" required>
+                                <option value="">Pilih Kategori</option>
+                                <option value="Bahan Baku">Bahan Baku</option>
+                                <option value="Operasional">Operasional</option>
+                                <option value="Peralatan">Peralatan</option>
+                                <option value="Lainnya">Lainnya</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="expensesDescription" class="form-label">Deskripsi</label>
+                            <input type="text" class="form-control" id="expensesDescription" placeholder="Masukkan deskripsi pengeluaran" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="expensesAmount" class="form-label">Jumlah Pengeluaran</label>
+                            <input type="number" class="form-control" id="expensesAmount" placeholder="Masukkan jumlah" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="expensesPayment" class="form-label">Metode Pembayaran</label>
+                            <select class="form-control" id="expensesPayment">
+                                <option value="Tunai">Tunai</option>
+                                <option value="Transfer Bank">Transfer Bank</option>
+                            </select>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                    <button type="button" class="btn btn-primary" id="saveExpenses">
+                        <i class="bi bi-check-circle me-2"></i>Simpan Pengeluaran
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="expenses.js"></script>
+</body>
+</html>
