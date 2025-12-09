@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manajemen Berita - EggTrack Admin</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <style>
+        /* Gunakan style yang sama dengan dashboard */
+        :root {
+            --primary: #4361ee;
+            --secondary: #3f37c9;
+            --success: #4cc9f0;
+            --light: #f8f9fa;
+            --dark: #212529;
+            --gray: #6c757d;
+        }
+        
+        body {
+            background-color: #f5f7fb;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+        }
+        
+        .sidebar {
+            background: linear-gradient(180deg, var(--primary), var(--secondary));
+            color: white;
+            height: 100vh;
+            position: fixed;
+            padding-top: 20px;
+            z-index: 1000;
+            width: 250px;
+            box-shadow: 5px 0 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        .sidebar .nav-link {
+            color: rgba(255, 255, 255, 0.8);
+            padding: 12px 20px;
+            text-decoration: none;
+            display: block;
+            transition: all 0.3s;
+            border-left: 4px solid transparent;
+        }
+        
+        .sidebar .nav-link:hover, .sidebar .nav-link.active {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            border-left: 4px solid var(--success);
+        }
+        
+        .sidebar .nav-link i {
+            margin-right: 15px;
+            font-size: 1.1rem;
+        }
+        
+        .main-content {
+            margin-left: 250px;
+            padding: 20px;
+            min-height: 100vh;
+            background: #f8f9fa;
+        }
+        
+        .header {
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            color: white;
+            padding: 25px;
+            border-radius: 15px;
+            margin-bottom: 25px;
+            box-shadow: 0 5px 15px rgba(67, 97, 238, 0.3);
+        }
+        
+        .card {
+            border-radius: 15px;
+            box-shadow: 0 5px 25px rgba(0, 0, 0, 0.08);
+            border: none;
+            margin-bottom: 25px;
+            transition: transform 0.3s, box-shadow 0.3s;
+            overflow: hidden;
+        }
+        
+        .news-image-preview {
+            width: 100px;
+            height: 60px;
+            object-fit: cover;
+            border-radius: 5px;
+        }
+        
+        .editor-toolbar {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-bottom: none;
+            padding: 10px;
+            border-radius: 5px 5px 0 0;
+        }
+        
+        .editor-content {
+            min-height: 300px;
+            border: 1px solid #dee2e6;
+            padding: 15px;
+            border-radius: 0 0 5px 5px;
+            background: white;
+        }
+        
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 100%;
+                height: auto;
+                position: relative;
+            }
+            
+            .main-content {
+                margin-left: 0;
+                padding: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Sidebar (sama dengan dashboard) -->
+    <div class="sidebar col-md-3">
+        <div class="text-center mb-4 pt-3">
+            <i class="bi bi-egg-fried" style="font-size: 3rem;"></i>
+            <h4 class="mt-2">EggTrack</h4>
+            <p id="userRoleDisplay" class="text-light">Administrator</p>
+        </div>
+        
+        <nav class="nav flex-column">
+            <a href="dashboard.html" class="nav-link">
+                <i class="bi bi-speedometer2"></i>
+                <span>Dashboard Utama</span>
+            </a>
+            <!-- Menu lainnya -->
+            <a href="news-management.html" class="nav-link active">
+                <i class="bi bi-newspaper"></i>
+                <span>Manajemen Berita</span>
+            </a>
+            <!-- Menu lainnya -->
+            <a href="#" class="nav-link mt-4" id="logoutBtn">
+                <i class="bi bi-box-arrow-right"></i>
+                <span>Keluar Sistem</span>
+            </a>
+        </nav>
+    </div>
+    
+    <!-- Main Content -->
+    <div class="main-content col-md-9">
+        <div class="header">
+            <h2><i class="bi bi-newspaper me-2"></i>Manajemen Berita</h2>
+            <p class="mb-0">Kelola berita dan artikel untuk ditampilkan di halaman publik</p>
+        </div>
+
+        <!-- Control Panel -->
+        <div class="card">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h5 class="mb-0">Daftar Berita</h5>
+                    <button class="btn btn-primary" id="addNewsBtn">
+                        <i class="bi bi-plus-circle me-2"></i>Tambah Berita Baru
+                    </button>
+                </div>
+                
+                <!-- Search and Filter -->
+                <div class="row mb-4">
+                    <div class="col-md-6">
+                        <div class="input-group">
+                            <input type="text" class="form-control" id="searchNews" placeholder="Cari berita...">
+                            <button class="btn btn-outline-secondary" type="button" id="searchBtn">
+                                <i class="bi bi-search"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <select class="form-select" id="filterCategory">
+                            <option value="">Semua Kategori</option>
+                            <option value="Terbaru">Terbaru</option>
+                            <option value="Trending">Trending</option>
+                            <option value="Tips">Tips</option>
+                            <option value="Kesehatan">Kesehatan</option>
+                            <option value="Edukasi">Edukasi</option>
+                            <option value="Sertifikasi">Sertifikasi</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <select class="form-select" id="filterStatus">
+                            <option value="">Semua Status</option>
+                            <option value="Published">Published</option>
+                            <option value="Draft">Draft</option>
+                            <option value="Archived">Archived</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- News Table -->
+                <div class="table-responsive">
+                    <table class="table table-hover" id="newsTable">
+                        <thead>
+                            <tr>
+                                <th width="60px">Gambar</th>
+                                <th>Judul</th>
+                                <th width="120px">Tanggal</th>
+                                <th width="120px">Kategori</th>
+                                <th width="100px">Status</th>
+                                <th width="150px">Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody id="newsTableBody">
+                            <tr>
+                                <td colspan="6" class="text-center py-4">
+                                    <div class="loading-spinner mx-auto"></div>
+                                    <div class="loading-text mt-2">Memuat data berita...</div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Pagination -->
+                <nav aria-label="Page navigation">
+                    <ul class="pagination justify-content-center" id="newsPagination">
+                        <!-- Pagination akan di-generate oleh JavaScript -->
+                    </ul>
+                </nav>
+            </div>
+        </div>
+    </div>
+
+    <!-- News Editor Modal -->
+    <div class="modal fade" id="newsEditorModal" tabindex="-1" aria-labelledby="newsEditorModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-xl">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="newsEditorModalLabel">Tambah Berita Baru</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="newsForm">
+                        <input type="hidden" id="newsId" name="newsId">
+                        
+                        <div class="row">
+                            <div class="col-md-8">
+                                <div class="mb-3">
+                                    <label for="newsTitle" class="form-label">Judul Berita *</label>
+                                    <input type="text" class="form-control" id="newsTitle" name="newsTitle" required>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="newsExcerpt" class="form-label">Ringkasan Berita</label>
+                                    <textarea class="form-control" id="newsExcerpt" name="newsExcerpt" rows="3"></textarea>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="newsContent" class="form-label">Konten Berita *</label>
+                                    <div class="editor-toolbar">
+                                        <button type="button" class="btn btn-sm btn-light" onclick="formatText('bold')">
+                                            <i class="bi bi-type-bold"></i>
+                                        </button>
+                                        <button type="button" class="btn btn-sm btn-light" onclick="formatText('italic')">
+                                            <i class="bi bi-type-italic"></i>
+                                        </button>
+                                        <button type="button" class="btn btn-sm btn-light" onclick="formatText('underline')">
+                                            <i class="bi bi-type-underline"></i>
+                                        </button>
+                                        <button type="button" class="btn btn-sm btn-light" onclick="insertBulletList()">
+                                            <i class="bi bi-list-ul"></i>
+                                        </button>
+                                        <button type="button" class="btn btn-sm btn-light" onclick="insertNumberedList()">
+                                            <i class="bi bi-list-ol"></i>
+                                        </button>
+                                    </div>
+                                    <div class="editor-content" contenteditable="true" id="newsContentEditor"></div>
+                                    <textarea class="form-control d-none" id="newsContent" name="newsContent" rows="10" required></textarea>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    <label for="newsImage" class="form-label">Gambar Berita *</label>
+                                    <input type="text" class="form-control" id="newsImage" name="newsImage" 
+                                           placeholder="URL gambar (contoh: https://images.unsplash.com/photo-...)" required>
+                                    <div class="mt-2">
+                                        <img src="" alt="Preview" id="imagePreview" class="img-fluid rounded d-none">
+                                    </div>
+                                    <small class="text-muted">Gunakan URL gambar dari Unsplash atau upload ke Imgur</small>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="newsCategory" class="form-label">Kategori</label>
+                                    <select class="form-select" id="newsCategory" name="newsCategory" required>
+                                        <option value="Terbaru">Terbaru</option>
+                                        <option value="Trending">Trending</option>
+                                        <option value="Tips">Tips</option>
+                                        <option value="Kesehatan">Kesehatan</option>
+                                        <option value="Edukasi">Edukasi</option>
+                                        <option value="Sertifikasi">Sertifikasi</option>
+                                    </select>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="newsAuthor" class="form-label">Penulis</label>
+                                    <input type="text" class="form-control" id="newsAuthor" name="newsAuthor" value="Admin EggTrack">
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="newsStatus" class="form-label">Status</label>
+                                    <select class="form-select" id="newsStatus" name="newsStatus" required>
+                                        <option value="Published">Published</option>
+                                        <option value="Draft">Draft</option>
+                                        <option value="Archived">Archived</option>
+                                    </select>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="publishDate" class="form-label">Tanggal Publikasi</label>
+                                    <input type="date" class="form-control" id="publishDate" name="publishDate">
+                                </div>
+                                
+                                <div class="form-check mb-3">
+                                    <input class="form-check-input" type="checkbox" id="featuredNews" name="featuredNews">
+                                    <label class="form-check-label" for="featuredNews">
+                                        Jadikan Berita Unggulan
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                    <button type="button" class="btn btn-primary" id="saveNewsBtn">
+                        <i class="bi bi-save me-2"></i>Simpan Berita
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Delete Confirmation Modal -->
+    <div class="modal fade" id="deleteConfirmModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Konfirmasi Hapus</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Apakah Anda yakin ingin menghapus berita ini?</p>
+                    <p class="text-danger"><strong>Perhatian:</strong> Tindakan ini tidak dapat dibatalkan.</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                    <button type="button" class="btn btn-danger" id="confirmDeleteBtn">Hapus</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="news-management.js"></script>
+</body>
+</html>

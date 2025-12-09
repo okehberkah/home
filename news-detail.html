@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Berita Detail - EggTrack</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <style>
+        :root {
+            --primary: #4361ee;
+            --secondary: #3f37c9;
+            --success: #4cc9f0;
+            --light: #f8f9fa;
+            --dark: #212529;
+            --gray: #6c757d;
+        }
+        
+        body {
+            background: #f5f7fb;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        .navbar {
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            box-shadow: 0 4px 20px rgba(67, 97, 238, 0.3);
+        }
+        
+        .news-detail-header {
+            padding: 40px 0;
+            background: white;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .news-detail-content {
+            padding: 40px 0;
+        }
+        
+        .news-image {
+            width: 100%;
+            height: 400px;
+            object-fit: cover;
+            border-radius: 15px;
+            margin-bottom: 30px;
+        }
+        
+        .news-content {
+            font-size: 1.1rem;
+            line-height: 1.8;
+        }
+        
+        .news-content img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 10px;
+            margin: 20px 0;
+        }
+        
+        .news-content h1,
+        .news-content h2,
+        .news-content h3 {
+            color: var(--dark);
+            margin-top: 1.5em;
+            margin-bottom: 0.5em;
+        }
+        
+        .news-content p {
+            margin-bottom: 1.5em;
+        }
+        
+        .news-meta {
+            color: var(--gray);
+            font-size: 0.9rem;
+        }
+        
+        .back-button {
+            margin-bottom: 20px;
+        }
+        
+        .footer {
+            background: linear-gradient(90deg, var(--dark), #343a40);
+            color: white;
+            padding: 40px 0;
+            margin-top: 60px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark">
+        <div class="container">
+            <a class="navbar-brand" href="index.html">
+                <i class="bi bi-egg-fried me-2"></i>EggTrack
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="index.html">Beranda</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="news.html">Berita</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="index.html#modules">Modul Sistem</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- News Detail Content -->
+    <div class="container">
+        <!-- Back Button -->
+        <div class="back-button">
+            <a href="news.html" class="btn btn-outline-primary">
+                <i class="bi bi-arrow-left me-2"></i>Kembali ke Berita
+            </a>
+        </div>
+        
+        <!-- News Header -->
+        <div class="news-detail-header">
+            <h1 id="newsDetailTitle" class="mb-3">Memuat judul berita...</h1>
+            <div id="newsDetailMeta" class="news-meta mb-4">
+                <!-- Meta info will be loaded here -->
+            </div>
+        </div>
+        
+        <!-- News Image -->
+        <img id="newsDetailImage" 
+             src="https://via.placeholder.com/1200x400?text=Memuat+gambar..." 
+             alt="News Image" 
+             class="news-image">
+        
+        <!-- News Content -->
+        <div class="news-detail-content">
+            <div id="newsDetailContent" class="news-content">
+                <p>Memuat konten berita...</p>
+            </div>
+        </div>
+        
+        <!-- Share Buttons -->
+        <div class="share-buttons mt-5 mb-5">
+            <h5 class="mb-3">Bagikan berita ini:</h5>
+            <div class="btn-group" role="group">
+                <button type="button" class="btn btn-outline-primary" onclick="shareOnFacebook()">
+                    <i class="bi bi-facebook me-2"></i>Facebook
+                </button>
+                <button type="button" class="btn btn-outline-info" onclick="shareOnTwitter()">
+                    <i class="bi bi-twitter me-2"></i>Twitter
+                </button>
+                <button type="button" class="btn btn-outline-success" onclick="shareOnWhatsApp()">
+                    <i class="bi bi-whatsapp me-2"></i>WhatsApp
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-4 mb-4">
+                    <h5><i class="bi bi-egg-fried me-2"></i>EggTrack</h5>
+                    <p class="mt-3">Sistem manajemen terintegrasi untuk peternakan telur bebek.</p>
+                </div>
+                <div class="col-md-4 mb-4">
+                    <h5>Tautan Cepat</h5>
+                    <ul class="list-unstyled">
+                        <li><a href="index.html" class="text-light text-decoration-none">Beranda</a></li>
+                        <li><a href="news.html" class="text-light text-decoration-none">Berita</a></li>
+                        <li><a href="index.html#modules" class="text-light text-decoration-none">Modul Sistem</a></li>
+                    </ul>
+                </div>
+                <div class="col-md-4 mb-4">
+                    <h5>Kontak</h5>
+                    <p><i class="bi bi-envelope me-2"></i> info@eggtrack.id</p>
+                    <p><i class="bi bi-telephone me-2"></i> (021) 1234-5678</p>
+                </div>
+            </div>
+            <hr class="mt-4 mb-4 opacity-25">
+            <div class="text-center">
+                <p>&copy; 2023 EggTrack. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="public-news.js"></script>
+    <script>
+        // Share functions
+        function shareOnFacebook() {
+            const url = encodeURIComponent(window.location.href);
+            window.open(`https://www.facebook.com/sharer/sharer.php?u=${url}`, '_blank');
+        }
+        
+        function shareOnTwitter() {
+            const text = encodeURIComponent(document.title);
+            const url = encodeURIComponent(window.location.href);
+            window.open(`https://twitter.com/intent/tweet?text=${text}&url=${url}`, '_blank');
+        }
+        
+        function shareOnWhatsApp() {
+            const text = encodeURIComponent(`${document.title} - ${window.location.href}`);
+            window.open(`https://wa.me/?text=${text}`, '_blank');
+        }
+    </script>
+</body>
+</html>

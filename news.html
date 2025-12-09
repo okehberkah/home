@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Berita Terkini - EggTrack</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <style>
+        :root {
+            --primary: #4361ee;
+            --secondary: #3f37c9;
+            --success: #4cc9f0;
+            --light: #f8f9fa;
+            --dark: #212529;
+            --gray: #6c757d;
+        }
+        
+        body {
+            background: #f5f7fb;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        .navbar {
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            box-shadow: 0 4px 20px rgba(67, 97, 238, 0.3);
+        }
+        
+        .news-hero {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            padding: 60px 0;
+            margin-bottom: 40px;
+        }
+        
+        .news-card {
+            background: white;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
+            transition: transform 0.3s, box-shadow 0.3s;
+            height: 100%;
+            margin-bottom: 30px;
+        }
+        
+        .news-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.15);
+        }
+        
+        .news-image {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+        }
+        
+        .news-content {
+            padding: 20px;
+        }
+        
+        .news-meta {
+            color: var(--gray);
+            font-size: 0.9em;
+            margin-bottom: 10px;
+        }
+        
+        .news-title {
+            font-size: 1.25rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+            color: var(--dark);
+        }
+        
+        .news-excerpt {
+            color: var(--gray);
+            line-height: 1.6;
+            margin-bottom: 15px;
+        }
+        
+        .news-category {
+            background: var(--primary);
+            color: white;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            display: inline-block;
+            margin-bottom: 10px;
+        }
+        
+        .featured-news {
+            border: 3px solid gold;
+            position: relative;
+        }
+        
+        .featured-badge {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: gold;
+            color: #333;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 0.8rem;
+        }
+        
+        .pagination .page-item.active .page-link {
+            background: var(--primary);
+            border-color: var(--primary);
+        }
+        
+        .news-detail-content img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 10px;
+            margin: 20px 0;
+        }
+        
+        .news-detail-content h1,
+        .news-detail-content h2,
+        .news-detail-content h3 {
+            color: var(--dark);
+            margin-top: 1.5em;
+            margin-bottom: 0.5em;
+        }
+        
+        .news-detail-content p {
+            line-height: 1.8;
+            margin-bottom: 1em;
+        }
+        
+        .news-sidebar {
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+        }
+        
+        .sidebar-title {
+            color: var(--primary);
+            font-weight: 700;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid var(--primary);
+        }
+        
+        .sidebar-news-item {
+            margin-bottom: 15px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .sidebar-news-item:last-child {
+            border-bottom: none;
+        }
+        
+        .footer {
+            background: linear-gradient(90deg, var(--dark), #343a40);
+            color: white;
+            padding: 40px 0;
+            margin-top: 60px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark">
+        <div class="container">
+            <a class="navbar-brand" href="index.html">
+                <i class="bi bi-egg-fried me-2"></i>EggTrack
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="index.html">Beranda</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="news.html">Berita</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="index.html#modules">Modul Sistem</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="index.html#about">Tentang</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="news-hero">
+        <div class="container text-center">
+            <h1 class="display-4 fw-bold mb-3">Berita Terkini</h1>
+            <p class="lead">Informasi terbaru seputar peternakan telur bebek, teknologi, dan perkembangan industri</p>
+        </div>
+    </section>
+
+    <!-- News Content -->
+    <div class="container">
+        <div class="row">
+            <!-- Main News Content -->
+            <div class="col-lg-8" id="newsListContainer">
+                <div class="row">
+                    <!-- News will be loaded here by JavaScript -->
+                    <div class="col-12 text-center">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                        <p class="mt-3">Memuat berita...</p>
+                    </div>
+                </div>
+                
+                <!-- Pagination -->
+                <nav aria-label="Page navigation" id="newsPagination" style="display: none;">
+                    <ul class="pagination justify-content-center">
+                        <!-- Pagination will be generated by JavaScript -->
+                    </ul>
+                </nav>
+            </div>
+            
+            <!-- Sidebar -->
+            <div class="col-lg-4">
+                <div class="news-sidebar mb-4">
+                    <h4 class="sidebar-title"><i class="bi bi-filter me-2"></i>Filter Berita</h4>
+                    <div class="mb-3">
+                        <label class="form-label">Kategori</label>
+                        <select class="form-select" id="filterCategory">
+                            <option value="">Semua Kategori</option>
+                            <option value="Terbaru">Terbaru</option>
+                            <option value="Trending">Trending</option>
+                            <option value="Tips">Tips</option>
+                            <option value="Kesehatan">Kesehatan</option>
+                            <option value="Edukasi">Edukasi</option>
+                            <option value="Sertifikasi">Sertifikasi</option>
+                        </select>
+                    </div>
+                    <button class="btn btn-primary w-100" id="applyFilter">
+                        <i class="bi bi-funnel me-2"></i>Terapkan Filter
+                    </button>
+                </div>
+                
+                <div class="news-sidebar">
+                    <h4 class="sidebar-title"><i class="bi bi-star me-2"></i>Berita Unggulan</h4>
+                    <div id="featuredNewsSidebar">
+                        <!-- Featured news will be loaded here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-4 mb-4">
+                    <h5><i class="bi bi-egg-fried me-2"></i>EggTrack</h5>
+                    <p class="mt-3">Sistem manajemen terintegrasi untuk peternakan telur bebek.</p>
+                </div>
+                <div class="col-md-4 mb-4">
+                    <h5>Tautan Cepat</h5>
+                    <ul class="list-unstyled">
+                        <li><a href="index.html" class="text-light text-decoration-none">Beranda</a></li>
+                        <li><a href="news.html" class="text-light text-decoration-none">Berita</a></li>
+                        <li><a href="index.html#modules" class="text-light text-decoration-none">Modul Sistem</a></li>
+                    </ul>
+                </div>
+                <div class="col-md-4 mb-4">
+                    <h5>Kontak</h5>
+                    <p><i class="bi bi-envelope me-2"></i> info@eggtrack.id</p>
+                    <p><i class="bi bi-telephone me-2"></i> (021) 1234-5678</p>
+                </div>
+            </div>
+            <hr class="mt-4 mb-4 opacity-25">
+            <div class="text-center">
+                <p>&copy; 2023 EggTrack. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="public-news.js"></script>
+</body>
+</html>
