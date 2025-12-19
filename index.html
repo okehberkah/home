@@ -3,649 +3,125 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>EggTrack - Sistem Manajemen Peternakan Telur Bebek</title>
+    <title>Login - EggTrack Admin</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
-    <!-- Favicon -->
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🥚</text></svg>">
-    <!-- Tambahkan font modern -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --primary: #5e72e4;
-            --primary-dark: #3a4ab9;
-            --secondary: #11cdef;
-            --success: #2dce89;
-            --warning: #fb6340;
+            --primary: #4361ee;
+            --secondary: #3f37c9;
+            --success: #4cc9f0;
             --light: #f8f9fa;
-            --dark: #32325d;
-            --gray: #8898aa;
-            --gray-light: #e9ecef;
-            --radius: 16px;
-            --radius-sm: 10px;
-            --shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-            --shadow-lg: 0 15px 35px rgba(0, 0, 0, 0.1);
-            --transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
-        }
-        
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
+            --dark: #212529;
+            --gray: #6c757d;
         }
         
         body {
-            font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: #f8fafc;
-            color: var(--dark);
-            line-height: 1.6;
-            overflow-x: hidden;
+            background-color: #f5f7fb;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+        }
+        
+        .login-container {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
             min-height: 100vh;
             display: flex;
-            flex-direction: column;
-        }
-        
-        h1, h2, h3, h4, h5, h6 {
-            font-family: 'Poppins', sans-serif;
-            font-weight: 600;
-            color: var(--dark);
-        }
-        
-        .main-container {
-            flex: 1;
-        }
-        
-        /* Modern Navbar */
-        .navbar {
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(10px);
-            box-shadow: 0 2px 20px rgba(0, 0, 0, 0.05);
-            padding: 1rem 0;
-            position: sticky;
-            top: 0;
-            z-index: 1030;
-            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
-        }
-        
-        .navbar-brand {
-            font-weight: 700;
-            font-size: 1.8rem;
-            color: var(--primary);
-            display: flex;
             align-items: center;
-            transition: var(--transition);
-        }
-        
-        .navbar-brand:hover {
-            color: var(--primary-dark);
-            transform: translateY(-2px);
-        }
-        
-        .navbar-brand i {
-            background: linear-gradient(135deg, var(--primary), var(--secondary));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            margin-right: 8px;
-            font-size: 2rem;
-        }
-        
-        .nav-link {
-            font-weight: 500;
-            color: var(--dark);
-            padding: 0.5rem 1rem !important;
-            border-radius: var(--radius-sm);
-            transition: var(--transition);
-            margin: 0 0.2rem;
-        }
-        
-        .nav-link:hover, .nav-link.active {
-            color: var(--primary);
-            background-color: rgba(94, 114, 228, 0.08);
-            transform: translateY(-2px);
-        }
-        
-        /* Modern Hero Section */
-        .hero-section {
-            padding: 100px 0;
-            background: linear-gradient(135deg, #f5f7ff 0%, #edf2ff 100%);
+            justify-content: center;
+            padding: 20px;
             position: relative;
             overflow: hidden;
-            margin-bottom: 50px;
         }
-        
-        .hero-section::before {
-            content: '';
+
+        .login-background {
             position: absolute;
-            top: -50%;
-            right: -20%;
-            width: 80%;
-            height: 200%;
-            background: linear-gradient(135deg, rgba(94, 114, 228, 0.05) 0%, rgba(17, 205, 239, 0.05) 100%);
-            border-radius: 50%;
-            z-index: 0;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000"><polygon fill="%234361ee" points="0,1000 1000,0 1000,1000"/></svg>') no-repeat center center;
+            background-size: cover;
+            opacity: 0.1;
         }
-        
-        .hero-content {
+
+        .login-center-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            height: 100%;
             position: relative;
-            z-index: 1;
+            z-index: 2;
         }
         
-        .hero-icon {
-            font-size: 5rem;
-            margin-bottom: 25px;
-            display: inline-block;
-            background: linear-gradient(135deg, var(--primary), var(--secondary));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            animation: float 6s ease-in-out infinite;
-        }
-        
-        @keyframes float {
-            0%, 100% { transform: translateY(0px) rotate(0deg); }
-            50% { transform: translateY(-20px) rotate(5deg); }
-        }
-        
-        .hero-title {
-            font-size: 3.5rem;
-            font-weight: 700;
-            margin-bottom: 20px;
-            line-height: 1.2;
-            background: linear-gradient(135deg, var(--primary), var(--secondary));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-        
-        @media (max-width: 768px) {
-            .hero-title {
-                font-size: 2.5rem;
-            }
-        }
-        
-        .hero-subtitle {
-            font-size: 1.25rem;
-            color: var(--gray);
-            max-width: 700px;
-            margin: 0 auto 40px;
-        }
-        
-        /* Modern Module Cards */
-        .module-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-            gap: 30px;
-            margin-bottom: 60px;
-        }
-        
-        .module-card {
+        .login-card {
             background: white;
-            border-radius: var(--radius);
-            padding: 35px 30px;
-            height: 100%;
-            box-shadow: var(--shadow);
-            transition: var(--transition);
-            border: 1px solid rgba(0, 0, 0, 0.03);
-            position: relative;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
             overflow: hidden;
-            display: flex;
-            flex-direction: column;
+            width: 100%;
+            max-width: 450px;
+            padding: 40px 35px;
+            position: relative;
+            transform: translateY(0);
+            transition: all 0.3s ease;
+            border: 1px solid rgba(255, 255, 255, 0.2);
         }
-        
-        .module-card::before {
+
+        .login-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 30px 80px rgba(0, 0, 0, 0.4);
+        }
+
+        .login-card::before {
             content: '';
             position: absolute;
             top: 0;
             left: 0;
-            width: 5px;
-            height: 100%;
-            background: linear-gradient(to bottom, var(--primary), var(--secondary));
-            transform: scaleY(0);
-            transform-origin: top;
-            transition: transform 0.6s ease;
-        }
-        
-        .module-card:hover {
-            transform: translateY(-12px);
-            box-shadow: var(--shadow-lg);
-        }
-        
-        .module-card:hover::before {
-            transform: scaleY(1);
-        }
-        
-        .module-icon {
-            font-size: 3rem;
-            margin-bottom: 20px;
-            display: block;
-            background: linear-gradient(135deg, var(--primary), var(--secondary));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            width: 70px;
-            height: 70px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background-color: rgba(94, 114, 228, 0.1);
-            border-radius: 18px;
-        }
-        
-        .module-title {
-            font-size: 1.5rem;
-            font-weight: 600;
-            margin-bottom: 15px;
-            color: var(--dark);
-        }
-        
-        .module-desc {
-            color: var(--gray);
-            margin-bottom: 25px;
-            flex-grow: 1;
-        }
-        
-        .module-btn {
-            background: linear-gradient(135deg, var(--primary), var(--secondary));
-            border: none;
-            color: white;
-            padding: 12px 25px;
-            border-radius: var(--radius-sm);
-            font-weight: 600;
-            transition: var(--transition);
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            width: fit-content;
-            box-shadow: 0 4px 15px rgba(94, 114, 228, 0.2);
-            text-decoration: none;
-        }
-        
-        .module-btn:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 8px 25px rgba(94, 114, 228, 0.3);
-            color: white;
-        }
-        
-        /* Modern Stats Section */
-        .stats-section {
-            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
-            border-radius: var(--radius);
-            padding: 60px 40px;
-            margin: 70px 0;
-            box-shadow: var(--shadow-lg);
-            color: white;
-            position: relative;
-            overflow: hidden;
-        }
-        
-        .stats-section::before {
-            content: '';
-            position: absolute;
-            top: -100px;
-            right: -100px;
-            width: 300px;
-            height: 300px;
-            background: rgba(255, 255, 255, 0.05);
-            border-radius: 50%;
-        }
-        
-        .stats-section::after {
-            content: '';
-            position: absolute;
-            bottom: -80px;
-            left: -80px;
-            width: 250px;
-            height: 250px;
-            background: rgba(255, 255, 255, 0.05);
-            border-radius: 50%;
-        }
-        
-        .stat-item {
-            text-align: center;
-            position: relative;
-            z-index: 1;
-        }
-        
-        .stat-number {
-            font-size: 3rem;
-            font-weight: 700;
-            line-height: 1;
-            margin-bottom: 10px;
-            color: white;
-        }
-        
-        .stat-label {
-            font-size: 1rem;
-            opacity: 0.9;
-        }
-        
-        /* Modern Footer */
-        .footer {
-            background: var(--dark);
-            color: white;
-            padding: 70px 0 30px;
-            margin-top: 80px;
-        }
-        
-        .footer-logo {
-            font-size: 2rem;
-            font-weight: 700;
-            margin-bottom: 20px;
-            display: flex;
-            align-items: center;
-        }
-        
-        .footer-logo i {
-            background: linear-gradient(135deg, var(--primary), var(--secondary));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            margin-right: 10px;
-        }
-        
-        .footer-links a {
-            color: rgba(255, 255, 255, 0.7);
-            text-decoration: none;
-            transition: var(--transition);
-            display: flex;
-            align-items: center;
-            margin-bottom: 12px;
-        }
-        
-        .footer-links a:hover {
-            color: white;
-            transform: translateX(5px);
-        }
-        
-        .footer-links a i {
-            margin-right: 10px;
-            width: 20px;
-        }
-        
-        /* Modern Login Modal */
-        .login-modal .modal-content {
-            border-radius: var(--radius);
-            border: none;
-            box-shadow: 0 25px 60px rgba(0, 0, 0, 0.15);
-            overflow: hidden;
-        }
-        
-        .login-modal .modal-header {
-            background: linear-gradient(135deg, var(--primary), var(--secondary));
-            color: white;
-            border: none;
-            padding: 30px;
-        }
-        
-        .login-modal .modal-body {
-            padding: 40px;
-        }
-        
-        .login-modal .login-title {
-            font-size: 1.8rem;
-            font-weight: 600;
-            color: var(--dark);
-            margin-bottom: 30px;
-            text-align: center;
-        }
-        
-        .login-modal .form-control {
-            padding: 14px 18px;
-            border-radius: var(--radius-sm);
-            border: 1px solid var(--gray-light);
-            transition: var(--transition);
-            font-size: 1rem;
-        }
-        
-        .login-modal .form-control:focus {
-            border-color: var(--primary);
-            box-shadow: 0 0 0 3px rgba(94, 114, 228, 0.15);
-        }
-        
-        .login-modal .login-btn {
-            background: linear-gradient(135deg, var(--primary), var(--secondary));
-            border: none;
-            color: white;
-            padding: 14px 30px;
-            border-radius: var(--radius-sm);
-            font-weight: 600;
-            width: 100%;
-            transition: var(--transition);
-            margin-top: 10px;
-            box-shadow: 0 4px 15px rgba(94, 114, 228, 0.2);
-        }
-        
-        .login-modal .login-btn:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 8px 25px rgba(94, 114, 228, 0.3);
-        }
-        
-        /* Auth Overlay */
-        .auth-required-overlay {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(255, 255, 255, 0.95);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            border-radius: var(--radius);
-            z-index: 10;
-            padding: 30px;
-            text-align: center;
-            backdrop-filter: blur(5px);
-        }
-        
-        .auth-required-icon {
-            font-size: 3rem;
-            background: linear-gradient(135deg, var(--primary), var(--secondary));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            margin-bottom: 20px;
-        }
-        
-        /* Logged In Banner */
-        .logged-in-banner {
-            background: linear-gradient(135deg, var(--success), #24b47e);
-            color: white;
-            padding: 18px 0;
-            text-align: center;
-            border-radius: var(--radius-sm);
-            margin-bottom: 30px;
-            box-shadow: 0 5px 15px rgba(45, 206, 137, 0.2);
-            animation: slideDown 0.5s ease;
-        }
-        
-        @keyframes slideDown {
-            from { transform: translateY(-20px); opacity: 0; }
-            to { transform: translateY(0); opacity: 1; }
-        }
-        
-        /* Demo Access Button */
-        .demo-access-btn {
-            position: fixed;
-            bottom: 25px;
-            right: 25px;
-            z-index: 1000;
-            background: linear-gradient(135deg, var(--primary), var(--secondary));
-            color: white;
-            border: none;
-            border-radius: 50px;
-            padding: 14px 28px;
-            box-shadow: 0 8px 25px rgba(94, 114, 228, 0.3);
-            font-weight: 600;
-            transition: var(--transition);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        
-        .demo-access-btn:hover {
-            transform: translateY(-5px) scale(1.05);
-            box-shadow: 0 12px 30px rgba(94, 114, 228, 0.4);
-        }
-        
-        /* Responsive Design Improvements */
-        @media (max-width: 768px) {
-            .module-grid {
-                grid-template-columns: 1fr;
-                gap: 20px;
-            }
-            
-            .stats-section {
-                padding: 40px 20px;
-            }
-            
-            .stat-number {
-                font-size: 2.5rem;
-            }
-            
-            .hero-section {
-                padding: 70px 0;
-            }
-            
-            .footer {
-                padding: 50px 0 25px;
-            }
-            
-            .demo-access-btn {
-                bottom: 15px;
-                right: 15px;
-                padding: 12px 20px;
-                font-size: 0.9rem;
-            }
-        }
-        
-        /* Animation for cards on scroll */
-        @keyframes fadeInUp {
-            from {
-                opacity: 0;
-                transform: translateY(30px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-        
-        .animate-on-scroll {
-            animation: fadeInUp 0.6s ease forwards;
-        }
-        
-        /* Section headers */
-        .section-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 30px;
-            flex-wrap: wrap;
-        }
-        
-        .section-title {
-            font-size: 2.2rem;
-            font-weight: 700;
-            color: var(--dark);
-            position: relative;
-            display: inline-block;
-        }
-        
-        .section-title::after {
-            content: '';
-            position: absolute;
-            bottom: -10px;
-            left: 0;
-            width: 60px;
+            right: 0;
             height: 4px;
-            background: linear-gradient(to right, var(--primary), var(--secondary));
-            border-radius: 2px;
+            background: linear-gradient(90deg, var(--primary), var(--success), var(--primary));
         }
         
-        /* Quick access buttons */
-        .quick-access-buttons {
-            display: flex;
-            gap: 20px;
-            justify-content: center;
-            flex-wrap: wrap;
-            margin-top: 30px;
+        .login-logo {
+            text-align: center;
+            margin-bottom: 30px;
         }
         
-        .btn-primary-modern {
-            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
-            border: none;
-            color: white;
-            padding: 14px 35px;
-            border-radius: var(--radius-sm);
-            font-weight: 600;
-            transition: var(--transition);
-            box-shadow: 0 5px 20px rgba(94, 114, 228, 0.2);
-            text-decoration: none;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-        }
-        
-        .btn-primary-modern:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 10px 25px rgba(94, 114, 228, 0.3);
-            color: white;
-        }
-        
-        .btn-outline-modern {
-            background: transparent;
-            border: 2px solid var(--primary);
+        .login-logo i {
+            font-size: 4rem;
             color: var(--primary);
-            padding: 14px 35px;
-            border-radius: var(--radius-sm);
-            font-weight: 600;
-            transition: var(--transition);
-            text-decoration: none;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
+            display: block;
+            margin-bottom: 15px;
+            background: linear-gradient(135deg, var(--primary), var(--success));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
         }
         
-        .btn-outline-modern:hover {
-            background: rgba(94, 114, 228, 0.08);
-            transform: translateY(-3px);
-            color: var(--primary);
+        .login-logo h2 {
+            color: var(--dark);
+            margin-bottom: 8px;
+            font-weight: 700;
+            font-size: 2rem;
         }
         
-        /* Custom scrollbar */
-        ::-webkit-scrollbar {
-            width: 8px;
+        .login-logo p {
+            color: var(--gray);
+            font-size: 1rem;
+            line-height: 1.5;
         }
         
-        ::-webkit-scrollbar-track {
-            background: #f1f1f1;
-            border-radius: 4px;
-        }
-        
-        ::-webkit-scrollbar-thumb {
-            background: linear-gradient(to bottom, var(--primary), var(--secondary));
-            border-radius: 4px;
-        }
-        
-        ::-webkit-scrollbar-thumb:hover {
-            background: linear-gradient(to bottom, var(--primary-dark), var(--secondary));
-        }
-        
-        /* NEW STYLES FOR SIMPLE LOGIN SYSTEM */
         .connection-status {
             padding: 12px 16px;
             border-radius: 12px;
-            margin-bottom: 20px;
+            margin-bottom: 25px;
             display: flex;
             align-items: center;
-            background: rgba(94, 114, 228, 0.1);
-            border: 1px solid rgba(94, 114, 228, 0.2);
-            font-size: 0.9rem;
+            background: rgba(67, 97, 238, 0.1);
+            border: 1px solid rgba(67, 97, 238, 0.2);
         }
         
         .status-indicator {
@@ -657,47 +133,54 @@
         }
         
         .status-connected {
-            background-color: var(--success);
-            box-shadow: 0 0 10px rgba(45, 206, 137, 0.5);
+            background-color: #28a745;
+            box-shadow: 0 0 10px rgba(40, 167, 69, 0.5);
         }
         
         .status-disconnected {
-            background-color: var(--warning);
-            box-shadow: 0 0 10px rgba(251, 99, 64, 0.5);
+            background-color: #dc3545;
+            box-shadow: 0 0 10px rgba(220, 53, 69, 0.5);
         }
-        
-        .login-error {
-            color: var(--warning);
-            font-size: 0.875rem;
-            margin-top: 0.5rem;
-            display: none;
-            font-weight: 500;
+
+        .form-control {
+            border-radius: 12px;
+            padding: 12px 16px;
+            border: 2px solid #e9ecef;
+            transition: all 0.3s ease;
+            font-size: 1rem;
         }
-        
-        .login-error.show {
-            display: block;
+
+        .form-control:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 0.2rem rgba(67, 97, 238, 0.25);
+        }
+
+        .form-label {
+            font-weight: 600;
+            color: var(--dark);
+            margin-bottom: 8px;
         }
         
         .role-selector {
             display: flex;
             justify-content: space-between;
-            margin-top: 10px;
-            gap: 8px;
+            margin-top: 20px;
+            gap: 10px;
         }
         
         .role-btn {
             flex: 1;
-            padding: 12px 8px;
+            padding: 16px 12px;
             text-align: center;
-            border-radius: 10px;
+            border-radius: 12px;
             cursor: pointer;
-            transition: var(--transition);
-            border: 2px solid var(--gray-light);
+            transition: all 0.3s;
+            border: 2px solid #e9ecef;
             background: white;
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 5px;
+            gap: 8px;
         }
         
         .role-btn:hover {
@@ -707,860 +190,152 @@
         
         .role-btn.active {
             border-color: var(--primary);
-            background: linear-gradient(135deg, rgba(94, 114, 228, 0.1), rgba(17, 205, 239, 0.1));
+            background: linear-gradient(135deg, rgba(67, 97, 238, 0.1), rgba(76, 201, 240, 0.1));
             color: var(--primary);
-            box-shadow: 0 5px 15px rgba(94, 114, 228, 0.2);
+            box-shadow: 0 5px 15px rgba(67, 97, 238, 0.2);
         }
-        
+
         .role-btn i {
-            font-size: 1.2rem;
-            margin-bottom: 3px;
+            font-size: 1.5rem;
+            margin-bottom: 5px;
         }
-        
+
         .role-btn div {
             font-weight: 600;
-            font-size: 0.8rem;
+            font-size: 0.9rem;
         }
         
-        .spinner-border {
-            vertical-align: middle;
-        }
-        
-        /* Toast notifications */
-        .toast-container {
-            z-index: 9999;
-        }
-        
-        .toast {
-            border-radius: var(--radius-sm);
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
             border: none;
-            box-shadow: var(--shadow-lg);
+            border-radius: 12px;
+            padding: 14px 20px;
+            font-weight: 600;
+            font-size: 1.1rem;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(67, 97, 238, 0.3);
         }
-        
-        /* Loading overlay */
-        .loading-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.5);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 9999;
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(67, 97, 238, 0.4);
+            background: linear-gradient(135deg, var(--secondary), var(--primary));
+        }
+
+        .login-error {
+            color: #dc3545;
+            font-size: 0.875rem;
+            margin-top: 0.5rem;
             display: none;
+            font-weight: 500;
         }
         
-        .loading-spinner {
-            width: 60px;
-            height: 60px;
-            border: 5px solid rgba(255, 255, 255, 0.3);
+        .login-error.show {
+            display: block;
+        }
+
+        .form-check-input:checked {
+            background-color: var(--primary);
+            border-color: var(--primary);
+        }
+
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255,255,255,.3);
             border-radius: 50%;
-            border-top-color: white;
+            border-top-color: #fff;
             animation: spin 1s ease-in-out infinite;
         }
         
         @keyframes spin {
             to { transform: rotate(360deg); }
         }
+
+        .login-footer {
+            text-align: center;
+            margin-top: 25px;
+            padding-top: 20px;
+            border-top: 1px solid #e9ecef;
+        }
+
+        .login-footer small {
+            color: var(--gray);
+            font-size: 0.85rem;
+        }
     </style>
 </head>
 <body>
-    <!-- Loading Overlay -->
-    <div class="loading-overlay" id="globalLoading">
-        <div class="loading-spinner"></div>
-    </div>
-
-    <!-- Navigation Bar -->
-    <nav class="navbar navbar-expand-lg">
-        <div class="container">
-            <a class="navbar-brand" href="index.html">
-                <i class="bi bi-egg-fried"></i>EggTrack
-            </a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav ms-auto">
-                    <li class="nav-item">
-                        <a class="nav-link active" href="index.html">Beranda</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="#modules">Modul</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="#about">Tentang</a>
-                    </li>
-                    <li class="nav-item">
-                        <button class="btn btn-primary-modern ms-2 px-4" data-bs-toggle="modal" data-bs-target="#loginModal" id="navbarLoginBtn">
-                            <i class="bi bi-box-arrow-in-right me-1"></i> Masuk
-                        </button>
-                    </li>
-                </ul>
-            </div>
-        </div>
-    </nav>
-
-    <!-- Hero Section -->
-    <section class="hero-section text-center">
-        <div class="container hero-content">
-            <i class="bi bi-egg-fried hero-icon"></i>
-            <h1 class="hero-title">EggTrack Pro</h1>
-            <p class="hero-subtitle">
-                Sistem Manajemen Terintegrasi untuk Peternakan Telur Bebek. 
-                Kelola produksi, penjualan, inventaris, dan analisis bisnis Anda dalam satu platform modern.
-            </p>
-            <div class="quick-access-buttons">
-                <button class="btn btn-primary-modern btn-lg" data-bs-toggle="modal" data-bs-target="#loginModal">
-                    <i class="bi bi-box-arrow-in-right me-2"></i> Masuk ke Sistem
-                </button>
-                <a href="#modules" class="btn btn-outline-modern btn-lg">
-                    <i class="bi bi-grid-3x3-gap me-2"></i> Jelajahi Modul
-                </a>
-            </div>
-        </div>
-    </section>
-
-    <!-- Main Container -->
-    <div class="main-container">
-        <div class="container">
-            <!-- Already Logged In Banner (hidden by default) -->
-            <div class="logged-in-banner" id="loggedInBanner" style="display: none;">
-                <div class="container d-flex align-items-center justify-content-between flex-wrap">
-                    <div class="d-flex align-items-center">
-                        <i class="bi bi-check-circle-fill me-3 fs-4"></i>
-                        <span class="fs-5">Anda sudah login sebagai <strong id="currentUserName">Administrator</strong></span>
-                    </div>
-                    <div>
-                        <button class="btn btn-outline-light btn-sm me-2" id="goToDashboardBtn">
-                            <i class="bi bi-speedometer2 me-1"></i> Buka Dashboard
-                        </button>
-                        <button class="btn btn-light btn-sm" id="logoutFromBannerBtn">
-                            <i class="bi bi-box-arrow-right me-1"></i> Logout
-                        </button>
-                    </div>
-                </div>
-            </div>
-
-            <!-- System Stats -->
-            <div class="stats-section" id="about">
-                <div class="row text-center">
-                    <div class="col-md-3 col-6 mb-4">
-                        <div class="stat-item">
-                            <div class="stat-number" id="moduleCount">9</div>
-                            <div class="stat-label">Modul Terintegrasi</div>
-                        </div>
-                    </div>
-                    <div class="col-md-3 col-6 mb-4">
-                        <div class="stat-item">
-                            <div class="stat-number" id="userCount">3</div>
-                            <div class="stat-label">Pengguna Aktif</div>
-                        </div>
-                    </div>
-                    <div class="col-md-3 col-6 mb-4">
-                        <div class="stat-item">
-                            <div class="stat-number" id="eggCount">12,500</div>
-                            <div class="stat-label">Telur Terproduksi</div>
-                        </div>
-                    </div>
-                    <div class="col-md-3 col-6 mb-4">
-                        <div class="stat-item">
-                            <div class="stat-number" id="salesCount">245</div>
-                            <div class="stat-label">Penjualan Sukses</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Modules Grid -->
-            <div class="mt-5 mb-5" id="modules">
-                <div class="section-header mb-5">
-                    <h2 class="section-title">Modul Sistem EggTrack</h2>
-                    <p class="text-muted mb-0" id="moduleSubtitle">9 modul terintegrasi untuk manajemen bisnis peternakan</p>
+    <div class="login-container">
+        <div class="login-background"></div>
+        <div class="login-center-container">
+            <div class="login-card">
+                <div class="login-logo">
+                    <i class="bi bi-egg-fried"></i>
+                    <h2>EggTrack Admin</h2>
+                    <p>Sistem Terintegrasi Pencatatan Produksi & Penjualan Telur Bebek</p>
                 </div>
                 
-                <div class="module-grid" id="modulesContainer">
-                    <!-- Modules akan dimuat secara dinamis -->
-                    <div class="module-card">
-                        <i class="bi bi-speedometer2 module-icon"></i>
-                        <h3 class="module-title">Dashboard Utama</h3>
-                        <p class="module-desc">Dashboard real-time dengan semua metrik bisnis penting. Pantau performa, statistik, dan aktivitas terkini dalam satu tampilan.</p>
-                        <a href="#" class="module-btn" data-bs-toggle="modal" data-bs-target="#loginModal">
-                            <i class="bi bi-arrow-right me-2"></i> Login untuk Akses
-                        </a>
+                <div class="connection-status mb-4" id="loginConnectionStatus">
+                    <div class="status-indicator status-disconnected"></div>
+                    <span>Memeriksa koneksi server...</span>
+                </div>
+                
+                <form id="loginForm">
+                    <div class="mb-4">
+                        <label for="loginUsername" class="form-label">Username</label>
+                        <input type="text" class="form-control" id="loginUsername" placeholder="Masukkan username Anda" required>
+                        <div class="login-error" id="usernameError"></div>
+                    </div>
+                    <div class="mb-4">
+                        <label for="loginPassword" class="form-label">Password</label>
+                        <input type="password" class="form-control" id="loginPassword" placeholder="Masukkan password Anda" required>
+                        <div class="login-error" id="passwordError"></div>
                     </div>
                     
-                    <div class="module-card">
-                        <i class="bi bi-egg-fried module-icon"></i>
-                        <h3 class="module-title">Manajemen Produksi</h3>
-                        <p class="module-desc">Kelola data produksi telur bebek secara lengkap. Catat produksi harian, analisis tren, dan integrasikan dengan stok inventaris.</p>
-                        <a href="#" class="module-btn" data-bs-toggle="modal" data-bs-target="#loginModal">
-                            <i class="bi bi-arrow-right me-2"></i> Login untuk Akses
-                        </a>
-                    </div>
-                    
-                    <div class="module-card">
-                        <i class="bi bi-cart module-icon"></i>
-                        <h3 class="module-title">Penjualan & Order</h3>
-                        <p class="module-desc">Kelola penjualan, buat faktur, dan lacak order pelanggan. Terintegrasi langsung dengan inventaris untuk update stok otomatis.</p>
-                        <a href="#" class="module-btn" data-bs-toggle="modal" data-bs-target="#loginModal">
-                            <i class="bi bi-arrow-right me-2"></i> Login untuk Akses
-                        </a>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Call to Action -->
-            <div class="text-center mt-5 mb-5" id="callToAction">
-                <h3 class="mb-4" style="color: var(--dark);">Siap Mengoptimalkan Bisnis Peternakan Anda?</h3>
-                <p class="lead mb-4">Akses semua modul sistem dengan satu akun terintegrasi</p>
-                <button class="btn btn-primary-modern btn-lg px-5 py-3 fw-bold" data-bs-toggle="modal" data-bs-target="#loginModal">
-                    <i class="bi bi-box-arrow-in-right me-2"></i> Masuk Sekarang
-                </button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Footer -->
-    <footer class="footer">
-        <div class="container">
-            <div class="row">
-                <div class="col-lg-4 mb-5">
-                    <div class="footer-logo">
-                        <i class="bi bi-egg-fried"></i>EggTrack
-                    </div>
-                    <p class="text-muted mb-4">Sistem manajemen terintegrasi untuk peternakan telur bebek. Mengoptimalkan produksi, penjualan, dan analisis bisnis dalam satu platform.</p>
-                </div>
-                <div class="col-lg-4 mb-5">
-                    <h5 class="mb-4 text-white">Tautan Cepat</h5>
-                    <div class="footer-links">
-                        <a href="#" data-bs-toggle="modal" data-bs-target="#loginModal"><i class="bi bi-speedometer2"></i> Dashboard</a>
-                        <a href="#about"><i class="bi bi-info-circle"></i> Tentang Sistem</a>
-                        <a href="#modules"><i class="bi bi-grid-3x3-gap"></i> Semua Modul</a>
-                    </div>
-                </div>
-                <div class="col-lg-4 mb-5">
-                    <h5 class="mb-4 text-white">Kontak & Dukungan</h5>
-                    <div class="footer-links">
-                        <a href="mailto:support@eggtrack.id"><i class="bi bi-envelope"></i> support@eggtrack.id</a>
-                        <a href="tel:+622112345678"><i class="bi bi-telephone"></i> (021) 1234-5678</a>
-                        <a href="#"><i class="bi bi-globe"></i> www.eggtrack.id</a>
-                        <a href="#" data-bs-toggle="modal" data-bs-target="#loginModal"><i class="bi bi-box-arrow-in-right"></i> Masuk Sistem</a>
-                    </div>
-                </div>
-            </div>
-            <hr class="mt-4 mb-4" style="opacity: 0.2;">
-            <div class="text-center pt-3">
-                <p class="text-muted">&copy; <span id="currentYear">2023</span> EggTrack. Hak Cipta Dilindungi. Versi 1.0.0</p>
-            </div>
-        </div>
-    </footer>
-
-    <!-- Demo Access Button (Fixed Position) -->
-    <button class="demo-access-btn" data-bs-toggle="modal" data-bs-target="#loginModal" id="demoAccessBtn">
-        <i class="bi bi-box-arrow-in-right me-1"></i> Masuk Sistem
-    </button>
-
-    <!-- Login Modal - SIMPLE VERSION -->
-    <div class="modal fade login-modal" id="loginModal" tabindex="-1" aria-labelledby="loginModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="loginModalLabel">
-                        <i class="bi bi-egg-fried me-2"></i>Masuk ke EggTrack
-                    </h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <div class="login-logo text-center mb-4">
-                        <i class="bi bi-egg-fried fs-1"></i>
-                        <h3 class="mt-2">EggTrack Admin</h3>
-                        <p class="text-muted small">Sistem Terintegrasi Pencatatan Produksi & Penjualan</p>
-                    </div>
-                    
-                    <!-- Status Koneksi -->
-                    <div class="connection-status mb-3" id="loginConnectionStatus">
-                        <div class="status-indicator status-disconnected"></div>
-                        <span class="small">Sistem siap digunakan</span>
-                    </div>
-                    
-                    <form id="loginForm">
-                        <div class="mb-3">
-                            <label for="loginUsername" class="form-label">Username</label>
-                            <div class="input-group">
-                                <span class="input-group-text bg-light border-end-0">
-                                    <i class="bi bi-person text-primary"></i>
-                                </span>
-                                <input type="text" class="form-control border-start-0" id="loginUsername" placeholder="Masukkan username" required>
+                    <div class="mb-4">
+                        <label class="form-label">Pilih Peran</label>
+                        <div class="role-selector">
+                            <div class="role-btn active" data-role="admin">
+                                <i class="bi bi-shield-lock"></i>
+                                <div>Administrator</div>
                             </div>
-                            <div class="login-error" id="usernameError"></div>
-                        </div>
-                        
-                        <div class="mb-3">
-                            <label for="loginPassword" class="form-label">Password</label>
-                            <div class="input-group">
-                                <span class="input-group-text bg-light border-end-0">
-                                    <i class="bi bi-lock text-primary"></i>
-                                </span>
-                                <input type="password" class="form-control border-start-0" id="loginPassword" placeholder="Masukkan password" required>
-                                <button class="btn btn-outline-secondary border-start-0" type="button" id="togglePasswordBtn">
-                                    <i class="bi bi-eye"></i>
-                                </button>
+                            <div class="role-btn" data-role="manager">
+                                <i class="bi bi-people"></i>
+                                <div>Manager</div>
                             </div>
-                            <div class="login-error" id="passwordError"></div>
-                        </div>
-                        
-                        <!-- Role Selector -->
-                        <div class="mb-3">
-                            <label class="form-label">Pilih Peran</label>
-                            <div class="role-selector">
-                                <div class="role-btn active" data-role="Administrator">
-                                    <i class="bi bi-shield-lock"></i>
-                                    <div>Administrator</div>
-                                </div>
-                                <div class="role-btn" data-role="Manager">
-                                    <i class="bi bi-people"></i>
-                                    <div>Manager</div>
-                                </div>
-                                <div class="role-btn" data-role="Staff">
-                                    <i class="bi bi-person-badge"></i>
-                                    <div>Staff</div>
-                                </div>
+                            <div class="role-btn" data-role="staff">
+                                <i class="bi bi-person-badge"></i>
+                                <div>Staff</div>
                             </div>
-                            <input type="hidden" id="role" value="Administrator">
-                            <div class="login-error" id="roleError"></div>
                         </div>
-                        
-                        <div class="mb-3 form-check">
-                            <input type="checkbox" class="form-check-input" id="rememberMe">
-                            <label class="form-check-label" for="rememberMe">Ingat informasi login saya</label>
-                        </div>
-                        
-                        <button type="submit" class="login-btn w-100" id="modalLoginBtn">
-                            <span id="loginSpinner" class="d-none">
-                                <span class="spinner-border spinner-border-sm me-2" role="status"></span>
-                                Memproses...
-                            </span>
-                            <span id="loginText">
-                                <i class="bi bi-box-arrow-in-right me-2"></i> Masuk ke Sistem
-                            </span>
-                        </button>
-                    </form>
-                    
-                    <div class="text-center mt-3">
-                        <small class="text-muted">Gunakan demo account: <strong>admin</strong> / <strong>admin123</strong></small>
+                        <input type="hidden" id="role" value="admin">
+                        <div class="login-error" id="roleError"></div>
                     </div>
                     
-                    <div class="login-footer mt-4 pt-3 border-top text-center">
-                        <small class="text-muted">Sistem terintegrasi - perubahan di satu modul akan mempengaruhi modul lainnya secara real-time</small>
+                    <div class="mb-4 form-check">
+                        <input type="checkbox" class="form-check-input" id="rememberMe">
+                        <label class="form-check-label" for="rememberMe">Ingat informasi login saya</label>
                     </div>
+                    
+                    <button type="submit" class="btn btn-primary w-100 py-3 mb-3">
+                        <span id="loginSpinner" class="d-none">
+                            <span class="loading"></span> Memproses...
+                        </span>
+                        <span id="loginText">Masuk ke Sistem</span>
+                    </button>
+                </form>
+                
+                <div class="login-footer">
+                    <small class="text-muted">Sistem terintegrasi - perubahan di satu modul akan mempengaruhi modul lainnya secara real-time</small>
                 </div>
             </div>
         </div>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script>
-        // === SISTEM LOGIN SANGAT SEDERHANA ===
-        
-        // Data module untuk fallback jika server tidak tersedia
-        const FALLBACK_MODULES = [
-            {
-                id: 'dashboard',
-                title: 'Dashboard Utama',
-                description: 'Dashboard real-time dengan semua metrik bisnis penting. Pantau performa, statistik, dan aktivitas terkini dalam satu tampilan.',
-                icon: 'bi-speedometer2',
-                link: 'dashboard.html',
-                buttonText: 'Akses Dashboard'
-            },
-            {
-                id: 'production',
-                title: 'Manajemen Produksi',
-                description: 'Kelola data produksi telur bebek secara lengkap. Catat produksi harian, analisis tren, dan integrasikan dengan stok inventaris.',
-                icon: 'bi-egg-fried',
-                link: 'production.html',
-                buttonText: 'Kelola Produksi'
-            },
-            {
-                id: 'sales',
-                title: 'Penjualan & Order',
-                description: 'Kelola penjualan, buat faktur, dan lacak order pelanggan. Terintegrasi langsung dengan inventaris untuk update stok otomatis.',
-                icon: 'bi-cart',
-                link: 'sales.html',
-                buttonText: 'Kelola Penjualan'
-            },
-            {
-                id: 'expenses',
-                title: 'Pengeluaran',
-                description: 'Catat semua pengeluaran operasional, dari bahan baku hingga biaya overhead. Analisis pengeluaran dan optimalkan biaya produksi.',
-                icon: 'bi-cash-coin',
-                link: 'expenses.html',
-                buttonText: 'Kelola Pengeluaran'
-            },
-            {
-                id: 'inventory',
-                title: 'Inventaris Stok',
-                description: 'Pantau stok telur, bahan baku, dan produk jadi. Dapatkan notifikasi stok rendah dan kelola persediaan secara efisien.',
-                icon: 'bi-box-seam',
-                link: 'inventory.html',
-                buttonText: 'Kelola Inventaris'
-            },
-            {
-                id: 'customer',
-                title: 'Manajemen Pelanggan',
-                description: 'Kelola database pelanggan, riwayat transaksi, dan preferensi. Bangun hubungan pelanggan yang lebih baik dengan data terpusat.',
-                icon: 'bi-people',
-                link: 'customer.html',
-                buttonText: 'Kelola Pelanggan'
-            },
-            {
-                id: 'reports',
-                title: 'Laporan & Analisis',
-                description: 'Hasilkan laporan keuangan, analisis penjualan, dan insight bisnis. Buat keputusan berbasis data dengan grafik dan statistik interaktif.',
-                icon: 'bi-graph-up',
-                link: 'reports.html',
-                buttonText: 'Lihat Laporan'
-            },
-            {
-                id: 'settings',
-                title: 'Pengaturan Sistem',
-                description: 'Konfigurasi sistem, kelola pengguna, dan atur preferensi. Sesuaikan EggTrack sesuai kebutuhan bisnis peternakan Anda.',
-                icon: 'bi-gear',
-                link: 'settings.html',
-                buttonText: 'Pengaturan'
-            },
-            {
-                id: 'hpp',
-                title: 'Perhitungan HPP',
-                description: 'Hitung Harga Pokok Penjualan (HPP) secara akurat. Analisis biaya produksi dan tentukan harga jual yang optimal.',
-                icon: 'bi-calculator',
-                link: 'hpp.html',
-                buttonText: 'Hitung HPP'
-            }
-        ];
-        
-        document.addEventListener('DOMContentLoaded', function() {
-            console.log('Initializing EggTrack System...');
-            
-            // Set tahun copyright
-            document.getElementById('currentYear').textContent = new Date().getFullYear();
-            
-            // Setup event listeners
-            setupEventListeners();
-            
-            // Load initial modules
-            loadInitialModules();
-            
-            // Check if user is already logged in
-            checkLoginStatus();
-            
-            // Setup scroll animations
-            setupScrollAnimations();
-            
-            console.log('System initialized successfully');
-        });
-        
-        function setupEventListeners() {
-            // Login form
-            const loginForm = document.getElementById('loginForm');
-            if (loginForm) {
-                loginForm.addEventListener('submit', handleLoginSubmit);
-            }
-            
-            // Role selector
-            document.querySelectorAll('.role-btn').forEach(btn => {
-                btn.addEventListener('click', function() {
-                    document.querySelectorAll('.role-btn').forEach(b => b.classList.remove('active'));
-                    this.classList.add('active');
-                    document.getElementById('role').value = this.dataset.role;
-                });
-            });
-            
-            // Toggle password visibility
-            const togglePasswordBtn = document.getElementById('togglePasswordBtn');
-            if (togglePasswordBtn) {
-                togglePasswordBtn.addEventListener('click', function() {
-                    const passwordInput = document.getElementById('loginPassword');
-                    const icon = this.querySelector('i');
-                    if (passwordInput.type === 'password') {
-                        passwordInput.type = 'text';
-                        icon.classList.remove('bi-eye');
-                        icon.classList.add('bi-eye-slash');
-                    } else {
-                        passwordInput.type = 'password';
-                        icon.classList.remove('bi-eye-slash');
-                        icon.classList.add('bi-eye');
-                    }
-                });
-            }
-            
-            // Logout button
-            const logoutBtn = document.getElementById('logoutFromBannerBtn');
-            if (logoutBtn) {
-                logoutBtn.addEventListener('click', handleLogout);
-            }
-            
-            // Go to dashboard button
-            const goToDashboardBtn = document.getElementById('goToDashboardBtn');
-            if (goToDashboardBtn) {
-                goToDashboardBtn.addEventListener('click', function() {
-                    window.location.href = 'dashboard.html';
-                });
-            }
-            
-            // Demo access button
-            const demoAccessBtn = document.getElementById('demoAccessBtn');
-            if (demoAccessBtn) {
-                demoAccessBtn.addEventListener('click', function() {
-                    // Auto-fill demo credentials
-                    setTimeout(() => {
-                        document.getElementById('loginUsername').value = 'admin';
-                        document.getElementById('loginPassword').value = 'admin123';
-                        // Set role ke Administrator
-                        document.querySelectorAll('.role-btn').forEach(b => b.classList.remove('active'));
-                        document.querySelector('.role-btn[data-role="Administrator"]').classList.add('active');
-                        document.getElementById('role').value = 'Administrator';
-                    }, 500);
-                });
-            }
-            
-            // Check URL parameters for login requirement
-            const urlParams = new URLSearchParams(window.location.search);
-            if (urlParams.get('login') === 'required') {
-                setTimeout(() => {
-                    const loginModal = new bootstrap.Modal(document.getElementById('loginModal'));
-                    loginModal.show();
-                }, 500);
-            }
-            
-            if (urlParams.get('logout') === 'success') {
-                showToast('Anda telah logout', 'info');
-            }
-        }
-        
-        function loadInitialModules() {
-            renderModules(FALLBACK_MODULES);
-            document.getElementById('moduleSubtitle').textContent = `${FALLBACK_MODULES.length} modul terintegrasi untuk manajemen bisnis peternakan`;
-        }
-        
-        function renderModules(modules) {
-            const modulesContainer = document.getElementById('modulesContainer');
-            if (!modulesContainer) return;
-            
-            modulesContainer.innerHTML = '';
-            
-            modules.forEach(module => {
-                const moduleCard = document.createElement('div');
-                moduleCard.className = 'module-card';
-                
-                moduleCard.innerHTML = `
-                    <i class="bi ${module.icon} module-icon"></i>
-                    <h3 class="module-title">${module.title}</h3>
-                    <p class="module-desc">${module.description}</p>
-                    <a href="${module.link}" class="module-btn">
-                        <i class="bi bi-arrow-right me-2"></i> ${module.buttonText || 'Akses Modul'}
-                    </a>
-                `;
-                
-                modulesContainer.appendChild(moduleCard);
-            });
-            
-            // Setup animations for new cards
-            setupScrollAnimations();
-        }
-        
-        async function handleLoginSubmit(e) {
-            e.preventDefault();
-            
-            const username = document.getElementById('loginUsername').value.trim();
-            const password = document.getElementById('loginPassword').value;
-            const role = document.getElementById('role').value;
-            
-            // Reset error messages
-            document.getElementById('usernameError')?.classList.remove('show');
-            document.getElementById('passwordError')?.classList.remove('show');
-            document.getElementById('roleError')?.classList.remove('show');
-            
-            let isValid = true;
-            
-            if (!username) {
-                document.getElementById('usernameError').textContent = 'Username harus diisi';
-                document.getElementById('usernameError').classList.add('show');
-                isValid = false;
-            }
-            
-            if (!password) {
-                document.getElementById('passwordError').textContent = 'Password harus diisi';
-                document.getElementById('passwordError').classList.add('show');
-                isValid = false;
-            }
-            
-            if (!isValid) return;
-            
-            const loginBtn = document.getElementById('modalLoginBtn');
-            const loginSpinner = document.getElementById('loginSpinner');
-            const loginText = document.getElementById('loginText');
-            
-            loginSpinner.classList.remove('d-none');
-            loginText.classList.add('d-none');
-            loginBtn.disabled = true;
-            
-            try {
-                // Simulasi delay login
-                await new Promise(resolve => setTimeout(resolve, 1000));
-                
-                const result = handleSimpleLogin(username, password, role);
-                
-                if (result.success) {
-                    showToast('Login berhasil! Mengarahkan ke dashboard...', 'success');
-                    
-                    // Simpan data user ke localStorage
-                    localStorage.setItem('eggUser', JSON.stringify(result.user));
-                    
-                    // Redirect ke dashboard setelah 1 detik
-                    setTimeout(() => {
-                        window.location.href = 'dashboard.html';
-                    }, 1000);
-                    
-                } else {
-                    showToast(result.message || 'Login gagal!', 'danger');
-                    document.getElementById('passwordError').textContent = result.message;
-                    document.getElementById('passwordError').classList.add('show');
-                }
-            } catch (error) {
-                console.error('Login error:', error);
-                showToast('Terjadi kesalahan saat login', 'danger');
-            } finally {
-                loginSpinner.classList.add('d-none');
-                loginText.classList.remove('d-none');
-                loginBtn.disabled = false;
-            }
-        }
-        
-        function handleSimpleLogin(username, password, role) {
-            // Data demo untuk login lokal - SANGAT SEDERHANA
-            const validUsers = {
-                'admin': { password: 'admin123', role: 'Administrator', name: 'Administrator Utama' },
-                'manager': { password: 'manager123', role: 'Manager', name: 'Manager Produksi' },
-                'staff': { password: 'staff123', role: 'Staff', name: 'Staff Peternakan' }
-            };
+    <script src="login.js"></script>
 
-            if (validUsers[username] && validUsers[username].password === password) {
-                return {
-                    success: true,
-                    user: {
-                        username: username,
-                        name: validUsers[username].name,
-                        role: validUsers[username].role,
-                        loginTime: new Date().toISOString()
-                    }
-                };
-            } else {
-                return {
-                    success: false,
-                    message: 'Username atau password salah'
-                };
-            }
-        }
-        
-        function checkLoginStatus() {
-            const userData = localStorage.getItem('eggUser');
-            
-            if (userData) {
-                try {
-                    const user = JSON.parse(userData);
-                    
-                    // Cek apakah session masih valid (24 jam)
-                    const loginTime = new Date(user.loginTime);
-                    const now = new Date();
-                    const hoursDiff = (now - loginTime) / (1000 * 60 * 60);
-                    
-                    if (hoursDiff < 24) {
-                        // User sudah login, tampilkan banner
-                        updateUIForLoggedInUser(user);
-                    } else {
-                        // Session expired
-                        localStorage.removeItem('eggUser');
-                    }
-                } catch (error) {
-                    console.error('Error parsing user data:', error);
-                    localStorage.removeItem('eggUser');
-                }
-            }
-        }
-        
-        function updateUIForLoggedInUser(user) {
-            // Tampilkan banner login
-            const loggedInBanner = document.getElementById('loggedInBanner');
-            const currentUserName = document.getElementById('currentUserName');
-            
-            if (loggedInBanner && currentUserName) {
-                loggedInBanner.style.display = 'block';
-                currentUserName.textContent = user.name;
-            }
-            
-            // Update tombol login di navbar
-            const navbarLoginBtn = document.getElementById('navbarLoginBtn');
-            if (navbarLoginBtn) {
-                navbarLoginBtn.innerHTML = `<i class="bi bi-person-circle me-1"></i> ${user.name}`;
-                navbarLoginBtn.classList.remove('btn-primary-modern');
-                navbarLoginBtn.classList.add('btn-outline-modern');
-                navbarLoginBtn.setAttribute('data-bs-toggle', 'modal');
-                navbarLoginBtn.setAttribute('data-bs-target', '#loginModal');
-                
-                // Update event untuk show user info
-                const newNavbarBtn = navbarLoginBtn.cloneNode(true);
-                navbarLoginBtn.parentNode.replaceChild(newNavbarBtn, navbarLoginBtn);
-                
-                newNavbarBtn.addEventListener('click', function(e) {
-                    e.preventDefault();
-                    showUserInfo(user);
-                });
-            }
-        }
-        
-        function showUserInfo(user) {
-            // Tampilkan modal dengan info user
-            const modalContent = `
-                <div class="modal fade" id="userInfoModal" tabindex="-1">
-                    <div class="modal-dialog modal-dialog-centered">
-                        <div class="modal-content">
-                            <div class="modal-header">
-                                <h5 class="modal-title">Informasi Akun</h5>
-                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                            </div>
-                            <div class="modal-body">
-                                <div class="text-center mb-4">
-                                    <div class="bg-primary bg-opacity-10 rounded-circle p-3 d-inline-block mb-3">
-                                        <i class="bi bi-person-circle text-primary fs-1"></i>
-                                    </div>
-                                    <h4>${user.name}</h4>
-                                    <p class="text-muted">${user.role}</p>
-                                </div>
-                                <div class="list-group">
-                                    <div class="list-group-item d-flex justify-content-between">
-                                        <span>Username</span>
-                                        <strong>${user.username}</strong>
-                                    </div>
-                                    <div class="list-group-item d-flex justify-content-between">
-                                        <span>Login Terakhir</span>
-                                        <strong>${formatDate(user.loginTime)}</strong>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="modal-footer">
-                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
-                                <button type="button" class="btn btn-danger" id="logoutFromModalBtn">Logout</button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            `;
-            
-            // Hapus modal jika sudah ada
-            const existingModal = document.getElementById('userInfoModal');
-            if (existingModal) existingModal.remove();
-            
-            // Tambahkan modal ke body
-            document.body.insertAdjacentHTML('beforeend', modalContent);
-            
-            // Tampilkan modal
-            const userModal = new bootstrap.Modal(document.getElementById('userInfoModal'));
-            userModal.show();
-            
-            // Setup logout button
-            document.getElementById('logoutFromModalBtn').addEventListener('click', handleLogout);
-        }
-        
-        function handleLogout() {
-            localStorage.removeItem('eggUser');
-            showToast('Anda telah logout', 'info');
-            
-            // Hide logged in banner
-            const loggedInBanner = document.getElementById('loggedInBanner');
-            if (loggedInBanner) loggedInBanner.style.display = 'none';
-            
-            // Reset navbar button
-            const navbarLoginBtn = document.getElementById('navbarLoginBtn');
-            if (navbarLoginBtn) {
-                navbarLoginBtn.innerHTML = `<i class="bi bi-box-arrow-in-right me-1"></i> Masuk`;
-                navbarLoginBtn.classList.remove('btn-outline-modern');
-                navbarLoginBtn.classList.add('btn-primary-modern');
-                navbarLoginBtn.setAttribute('data-bs-toggle', 'modal');
-                navbarLoginBtn.setAttribute('data-bs-target', '#loginModal');
-            }
-            
-            // Redirect to home
-            setTimeout(() => {
-                window.location.href = 'index.html?logout=success';
-            }, 1000);
-        }
-        
-        function setupScrollAnimations() {
-            const observerOptions = {
-                threshold: 0.1,
-                rootMargin: '0px 0px -50px 0px'
-            };
-            
-            const observer = new IntersectionObserver((entries) => {
-                entries.forEach(entry => {
-                    if (entry.isIntersecting) {
-                        entry.target.classList.add('animate-on-scroll');
-                    }
-                });
-            }, observerOptions);
-            
-            document.querySelectorAll('.module-card').forEach(card => {
-                observer.observe(card);
-            });
-        }
-        
-        function showToast(message, type = 'info') {
-            let toastContainer = document.querySelector('.toast-container');
-            if (!toastContainer) {
-                toastContainer = document.createElement('div');
-                toastContainer.className = 'toast-container position-fixed top-0 end-0 p-3';
-                document.body.appendChild(toastContainer);
-            }
-            
-            const toastId = 'toast-' + Date.now();
-            const toast = document.createElement('div');
-            toast.className = `toast align-items-center text-bg-${type} border-0`;
-            toast.id = toastId;
-            
-            toast.innerHTML = `
-                <div class="d-flex">
-                    <div class="toast-body">
-                        ${message}
-                    </div>
-                    <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
-                </div>
-            `;
-            
-            toastContainer.appendChild(toast);
-            const bsToast = new bootstrap.Toast(toast, { delay: 4000 });
-            bsToast.show();
-            
-            toast.addEventListener('hidden.bs.toast', () => toast.remove());
-        }
-        
-        function formatDate(dateString) {
-            try {
-                const date = new Date(dateString);
-                if (isNaN(date.getTime())) return '-';
-                
-                return date.toLocaleDateString('id-ID', {
-                    day: '2-digit',
-                    month: '2-digit',
-                    year: 'numeric',
-                    hour: '2-digit',
-                    minute: '2-digit'
-                });
-            } catch (error) {
-                return '-';
-            }
-        }
-    </script>
 </body>
 </html>
