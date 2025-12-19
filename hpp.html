@@ -1,0 +1,1278 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Perhitungan HPP - EggTrack</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🥚</text></svg>">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #5e72e4;
+            --primary-dark: #3a4ab9;
+            --secondary: #11cdef;
+            --success: #2dce89;
+            --warning: #fb6340;
+            --light: #f8f9fa;
+            --dark: #32325d;
+            --gray: #8898aa;
+            --gray-light: #e9ecef;
+            --radius: 16px;
+            --radius-sm: 10px;
+            --shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            --shadow-lg: 0 15px 35px rgba(0, 0, 0, 0.1);
+            --transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f8fafc;
+            color: var(--dark);
+            line-height: 1.6;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        h1, h2, h3, h4, h5, h6 {
+            font-family: 'Poppins', sans-serif;
+            font-weight: 600;
+            color: var(--dark);
+        }
+        
+        /* Navbar (sama dengan index.html) */
+        .navbar {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 2px 20px rgba(0, 0, 0, 0.05);
+            padding: 1rem 0;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+        }
+        
+        .navbar-brand {
+            font-weight: 700;
+            font-size: 1.8rem;
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            transition: var(--transition);
+        }
+        
+        .navbar-brand:hover {
+            color: var(--primary-dark);
+            transform: translateY(-2px);
+        }
+        
+        .navbar-brand i {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-right: 8px;
+            font-size: 2rem;
+        }
+        
+        .nav-link {
+            font-weight: 500;
+            color: var(--dark);
+            padding: 0.5rem 1rem !important;
+            border-radius: var(--radius-sm);
+            transition: var(--transition);
+            margin: 0 0.2rem;
+        }
+        
+        .nav-link:hover, .nav-link.active {
+            color: var(--primary);
+            background-color: rgba(94, 114, 228, 0.08);
+            transform: translateY(-2px);
+        }
+        
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            padding: 30px 0;
+        }
+        
+        /* HPP Calculator Card */
+        .hpp-calculator-card {
+            background: white;
+            border-radius: var(--radius);
+            padding: 35px;
+            box-shadow: var(--shadow);
+            border: 1px solid rgba(0, 0, 0, 0.03);
+            margin-bottom: 30px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .hpp-calculator-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 5px;
+            height: 100%;
+            background: linear-gradient(to bottom, #2dce89, #11cdef);
+            transform-origin: top;
+        }
+        
+        .hpp-section-title {
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin-bottom: 25px;
+            color: var(--dark);
+            display: flex;
+            align-items: center;
+        }
+        
+        .hpp-section-title i {
+            margin-right: 12px;
+            background: linear-gradient(135deg, #2dce89, #11cdef);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        /* Input Groups */
+        .hpp-input-group {
+            margin-bottom: 25px;
+        }
+        
+        .hpp-input-label {
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: var(--dark);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        
+        .hpp-input-label span {
+            font-size: 0.9rem;
+            color: var(--gray);
+            font-weight: normal;
+        }
+        
+        .hpp-input {
+            padding: 14px 18px;
+            border-radius: var(--radius-sm);
+            border: 1px solid var(--gray-light);
+            width: 100%;
+            font-size: 1rem;
+            transition: var(--transition);
+            font-family: 'Inter', sans-serif;
+        }
+        
+        .hpp-input:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(94, 114, 228, 0.15);
+            outline: none;
+        }
+        
+        .hpp-input-unit {
+            position: relative;
+        }
+        
+        .hpp-input-unit::after {
+            content: 'Rp';
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--gray);
+            font-weight: 500;
+        }
+        
+        .hpp-input-unit input {
+            padding-right: 50px;
+        }
+        
+        /* HPP Results */
+        .hpp-results-card {
+            background: linear-gradient(135deg, #2dce89, #24b47e);
+            color: white;
+            border-radius: var(--radius);
+            padding: 35px;
+            box-shadow: 0 10px 30px rgba(45, 206, 137, 0.2);
+            margin-bottom: 30px;
+        }
+        
+        .hpp-results-title {
+            font-size: 1.6rem;
+            font-weight: 700;
+            margin-bottom: 25px;
+            display: flex;
+            align-items: center;
+        }
+        
+        .hpp-results-title i {
+            margin-right: 12px;
+        }
+        
+        .hpp-result-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+        }
+        
+        .hpp-result-item:last-child {
+            border-bottom: none;
+            font-weight: 700;
+            font-size: 1.2rem;
+            margin-top: 10px;
+            padding-top: 20px;
+        }
+        
+        .hpp-result-label {
+            font-size: 1rem;
+        }
+        
+        .hpp-result-value {
+            font-size: 1.2rem;
+            font-weight: 600;
+        }
+        
+        /* History Card */
+        .history-card {
+            background: white;
+            border-radius: var(--radius);
+            padding: 35px;
+            box-shadow: var(--shadow);
+            border: 1px solid rgba(0, 0, 0, 0.03);
+            margin-bottom: 30px;
+        }
+        
+        .history-item {
+            padding: 20px;
+            border-radius: var(--radius-sm);
+            background: #f8fafc;
+            margin-bottom: 15px;
+            border-left: 4px solid var(--primary);
+            transition: var(--transition);
+        }
+        
+        .history-item:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+        }
+        
+        .history-date {
+            font-weight: 600;
+            color: var(--dark);
+            margin-bottom: 5px;
+        }
+        
+        .history-details {
+            display: flex;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            margin-top: 10px;
+        }
+        
+        .history-detail {
+            display: flex;
+            flex-direction: column;
+            margin-right: 20px;
+            margin-bottom: 10px;
+        }
+        
+        .history-detail-label {
+            font-size: 0.85rem;
+            color: var(--gray);
+        }
+        
+        .history-detail-value {
+            font-weight: 600;
+            color: var(--dark);
+        }
+        
+        /* Buttons */
+        .hpp-calculate-btn {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            border: none;
+            color: white;
+            padding: 16px 35px;
+            border-radius: var(--radius-sm);
+            font-weight: 600;
+            transition: var(--transition);
+            width: 100%;
+            font-size: 1.1rem;
+            box-shadow: 0 5px 20px rgba(94, 114, 228, 0.2);
+            margin-top: 10px;
+        }
+        
+        .hpp-calculate-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(94, 114, 228, 0.3);
+            color: white;
+        }
+        
+        .hpp-reset-btn {
+            background: transparent;
+            border: 2px solid var(--gray);
+            color: var(--dark);
+            padding: 16px 35px;
+            border-radius: var(--radius-sm);
+            font-weight: 600;
+            transition: var(--transition);
+            width: 100%;
+            margin-top: 15px;
+        }
+        
+        .hpp-reset-btn:hover {
+            background: rgba(136, 152, 170, 0.1);
+            transform: translateY(-3px);
+        }
+        
+        /* Footer */
+        .footer {
+            background: var(--dark);
+            color: white;
+            padding: 50px 0 25px;
+            margin-top: 60px;
+        }
+        
+        .footer-logo {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+        }
+        
+        .footer-logo i {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-right: 10px;
+        }
+        
+        .footer-links a {
+            color: rgba(255, 255, 255, 0.7);
+            text-decoration: none;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+        
+        .footer-links a:hover {
+            color: white;
+            transform: translateX(5px);
+        }
+        
+        .footer-links a i {
+            margin-right: 10px;
+            width: 20px;
+        }
+        
+        /* Auth Required Overlay */
+        .auth-required-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.95);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            padding: 30px;
+            text-align: center;
+            backdrop-filter: blur(5px);
+        }
+        
+        .auth-required-icon {
+            font-size: 5rem;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 20px;
+        }
+        
+        .auth-required-title {
+            font-size: 2.2rem;
+            font-weight: 700;
+            margin-bottom: 15px;
+            color: var(--dark);
+        }
+        
+        .auth-required-text {
+            font-size: 1.1rem;
+            color: var(--gray);
+            max-width: 500px;
+            margin-bottom: 30px;
+        }
+        
+        /* Toast notifications */
+        .toast-container {
+            z-index: 9999;
+        }
+        
+        .toast {
+            border-radius: var(--radius-sm);
+            border: none;
+            box-shadow: var(--shadow-lg);
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .hpp-calculator-card, .hpp-results-card, .history-card {
+                padding: 25px 20px;
+            }
+            
+            .hpp-section-title {
+                font-size: 1.5rem;
+            }
+            
+            .history-details {
+                flex-direction: column;
+            }
+            
+            .history-detail {
+                margin-right: 0;
+                margin-bottom: 15px;
+            }
+        }
+        
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 4px;
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: linear-gradient(to bottom, var(--primary), var(--secondary));
+            border-radius: 4px;
+        }
+        
+        ::-webkit-scrollbar-thumb:hover {
+            background: linear-gradient(to bottom, var(--primary-dark), var(--secondary));
+        }
+    </style>
+</head>
+<body>
+    <!-- Auth Required Overlay (akan disembunyikan jika user sudah login) -->
+    <div class="auth-required-overlay" id="authRequiredOverlay">
+        <i class="bi bi-lock auth-required-icon"></i>
+        <h2 class="auth-required-title">Akses Dibatasi</h2>
+        <p class="auth-required-text">Anda harus login terlebih dahulu untuk mengakses modul Perhitungan HPP. Silakan login menggunakan akun Anda.</p>
+        <div>
+            <a href="index.html?login=required" class="btn btn-primary-modern btn-lg px-5 py-3 fw-bold">
+                <i class="bi bi-box-arrow-in-right me-2"></i> Login Sekarang
+            </a>
+        </div>
+        <div class="mt-4">
+            <a href="index.html" class="btn btn-outline-modern btn-lg">
+                <i class="bi bi-house me-2"></i> Kembali ke Beranda
+            </a>
+        </div>
+    </div>
+
+    <!-- Navigation Bar -->
+    <nav class="navbar navbar-expand-lg">
+        <div class="container">
+            <a class="navbar-brand" href="index.html">
+                <i class="bi bi-egg-fried"></i>EggTrack
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="index.html">
+                            <i class="bi bi-house me-1"></i> Beranda
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="dashboard.html">
+                            <i class="bi bi-speedometer2 me-1"></i> Dashboard
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="hpp.html">
+                            <i class="bi bi-calculator me-1"></i> HPP
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="production.html">
+                            <i class="bi bi-egg-fried me-1"></i> Produksi
+                        </a>
+                    </li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+                            <i class="bi bi-grid-3x3-gap me-1"></i> Modul Lain
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="sales.html"><i class="bi bi-cart me-2"></i> Penjualan</a></li>
+                            <li><a class="dropdown-item" href="inventory.html"><i class="bi bi-box-seam me-2"></i> Inventaris</a></li>
+                            <li><a class="dropdown-item" href="reports.html"><i class="bi bi-graph-up me-2"></i> Laporan</a></li>
+                        </ul>
+                    </li>
+                    <li class="nav-item">
+                        <button class="btn btn-outline-modern ms-2 px-4" id="navbarUserBtn">
+                            <i class="bi bi-person-circle me-1"></i> <span id="navbarUserName">Akun</span>
+                        </button>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="main-content" id="mainContent" style="display: none;">
+        <div class="container">
+            <!-- Page Header -->
+            <div class="row mb-5">
+                <div class="col-12">
+                    <div class="d-flex align-items-center justify-content-between flex-wrap">
+                        <div>
+                            <h1 class="hpp-section-title">
+                                <i class="bi bi-calculator"></i> Perhitungan HPP (Harga Pokok Penjualan)
+                            </h1>
+                            <p class="text-muted">Hitung biaya produksi telur bebek dan tentukan harga jual yang optimal untuk keuntungan maksimal.</p>
+                        </div>
+                        <div class="mt-3 mt-md-0">
+                            <button class="btn btn-outline-modern" id="printHPPBtn">
+                                <i class="bi bi-printer me-2"></i> Cetak Laporan
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <!-- Left Column: HPP Calculator -->
+                <div class="col-lg-8">
+                    <div class="hpp-calculator-card">
+                        <h3 class="hpp-section-title mb-4">
+                            <i class="bi bi-input-cursor"></i> Input Data Biaya Produksi
+                        </h3>
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="hpp-input-group">
+                                    <label class="hpp-input-label">Biaya Pakan (per bulan)
+                                        <span>Total biaya pakan untuk semua bebek</span>
+                                    </label>
+                                    <div class="hpp-input-unit">
+                                        <input type="number" class="hpp-input" id="feedCost" placeholder="0" min="0" step="1000">
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <div class="hpp-input-group">
+                                    <label class="hpp-input-label">Biaya Tenaga Kerja (per bulan)
+                                        <span>Gaji karyawan & upah harian</span>
+                                    </label>
+                                    <div class="hpp-input-unit">
+                                        <input type="number" class="hpp-input" id="laborCost" placeholder="0" min="0" step="1000">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="hpp-input-group">
+                                    <label class="hpp-input-label">Biaya Obat & Vitamin (per bulan)
+                                        <span>Pengobatan dan suplemen untuk bebek</span>
+                                    </label>
+                                    <div class="hpp-input-unit">
+                                        <input type="number" class="hpp-input" id="medicineCost" placeholder="0" min="0" step="1000">
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <div class="hpp-input-group">
+                                    <label class="hpp-input-label">Biaya Listrik & Air (per bulan)
+                                        <span>Biaya utilitas peternakan</span>
+                                    </label>
+                                    <div class="hpp-input-unit">
+                                        <input type="number" class="hpp-input" id="utilityCost" placeholder="0" min="0" step="1000">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="hpp-input-group">
+                                    <label class="hpp-input-label">Biaya Lain-lain (per bulan)
+                                        <span>Biaya tak terduga & perlengkapan</span>
+                                    </label>
+                                    <div class="hpp-input-unit">
+                                        <input type="number" class="hpp-input" id="otherCost" placeholder="0" min="0" step="1000">
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <div class="hpp-input-group">
+                                    <label class="hpp-input-label">Jumlah Telur Diproduksi (per bulan)
+                                        <span>Total telur yang dihasilkan</span>
+                                    </label>
+                                    <input type="number" class="hpp-input" id="eggProduction" placeholder="0" min="0" step="100">
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="hpp-input-group">
+                                    <label class="hpp-input-label">Persentase Kerusakan Telur (%)
+                                        <span>Telur pecah/rusak selama produksi</span>
+                                    </label>
+                                    <input type="number" class="hpp-input" id="damagePercentage" placeholder="0" min="0" max="100" step="0.5">
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <div class="hpp-input-group">
+                                    <label class="hpp-input-label">Margin Keuntungan yang Diinginkan (%)
+                                        <span>Persentase keuntungan dari harga jual</span>
+                                    </label>
+                                    <input type="number" class="hpp-input" id="profitMargin" placeholder="20" min="0" max="100" step="0.5">
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row mt-4">
+                            <div class="col-md-6">
+                                <button class="hpp-calculate-btn" id="calculateHPPBtn">
+                                    <i class="bi bi-calculator me-2"></i> Hitung HPP
+                                </button>
+                            </div>
+                            <div class="col-md-6">
+                                <button class="hpp-reset-btn" id="resetHPPBtn">
+                                    <i class="bi bi-arrow-clockwise me-2"></i> Reset Form
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- HPP Results -->
+                    <div class="hpp-results-card" id="hppResultsCard" style="display: none;">
+                        <h3 class="hpp-results-title">
+                            <i class="bi bi-graph-up-arrow"></i> Hasil Perhitungan HPP
+                        </h3>
+                        
+                        <div class="hpp-result-item">
+                            <span class="hpp-result-label">Total Biaya Produksi Bulanan</span>
+                            <span class="hpp-result-value" id="totalCostValue">Rp 0</span>
+                        </div>
+                        
+                        <div class="hpp-result-item">
+                            <span class="hpp-result-label">Jumlah Telur Layak Jual</span>
+                            <span class="hpp-result-value" id="sellableEggsValue">0 butir</span>
+                        </div>
+                        
+                        <div class="hpp-result-item">
+                            <span class="hpp-result-label">HPP per Butir Telur</span>
+                            <span class="hpp-result-value" id="hppPerEggValue">Rp 0</span>
+                        </div>
+                        
+                        <div class="hpp-result-item">
+                            <span class="hpp-result-label">Harga Jual per Butir (dengan margin)</span>
+                            <span class="hpp-result-value" id="sellingPriceValue">Rp 0</span>
+                        </div>
+                        
+                        <div class="hpp-result-item">
+                            <span class="hpp-result-label">Perkiraan Keuntungan Bulanan</span>
+                            <span class="hpp-result-value" id="monthlyProfitValue">Rp 0</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Right Column: History & Info -->
+                <div class="col-lg-4">
+                    <!-- History Card -->
+                    <div class="history-card">
+                        <h3 class="hpp-section-title mb-4">
+                            <i class="bi bi-clock-history"></i> Riwayat Perhitungan
+                        </h3>
+                        
+                        <div id="hppHistoryList">
+                            <!-- History items will be added here dynamically -->
+                            <div class="text-center py-5 text-muted" id="emptyHistoryMessage">
+                                <i class="bi bi-clock-history fs-1 mb-3 d-block"></i>
+                                <p>Belum ada riwayat perhitungan. Mulai dengan menghitung HPP pertama Anda.</p>
+                            </div>
+                        </div>
+                        
+                        <div class="mt-3">
+                            <button class="btn btn-outline-modern w-100" id="clearHistoryBtn">
+                                <i class="bi bi-trash me-2"></i> Hapus Riwayat
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Info Card -->
+                    <div class="history-card mt-4">
+                        <h3 class="hpp-section-title mb-4">
+                            <i class="bi bi-info-circle"></i> Informasi HPP
+                        </h3>
+                        
+                        <div class="mb-3">
+                            <h5 class="fw-bold">Apa itu HPP?</h5>
+                            <p class="text-muted small">Harga Pokok Penjualan (HPP) adalah total biaya yang dikeluarkan untuk memproduksi barang yang dijual.</p>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <h5 class="fw-bold">Rumus Perhitungan:</h5>
+                            <p class="text-muted small">HPP per Telur = Total Biaya Produksi ÷ Jumlah Telur Layak Jual</p>
+                        </div>
+                        
+                        <div>
+                            <h5 class="fw-bold">Tips:</h5>
+                            <ul class="text-muted small ps-3">
+                                <li>Catat semua biaya secara detail untuk perhitungan akurat</li>
+                                <li>Perhitungkan persentase kerusakan telur yang realistis</li>
+                                <li>Atur margin keuntungan sesuai kondisi pasar</li>
+                                <li>Update perhitungan secara berkala saat biaya berubah</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-4 mb-5">
+                    <div class="footer-logo">
+                        <i class="bi bi-egg-fried"></i>EggTrack
+                    </div>
+                    <p class="text-muted mb-4">Sistem manajemen terintegrasi untuk peternakan telur bebek. Mengoptimalkan produksi, penjualan, dan analisis bisnis dalam satu platform.</p>
+                </div>
+                <div class="col-lg-4 mb-5">
+                    <h5 class="mb-4 text-white">Tautan Cepat</h5>
+                    <div class="footer-links">
+                        <a href="dashboard.html"><i class="bi bi-speedometer2"></i> Dashboard</a>
+                        <a href="hpp.html"><i class="bi bi-calculator"></i> Perhitungan HPP</a>
+                        <a href="production.html"><i class="bi bi-egg-fried"></i> Manajemen Produksi</a>
+                    </div>
+                </div>
+                <div class="col-lg-4 mb-5">
+                    <h5 class="mb-4 text-white">Kontak & Dukungan</h5>
+                    <div class="footer-links">
+                        <a href="mailto:support@eggtrack.id"><i class="bi bi-envelope"></i> support@eggtrack.id</a>
+                        <a href="tel:+622112345678"><i class="bi bi-telephone"></i> (021) 1234-5678</a>
+                        <a href="index.html"><i class="bi bi-house"></i> Beranda</a>
+                    </div>
+                </div>
+            </div>
+            <hr class="mt-4 mb-4" style="opacity: 0.2;">
+            <div class="text-center pt-3">
+                <p class="text-muted">&copy; <span id="currentYear">2023</span> EggTrack. Hak Cipta Dilindungi. Versi 1.0.0</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Toast Container -->
+    <div class="toast-container position-fixed top-0 end-0 p-3"></div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Check login status
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('HPP Page Initializing...');
+            
+            // Set tahun copyright
+            document.getElementById('currentYear').textContent = new Date().getFullYear();
+            
+            // Check login status
+            checkLoginStatus();
+            
+            // Setup event listeners
+            setupEventListeners();
+            
+            // Load history from localStorage
+            loadHPPHistory();
+        });
+        
+        function checkLoginStatus() {
+            const userData = localStorage.getItem('eggUser');
+            
+            if (userData) {
+                try {
+                    const user = JSON.parse(userData);
+                    
+                    // Cek apakah session masih valid (24 jam)
+                    const loginTime = new Date(user.loginTime);
+                    const now = new Date();
+                    const hoursDiff = (now - loginTime) / (1000 * 60 * 60);
+                    
+                    if (hoursDiff < 24) {
+                        // User sudah login, tampilkan konten
+                        document.getElementById('authRequiredOverlay').style.display = 'none';
+                        document.getElementById('mainContent').style.display = 'block';
+                        
+                        // Update navbar user info
+                        updateNavbarUserInfo(user);
+                    } else {
+                        // Session expired
+                        localStorage.removeItem('eggUser');
+                        showToast('Sesi login telah berakhir, silakan login kembali', 'warning');
+                    }
+                } catch (error) {
+                    console.error('Error parsing user data:', error);
+                    localStorage.removeItem('eggUser');
+                }
+            } else {
+                // User belum login, tampilkan overlay
+                document.getElementById('authRequiredOverlay').style.display = 'flex';
+                document.getElementById('mainContent').style.display = 'none';
+            }
+        }
+        
+        function updateNavbarUserInfo(user) {
+            const navbarUserName = document.getElementById('navbarUserName');
+            const navbarUserBtn = document.getElementById('navbarUserBtn');
+            
+            if (navbarUserName && navbarUserBtn) {
+                navbarUserName.textContent = user.name;
+                
+                // Update event untuk show user info
+                navbarUserBtn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    showUserInfo(user);
+                });
+            }
+        }
+        
+        function showUserInfo(user) {
+            const modalContent = `
+                <div class="modal fade" id="userInfoModal" tabindex="-1">
+                    <div class="modal-dialog modal-dialog-centered">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title">Informasi Akun</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                            </div>
+                            <div class="modal-body">
+                                <div class="text-center mb-4">
+                                    <div class="bg-primary bg-opacity-10 rounded-circle p-3 d-inline-block mb-3">
+                                        <i class="bi bi-person-circle text-primary fs-1"></i>
+                                    </div>
+                                    <h4>${user.name}</h4>
+                                    <p class="text-muted">${user.role}</p>
+                                </div>
+                                <div class="list-group">
+                                    <div class="list-group-item d-flex justify-content-between">
+                                        <span>Username</span>
+                                        <strong>${user.username}</strong>
+                                    </div>
+                                    <div class="list-group-item d-flex justify-content-between">
+                                        <span>Login Terakhir</span>
+                                        <strong>${formatDate(user.loginTime)}</strong>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
+                                <button type="button" class="btn btn-danger" id="logoutFromModalBtn">Logout</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            // Hapus modal jika sudah ada
+            const existingModal = document.getElementById('userInfoModal');
+            if (existingModal) existingModal.remove();
+            
+            // Tambahkan modal ke body
+            document.body.insertAdjacentHTML('beforeend', modalContent);
+            
+            // Tampilkan modal
+            const userModal = new bootstrap.Modal(document.getElementById('userInfoModal'));
+            userModal.show();
+            
+            // Setup logout button
+            document.getElementById('logoutFromModalBtn').addEventListener('click', handleLogout);
+        }
+        
+        function handleLogout() {
+            localStorage.removeItem('eggUser');
+            showToast('Anda telah logout', 'info');
+            
+            // Redirect to home
+            setTimeout(() => {
+                window.location.href = 'index.html?logout=success';
+            }, 1000);
+        }
+        
+        function setupEventListeners() {
+            // Calculate HPP button
+            document.getElementById('calculateHPPBtn').addEventListener('click', calculateHPP);
+            
+            // Reset form button
+            document.getElementById('resetHPPBtn').addEventListener('click', resetHPPForm);
+            
+            // Clear history button
+            document.getElementById('clearHistoryBtn').addEventListener('click', clearHPPHistory);
+            
+            // Print button
+            document.getElementById('printHPPBtn').addEventListener('click', printHPPReport);
+            
+            // Allow Enter key to trigger calculation
+            document.querySelectorAll('.hpp-input').forEach(input => {
+                input.addEventListener('keypress', function(e) {
+                    if (e.key === 'Enter') {
+                        calculateHPP();
+                    }
+                });
+            });
+        }
+        
+        function calculateHPP() {
+            // Get input values
+            const feedCost = parseFloat(document.getElementById('feedCost').value) || 0;
+            const laborCost = parseFloat(document.getElementById('laborCost').value) || 0;
+            const medicineCost = parseFloat(document.getElementById('medicineCost').value) || 0;
+            const utilityCost = parseFloat(document.getElementById('utilityCost').value) || 0;
+            const otherCost = parseFloat(document.getElementById('otherCost').value) || 0;
+            const eggProduction = parseFloat(document.getElementById('eggProduction').value) || 0;
+            const damagePercentage = parseFloat(document.getElementById('damagePercentage').value) || 0;
+            const profitMargin = parseFloat(document.getElementById('profitMargin').value) || 20;
+            
+            // Validation
+            if (eggProduction <= 0) {
+                showToast('Jumlah produksi telur harus lebih dari 0', 'warning');
+                return;
+            }
+            
+            // Calculate total cost
+            const totalCost = feedCost + laborCost + medicineCost + utilityCost + otherCost;
+            
+            // Calculate sellable eggs
+            const damageDecimal = damagePercentage / 100;
+            const sellableEggs = Math.floor(eggProduction * (1 - damageDecimal));
+            
+            // Calculate HPP per egg
+            const hppPerEgg = totalCost / sellableEggs;
+            
+            // Calculate selling price with profit margin
+            const profitMarginDecimal = profitMargin / 100;
+            const sellingPrice = hppPerEgg * (1 + profitMarginDecimal);
+            
+            // Calculate monthly profit
+            const monthlyProfit = (sellingPrice * sellableEggs) - totalCost;
+            
+            // Display results
+            document.getElementById('totalCostValue').textContent = formatCurrency(totalCost);
+            document.getElementById('sellableEggsValue').textContent = `${sellableEggs.toLocaleString()} butir`;
+            document.getElementById('hppPerEggValue').textContent = formatCurrency(hppPerEgg);
+            document.getElementById('sellingPriceValue').textContent = formatCurrency(sellingPrice);
+            document.getElementById('monthlyProfitValue').textContent = formatCurrency(monthlyProfit);
+            
+            // Show results card
+            document.getElementById('hppResultsCard').style.display = 'block';
+            
+            // Save to history
+            saveToHPPHistory({
+                date: new Date().toISOString(),
+                totalCost,
+                eggProduction,
+                damagePercentage,
+                sellableEggs,
+                hppPerEgg,
+                profitMargin,
+                sellingPrice,
+                monthlyProfit
+            });
+            
+            // Show success message
+            showToast('Perhitungan HPP berhasil diselesaikan!', 'success');
+        }
+        
+        function resetHPPForm() {
+            document.getElementById('feedCost').value = '';
+            document.getElementById('laborCost').value = '';
+            document.getElementById('medicineCost').value = '';
+            document.getElementById('utilityCost').value = '';
+            document.getElementById('otherCost').value = '';
+            document.getElementById('eggProduction').value = '';
+            document.getElementById('damagePercentage').value = '';
+            document.getElementById('profitMargin').value = '20';
+            
+            document.getElementById('hppResultsCard').style.display = 'none';
+            
+            showToast('Form telah direset', 'info');
+        }
+        
+        function saveToHPPHistory(data) {
+            // Get existing history
+            let history = JSON.parse(localStorage.getItem('eggHPPHistory') || '[]');
+            
+            // Add new calculation
+            history.unshift(data);
+            
+            // Keep only last 10 calculations
+            if (history.length > 10) {
+                history = history.slice(0, 10);
+            }
+            
+            // Save to localStorage
+            localStorage.setItem('eggHPPHistory', JSON.stringify(history));
+            
+            // Update history display
+            loadHPPHistory();
+        }
+        
+        function loadHPPHistory() {
+            const history = JSON.parse(localStorage.getItem('eggHPPHistory') || '[]');
+            const historyList = document.getElementById('hppHistoryList');
+            const emptyHistoryMessage = document.getElementById('emptyHistoryMessage');
+            
+            if (history.length === 0) {
+                emptyHistoryMessage.style.display = 'block';
+                return;
+            }
+            
+            emptyHistoryMessage.style.display = 'none';
+            
+            // Clear existing history items (except empty message)
+            const existingItems = historyList.querySelectorAll('.history-item');
+            existingItems.forEach(item => item.remove());
+            
+            // Add history items
+            history.forEach((item, index) => {
+                const historyItem = document.createElement('div');
+                historyItem.className = 'history-item';
+                
+                const date = new Date(item.date);
+                const formattedDate = date.toLocaleDateString('id-ID', {
+                    day: '2-digit',
+                    month: 'short',
+                    year: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                });
+                
+                historyItem.innerHTML = `
+                    <div class="history-date">
+                        <i class="bi bi-calendar-event me-2"></i>${formattedDate}
+                    </div>
+                    <div class="history-details">
+                        <div class="history-detail">
+                            <span class="history-detail-label">HPP/Telur</span>
+                            <span class="history-detail-value">${formatCurrency(item.hppPerEgg)}</span>
+                        </div>
+                        <div class="history-detail">
+                            <span class="history-detail-label">Telur Layak Jual</span>
+                            <span class="history-detail-value">${item.sellableEggs.toLocaleString()}</span>
+                        </div>
+                        <div class="history-detail">
+                            <span class="history-detail-label">Harga Jual</span>
+                            <span class="history-detail-value">${formatCurrency(item.sellingPrice)}</span>
+                        </div>
+                    </div>
+                    <button class="btn btn-sm btn-outline-primary mt-2" onclick="loadHistoryItem(${index})">
+                        <i class="bi bi-arrow-clockwise me-1"></i> Gunakan Lagi
+                    </button>
+                `;
+                
+                historyList.appendChild(historyItem);
+            });
+        }
+        
+        function loadHistoryItem(index) {
+            const history = JSON.parse(localStorage.getItem('eggHPPHistory') || '[]');
+            
+            if (history[index]) {
+                const item = history[index];
+                
+                document.getElementById('feedCost').value = '';
+                document.getElementById('laborCost').value = '';
+                document.getElementById('medicineCost').value = '';
+                document.getElementById('utilityCost').value = '';
+                document.getElementById('otherCost').value = '';
+                document.getElementById('eggProduction').value = item.eggProduction;
+                document.getElementById('damagePercentage').value = item.damagePercentage;
+                document.getElementById('profitMargin').value = item.profitMargin;
+                
+                // Estimate costs based on HPP
+                const estimatedTotalCost = item.hppPerEgg * item.sellableEggs;
+                document.getElementById('feedCost').value = Math.round(estimatedTotalCost * 0.4);
+                document.getElementById('laborCost').value = Math.round(estimatedTotalCost * 0.3);
+                document.getElementById('medicineCost').value = Math.round(estimatedTotalCost * 0.1);
+                document.getElementById('utilityCost').value = Math.round(estimatedTotalCost * 0.15);
+                document.getElementById('otherCost').value = Math.round(estimatedTotalCost * 0.05);
+                
+                showToast('Data riwayat telah dimuat ke form', 'success');
+            }
+        }
+        
+        function clearHPPHistory() {
+            if (confirm('Apakah Anda yakin ingin menghapus semua riwayat perhitungan?')) {
+                localStorage.removeItem('eggHPPHistory');
+                loadHPPHistory();
+                showToast('Riwayat perhitungan telah dihapus', 'info');
+            }
+        }
+        
+        function printHPPReport() {
+            const totalCost = document.getElementById('totalCostValue').textContent;
+            const sellableEggs = document.getElementById('sellableEggsValue').textContent;
+            const hppPerEgg = document.getElementById('hppPerEggValue').textContent;
+            const sellingPrice = document.getElementById('sellingPriceValue').textContent;
+            const monthlyProfit = document.getElementById('monthlyProfitValue').textContent;
+            
+            // Create print window
+            const printWindow = window.open('', '_blank');
+            
+            printWindow.document.write(`
+                <!DOCTYPE html>
+                <html>
+                <head>
+                    <title>Laporan HPP - EggTrack</title>
+                    <style>
+                        body { font-family: Arial, sans-serif; margin: 20px; }
+                        h1 { color: #333; }
+                        .header { text-align: center; margin-bottom: 30px; }
+                        .section { margin-bottom: 20px; }
+                        .result-item { display: flex; justify-content: space-between; margin-bottom: 10px; padding: 10px; border-bottom: 1px solid #eee; }
+                        .footer { margin-top: 50px; font-size: 12px; color: #666; text-align: center; }
+                        .highlight { background-color: #f0f8ff; padding: 15px; border-radius: 5px; font-weight: bold; }
+                        @media print {
+                            .no-print { display: none; }
+                            body { font-size: 12pt; }
+                        }
+                    </style>
+                </head>
+                <body>
+                    <div class="header">
+                        <h1>Laporan Perhitungan HPP</h1>
+                        <p>EggTrack - Sistem Manajemen Peternakan Telur Bebek</p>
+                        <p>Tanggal: ${new Date().toLocaleDateString('id-ID')}</p>
+                    </div>
+                    
+                    <div class="section">
+                        <h2>Hasil Perhitungan</h2>
+                        <div class="result-item">
+                            <span>Total Biaya Produksi Bulanan:</span>
+                            <span>${totalCost}</span>
+                        </div>
+                        <div class="result-item">
+                            <span>Jumlah Telur Layak Jual:</span>
+                            <span>${sellableEggs}</span>
+                        </div>
+                        <div class="result-item">
+                            <span>HPP per Butir Telur:</span>
+                            <span>${hppPerEgg}</span>
+                        </div>
+                        <div class="result-item">
+                            <span>Harga Jual per Butir (dengan margin):</span>
+                            <span>${sellingPrice}</span>
+                        </div>
+                        <div class="result-item highlight">
+                            <span>Perkiraan Keuntungan Bulanan:</span>
+                            <span>${monthlyProfit}</span>
+                        </div>
+                    </div>
+                    
+                    <div class="footer">
+                        <p>Laporan ini dibuat secara otomatis oleh sistem EggTrack</p>
+                        <p>&copy; ${new Date().getFullYear()} EggTrack. Hak Cipta Dilindungi.</p>
+                    </div>
+                    
+                    <div class="no-print">
+                        <button onclick="window.print()">Cetak Laporan</button>
+                        <button onclick="window.close()">Tutup</button>
+                    </div>
+                    
+                    <script>
+                        window.onload = function() {
+                            window.print();
+                        }
+                    </script>
+                </body>
+                </html>
+            `);
+            
+            printWindow.document.close();
+        }
+        
+        function formatCurrency(amount) {
+            if (isNaN(amount)) return 'Rp 0';
+            
+            // Format to Indonesian Rupiah
+            return 'Rp ' + Math.round(amount).toLocaleString('id-ID');
+        }
+        
+        function formatDate(dateString) {
+            try {
+                const date = new Date(dateString);
+                if (isNaN(date.getTime())) return '-';
+                
+                return date.toLocaleDateString('id-ID', {
+                    day: '2-digit',
+                    month: '2-digit',
+                    year: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                });
+            } catch (error) {
+                return '-';
+            }
+        }
+        
+        function showToast(message, type = 'info') {
+            let toastContainer = document.querySelector('.toast-container');
+            if (!toastContainer) {
+                toastContainer = document.createElement('div');
+                toastContainer.className = 'toast-container position-fixed top-0 end-0 p-3';
+                document.body.appendChild(toastContainer);
+            }
+            
+            const toastId = 'toast-' + Date.now();
+            const toast = document.createElement('div');
+            toast.className = `toast align-items-center text-bg-${type} border-0`;
+            toast.id = toastId;
+            
+            toast.innerHTML = `
+                <div class="d-flex">
+                    <div class="toast-body">
+                        ${message}
+                    </div>
+                    <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+                </div>
+            `;
+            
+            toastContainer.appendChild(toast);
+            const bsToast = new bootstrap.Toast(toast, { delay: 4000 });
+            bsToast.show();
+            
+            toast.addEventListener('hidden.bs.toast', () => toast.remove());
+        }
+    </script>
+</body>
+</html>

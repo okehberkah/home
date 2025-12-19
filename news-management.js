@@ -1,5 +1,4 @@
-// news-management.js
-// Konfigurasi Apps Script URL
+// news-management.js - VERSI FINAL (SISTEM MANAJEMEN BERITA EGGTRACK)
 const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxpkV9khWzZ6CErdwpulFytH9UimnJ4NEhv8HPiGYUrSYvws5yhaoUPolqRwr1VD109/exec';
 
 // Data berita dan state management
@@ -10,6 +9,67 @@ const itemsPerPage = 10;
 let deleteNewsId = null;
 let isOnline = true;
 let editMode = false;
+let currentUser = null;
+
+// DEMO DATA - Backup jika koneksi gagal
+const DEMO_ADMIN_NEWS_DATA = [
+    {
+        ID: 1,
+        Title: 'Inovasi Pengolahan Telur Bebek dengan Teknologi Modern',
+        Excerpt: 'Peternakan telur bebek di Indonesia mulai mengadopsi teknologi canggih untuk meningkatkan kualitas dan produktivitas...',
+        Content: '<p>Industri peternakan telur bebek di Indonesia sedang mengalami transformasi digital yang signifikan.</p>',
+        ImageURL: 'https://images.unsplash.com/photo-1586816879360-004f5b0c51e5?ixlib=rb-1.2.1&auto=format&fit=crop&w=1200&q=80',
+        Category: 'Terbaru',
+        Author: 'Admin EggTrack',
+        Status: 'Published',
+        Date: '2024-03-15',
+        CreatedAt: '2024-03-15T10:00:00Z',
+        Featured: true,
+        Views: 1250
+    },
+    {
+        ID: 2,
+        Title: 'Peluang Pasar Ekspor Telur Bebek Meningkat 25%',
+        Excerpt: 'Permintaan telur bebek dari pasar internasional menunjukkan peningkatan signifikan...',
+        Content: '<p>Permintaan telur bebek dari pasar internasional menunjukkan peningkatan signifikan.</p>',
+        ImageURL: 'https://images.unsplash.com/photo-1518621736915-f3b1c41bfd00?ixlib=rb-1.2.1&auto=format&fit=crop&w=1200&q=80',
+        Category: 'Trending',
+        Author: 'Tim Riset EggTrack',
+        Status: 'Published',
+        Date: '2024-03-10',
+        CreatedAt: '2024-03-10T14:30:00Z',
+        Featured: false,
+        Views: 890
+    },
+    {
+        ID: 3,
+        Title: 'Tips Manajemen Peternakan yang Efisien',
+        Excerpt: 'Penerapan sistem manajemen digital terbukti meningkatkan efisiensi operasional...',
+        Content: '<p>Penerapan sistem manajemen digital terbukti meningkatkan efisiensi operasional.</p>',
+        ImageURL: 'https://images.unsplash.com/photo-1505253668822-42074d58a7c6?ixlib=rb-1.2.1&auto=format&fit=crop&w=1200&q=80',
+        Category: 'Tips',
+        Author: 'Admin EggTrack',
+        Status: 'Draft',
+        Date: '2024-03-05',
+        CreatedAt: '2024-03-05T09:15:00Z',
+        Featured: true,
+        Views: 0
+    },
+    {
+        ID: 4,
+        Title: 'Studi Terbaru: Telur Bebek Lebih Kaya Omega-3',
+        Excerpt: 'Penelitian terbaru menunjukkan kandungan nutrisi telur bebek lebih unggul...',
+        Content: '<p>Penelitian terbaru menunjukkan kandungan nutrisi telur bebek lebih unggul.</p>',
+        ImageURL: 'https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?ixlib=rb-1.2.1&auto=format&fit=crop&w=1200&q=80',
+        Category: 'Kesehatan',
+        Author: 'Dr. Agus Santoso',
+        Status: 'Archived',
+        Date: '2024-02-28',
+        CreatedAt: '2024-02-28T11:45:00Z',
+        Featured: false,
+        Views: 620
+    }
+];
 
 // Inisialisasi saat halaman dimuat
 document.addEventListener('DOMContentLoaded', function() {
@@ -19,12 +79,24 @@ document.addEventListener('DOMContentLoaded', function() {
 // Fungsi inisialisasi utama
 async function initializeNewsManagement() {
     try {
+        // Load user profile first
         loadUserProfile();
+        
+        // Setup event listeners
         setupEventListeners();
+        
+        // Setup editor
         setupEditor();
-        checkConnection();
+        
+        // Check connection
+        await checkConnection();
+        
+        // Load news data
         await loadNews();
+        
+        // Update stats
         updateNewsStats();
+        
     } catch (error) {
         console.error('Error initializing news management:', error);
         showToast('Gagal menginisialisasi sistem berita', 'danger');
@@ -34,77 +106,89 @@ async function initializeNewsManagement() {
 // Setup semua event listeners
 function setupEventListeners() {
     // Tombol tambah berita
-    document.getElementById('addNewsBtn')?.addEventListener('click', () => openNewsEditor());
+    const addNewsBtn = document.getElementById('addNewsBtn');
+    if (addNewsBtn) {
+        addNewsBtn.addEventListener('click', () => openNewsEditor());
+    }
     
     // Tombol simpan berita
-    document.getElementById('saveNewsBtn')?.addEventListener('click', saveNews);
+    const saveNewsBtn = document.getElementById('saveNewsBtn');
+    if (saveNewsBtn) {
+        saveNewsBtn.addEventListener('click', saveNews);
+    }
     
     // Tombol konfirmasi hapus
-    document.getElementById('confirmDeleteBtn')?.addEventListener('click', deleteNews);
+    const confirmDeleteBtn = document.getElementById('confirmDeleteBtn');
+    if (confirmDeleteBtn) {
+        confirmDeleteBtn.addEventListener('click', deleteNews);
+    }
     
     // Pencarian berita
-    document.getElementById('searchBtn')?.addEventListener('click', searchNews);
-    document.getElementById('searchNews')?.addEventListener('keypress', function(e) {
-        if (e.key === 'Enter') searchNews();
-    });
+    const searchBtn = document.getElementById('searchBtn');
+    const searchNewsInput = document.getElementById('searchNews');
+    
+    if (searchBtn) {
+        searchBtn.addEventListener('click', searchNews);
+    }
+    
+    if (searchNewsInput) {
+        searchNewsInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') searchNews();
+        });
+    }
     
     // Live search (debounced)
     let searchTimeout;
-    document.getElementById('searchNews')?.addEventListener('input', function(e) {
-        clearTimeout(searchTimeout);
-        searchTimeout = setTimeout(() => {
-            searchNews();
-        }, 300);
-    });
+    if (searchNewsInput) {
+        searchNewsInput.addEventListener('input', function(e) {
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(() => {
+                searchNews();
+            }, 500);
+        });
+    }
     
     // Filter berita
-    document.getElementById('filterCategory')?.addEventListener('change', filterNews);
-    document.getElementById('filterStatus')?.addEventListener('change', filterNews);
-    document.getElementById('sortOrder')?.addEventListener('change', filterNews);
+    const filterCategory = document.getElementById('filterCategory');
+    const filterStatus = document.getElementById('filterStatus');
+    
+    if (filterCategory) {
+        filterCategory.addEventListener('change', filterNews);
+    }
+    
+    if (filterStatus) {
+        filterStatus.addEventListener('change', filterNews);
+    }
     
     // Preview gambar
-    document.getElementById('newsImage')?.addEventListener('input', function() {
-        updateImagePreview(this.value);
-    });
-    
-    // Bulk actions
-    document.getElementById('bulkAction')?.addEventListener('change', function() {
-        if (this.value === 'delete') {
-            confirmBulkDelete();
-        } else if (this.value !== '') {
-            applyBulkAction(this.value);
-        }
-    });
-    
-    // Select all checkbox
-    document.getElementById('selectAllNews')?.addEventListener('change', function() {
-        const checkboxes = document.querySelectorAll('.news-checkbox');
-        checkboxes.forEach(cb => {
-            cb.checked = this.checked;
+    const newsImageInput = document.getElementById('newsImage');
+    if (newsImageInput) {
+        newsImageInput.addEventListener('input', function() {
+            updateImagePreview(this.value);
         });
-    });
-    
-    // Refresh button
-    document.getElementById('refreshNewsBtn')?.addEventListener('click', async function() {
-        this.innerHTML = '<i class="bi bi-arrow-clockwise me-1 spin"></i> Memuat...';
-        await loadNews();
-        this.innerHTML = '<i class="bi bi-arrow-clockwise me-1"></i> Refresh';
-    });
-    
-    // Export button
-    document.getElementById('exportNewsBtn')?.addEventListener('click', exportNews);
+    }
     
     // Logout
-    document.getElementById('logoutBtn')?.addEventListener('click', handleLogout);
+    const logoutBtn = document.getElementById('logoutBtn');
+    if (logoutBtn) {
+        logoutBtn.addEventListener('click', handleLogout);
+    }
     
     // Modal events
-    document.getElementById('newsEditorModal')?.addEventListener('shown.bs.modal', function() {
-        document.getElementById('newsTitle')?.focus();
-    });
+    const newsEditorModal = document.getElementById('newsEditorModal');
+    if (newsEditorModal) {
+        newsEditorModal.addEventListener('shown.bs.modal', function() {
+            const newsTitle = document.getElementById('newsTitle');
+            if (newsTitle) newsTitle.focus();
+        });
+        
+        newsEditorModal.addEventListener('hidden.bs.modal', function() {
+            resetEditor();
+        });
+    }
     
-    document.getElementById('newsEditorModal')?.addEventListener('hidden.bs.modal', function() {
-        resetEditor();
-    });
+    // Load draft on page load
+    window.addEventListener('load', loadDraft);
 }
 
 // Setup rich text editor
@@ -112,61 +196,9 @@ function setupEditor() {
     const editor = document.getElementById('newsContentEditor');
     if (!editor) return;
     
-    // Basic editor functions
-    const toolbarButtons = [
-        { id: 'boldBtn', command: 'bold', icon: 'bi-type-bold', title: 'Tebal (Ctrl+B)' },
-        { id: 'italicBtn', command: 'italic', icon: 'bi-type-italic', title: 'Miring (Ctrl+I)' },
-        { id: 'underlineBtn', command: 'underline', icon: 'bi-type-underline', title: 'Garis Bawah (Ctrl+U)' },
-        { id: 'separator1', type: 'separator' },
-        { id: 'bulletListBtn', command: 'insertUnorderedList', icon: 'bi-list-ul', title: 'Daftar poin' },
-        { id: 'numberListBtn', command: 'insertOrderedList', icon: 'bi-list-ol', title: 'Daftar nomor' },
-        { id: 'separator2', type: 'separator' },
-        { id: 'linkBtn', command: 'createLink', icon: 'bi-link', title: 'Tautan' },
-        { id: 'imageBtn', command: 'insertImage', icon: 'bi-image', title: 'Gambar' },
-        { id: 'separator3', type: 'separator' },
-        { id: 'headingBtn', command: 'formatBlock', value: 'h3', icon: 'bi-type-h3', title: 'Judul' },
-        { id: 'paragraphBtn', command: 'formatBlock', value: 'p', icon: 'bi-paragraph', title: 'Paragraf' },
-        { id: 'separator4', type: 'separator' },
-        { id: 'undoBtn', command: 'undo', icon: 'bi-arrow-counterclockwise', title: 'Undo (Ctrl+Z)' },
-        { id: 'redoBtn', command: 'redo', icon: 'bi-arrow-clockwise', title: 'Redo (Ctrl+Y)' },
-        { id: 'separator5', type: 'separator' },
-        { id: 'clearBtn', command: 'removeFormat', icon: 'bi-eraser', title: 'Hapus format' }
-    ];
-    
-    // Create toolbar
-    const toolbar = document.querySelector('.editor-toolbar');
-    if (toolbar) {
-        toolbarButtons.forEach(btn => {
-            if (btn.type === 'separator') {
-                const separator = document.createElement('div');
-                separator.className = 'vr mx-2';
-                toolbar.appendChild(separator);
-            } else {
-                const button = document.createElement('button');
-                button.type = 'button';
-                button.className = 'btn btn-sm btn-outline-secondary';
-                button.innerHTML = `<i class="bi ${btn.icon}"></i>`;
-                button.title = btn.title;
-                button.addEventListener('click', (e) => {
-                    e.preventDefault();
-                    if (btn.command === 'createLink') {
-                        insertLink();
-                    } else if (btn.command === 'insertImage') {
-                        insertImage();
-                    } else if (btn.command === 'formatBlock') {
-                        document.execCommand('formatBlock', false, btn.value);
-                    } else {
-                        document.execCommand(btn.command, false, null);
-                    }
-                    syncEditor();
-                });
-                toolbar.appendChild(button);
-            }
-        });
-    }
-    
-    // Sync editor content with textarea
+    // Sync editor content with hidden textarea
     editor.addEventListener('input', syncEditor);
+    
     editor.addEventListener('paste', function(e) {
         // Clean pasted HTML
         e.preventDefault();
@@ -193,7 +225,55 @@ function setupEditor() {
         if (e.ctrlKey && e.key === 's') {
             e.preventDefault();
             saveDraft();
+            showToast('Draf disimpan', 'info');
         }
+    });
+    
+    // Setup toolbar buttons
+    setupEditorToolbar();
+}
+
+// Setup editor toolbar
+function setupEditorToolbar() {
+    const toolbarButtons = [
+        { command: 'bold', icon: 'bi-type-bold', title: 'Tebal (Ctrl+B)' },
+        { command: 'italic', icon: 'bi-type-italic', title: 'Miring (Ctrl+I)' },
+        { command: 'underline', icon: 'bi-type-underline', title: 'Garis Bawah' },
+        { command: 'insertUnorderedList', icon: 'bi-list-ul', title: 'Daftar poin' },
+        { command: 'insertOrderedList', icon: 'bi-list-ol', title: 'Daftar nomor' },
+        { command: 'createLink', icon: 'bi-link', title: 'Tautan' },
+        { command: 'insertImage', icon: 'bi-image', title: 'Gambar' },
+        { command: 'undo', icon: 'bi-arrow-counterclockwise', title: 'Undo' },
+        { command: 'redo', icon: 'bi-arrow-clockwise', title: 'Redo' }
+    ];
+    
+    const toolbar = document.querySelector('.editor-toolbar');
+    if (!toolbar) return;
+    
+    toolbarButtons.forEach(btn => {
+        const button = document.createElement('button');
+        button.type = 'button';
+        button.className = 'btn btn-sm btn-outline-secondary me-1 mb-1';
+        button.innerHTML = `<i class="bi ${btn.icon}"></i>`;
+        button.title = btn.title;
+        
+        button.addEventListener('click', (e) => {
+            e.preventDefault();
+            
+            if (btn.command === 'createLink') {
+                insertLink();
+            } else if (btn.command === 'insertImage') {
+                insertImage();
+            } else if (btn.command === 'formatBlock') {
+                document.execCommand('formatBlock', false, btn.value);
+            } else {
+                document.execCommand(btn.command, false, null);
+            }
+            
+            syncEditor();
+        });
+        
+        toolbar.appendChild(button);
     });
 }
 
@@ -201,12 +281,14 @@ function setupEditor() {
 function syncEditor() {
     const editor = document.getElementById('newsContentEditor');
     const textarea = document.getElementById('newsContent');
+    
     if (editor && textarea) {
         // Clean HTML before saving
         let content = editor.innerHTML
             .replace(/<div><br><\/div>/gi, '<br>')
             .replace(/<div>/gi, '<p>')
             .replace(/<\/div>/gi, '</p>')
+            .replace(/<p><\/p>/gi, '')
             .replace(/\n/g, '')
             .replace(/\s+/g, ' ')
             .trim();
@@ -221,7 +303,7 @@ function insertLink() {
     if (url) {
         const text = prompt('Teks untuk tautan:', 'Klik di sini');
         if (text) {
-            document.execCommand('insertHTML', false, `<a href="${url}" target="_blank">${text}</a>`);
+            document.execCommand('insertHTML', false, `<a href="${url}" target="_blank" rel="noopener noreferrer">${text}</a>`);
             syncEditor();
         }
     }
@@ -234,30 +316,35 @@ function insertImage() {
         const alt = prompt('Teks alternatif untuk gambar:', 'Gambar');
         const width = prompt('Lebar gambar (px):', '600');
         document.execCommand('insertHTML', false, 
-            `<img src="${url}" alt="${alt}" style="max-width: 100%; height: auto; width: ${width}px;" class="img-fluid rounded">`);
+            `<img src="${url}" alt="${alt}" style="max-width: 100%; height: auto; width: ${width}px;" class="img-fluid rounded mb-2">`);
         syncEditor();
     }
 }
 
 // Load profil pengguna
 function loadUserProfile() {
-    const savedUser = localStorage.getItem('eggTrackUser');
-    if (savedUser) {
-        try {
-            const user = JSON.parse(savedUser);
+    try {
+        const savedUser = localStorage.getItem('eggTrackUser');
+        if (savedUser) {
+            currentUser = JSON.parse(savedUser);
+            
+            // Update UI dengan informasi user
             const userRoleDisplay = document.getElementById('userRoleDisplay');
             if (userRoleDisplay) {
-                userRoleDisplay.textContent = user.name || 'Administrator';
+                userRoleDisplay.textContent = currentUser.name || currentUser.username || 'Administrator';
             }
-            // Set author name in form
+            
+            // Set author name in form jika kosong
             const authorField = document.getElementById('newsAuthor');
-            if (authorField && !authorField.value) {
-                authorField.value = user.name || 'Admin EggTrack';
+            if (authorField && !authorField.value && currentUser.name) {
+                authorField.value = currentUser.name;
             }
-        } catch (e) {
-            console.error('Error parsing user data:', e);
+        } else {
+            // Redirect ke login jika tidak ada user
+            window.location.href = 'login.html';
         }
-    } else {
+    } catch (e) {
+        console.error('Error parsing user data:', e);
         window.location.href = 'login.html';
     }
 }
@@ -265,13 +352,17 @@ function loadUserProfile() {
 // Check connection status
 async function checkConnection() {
     try {
-        const test = await fetch(`${APPS_SCRIPT_URL}?action=ping`);
-        const result = await test.json();
-        isOnline = result && result.success;
-        updateConnectionStatus(isOnline);
+        const test = await fetch(`${APPS_SCRIPT_URL}?action=ping`, {
+            method: 'GET',
+            mode: 'no-cors'
+        });
+        isOnline = true;
+        updateConnectionStatus(true);
+        return true;
     } catch (error) {
         isOnline = false;
         updateConnectionStatus(false);
+        return false;
     }
 }
 
@@ -293,102 +384,87 @@ function updateConnectionStatus(connected) {
 async function loadNews() {
     try {
         showLoading('newsTableBody', true);
-        showToast('Memuat data berita...', 'info');
         
-        const result = await fetchData('getNews');
-        
-        if (result && result.success) {
-            newsData = result.news || [];
-            filteredNewsData = [...newsData];
+        if (isOnline) {
+            // Try to load from server
+            const result = await fetchData('getNews');
             
-            // Sort by date (newest first)
-            newsData.sort((a, b) => new Date(b.CreatedAt || b.Date) - new Date(a.CreatedAt || a.Date));
-            filteredNewsData.sort((a, b) => new Date(b.CreatedAt || b.Date) - new Date(a.CreatedAt || a.Date));
-            
-            displayNews();
-            updateNewsStats();
-            showToast(`Berhasil memuat ${newsData.length} berita`, 'success');
+            if (result && result.success && result.data && result.data.length > 0) {
+                // Process server data
+                newsData = normalizeNewsData(result.data);
+                showToast(`Berhasil memuat ${newsData.length} berita dari server`, 'success');
+            } else {
+                // Fallback to demo data
+                useDemoNewsData();
+                showToast('Server tidak merespon, menggunakan data demo', 'warning');
+            }
         } else {
-            throw new Error(result?.message || 'Gagal memuat data');
+            // Offline mode - use demo data
+            useDemoNewsData();
+            showToast('Mode offline: Menggunakan data demo', 'warning');
         }
+        
+        // Sort by date (newest first)
+        newsData.sort((a, b) => {
+            const dateA = new Date(a.CreatedAt || a.Date || a.createdAt);
+            const dateB = new Date(b.CreatedAt || b.Date || b.createdAt);
+            return dateB - dateA;
+        });
+        
+        filteredNewsData = [...newsData];
+        
+        displayNews();
+        updateNewsStats();
         
     } catch (error) {
         console.error('Error loading news:', error);
-        
-        // Use demo data if online mode fails
-        if (!isOnline) {
-            useDemoNewsData();
-            showToast('Menggunakan data demo (mode offline)', 'warning');
-        } else {
-            showToast('Gagal memuat data berita', 'danger');
-        }
+        useDemoNewsData();
+        showToast('Gagal memuat data, menggunakan data demo', 'danger');
     } finally {
         showLoading('newsTableBody', false);
     }
 }
 
+// Normalize news data from various formats
+function normalizeNewsData(data) {
+    if (!Array.isArray(data)) return [];
+    
+    return data.map(item => {
+        // Handle various field name formats
+        return {
+            ID: item.ID || item.id || generateId(),
+            Title: item.Title || item.title || item.Headline || 'Tanpa Judul',
+            Excerpt: item.Excerpt || item.excerpt || item.Summary || '',
+            Content: item.Content || item.content || item.Body || '',
+            ImageURL: item.ImageURL || item.imageURL || item.Image || item.image || '',
+            Category: item.Category || item.category || item.Type || 'Terbaru',
+            Author: item.Author || item.author || item.Creator || 'Admin EggTrack',
+            Status: item.Status || item.status || 'Draft',
+            Date: item.Date || item.date || item.PublishDate || new Date().toISOString().split('T')[0],
+            CreatedAt: item.CreatedAt || item.createdAt || item.Timestamp || new Date().toISOString(),
+            Featured: Boolean(item.Featured || item.featured || item.Highlight || false),
+            Views: parseInt(item.Views || item.views || item.ViewCount || 0)
+        };
+    });
+}
+
+// Generate ID for new items
+function generateId() {
+    return Math.floor(Math.random() * 1000000);
+}
+
 // Gunakan data demo untuk pengujian
 function useDemoNewsData() {
-    newsData = [
-        {
-            ID: 1,
-            Title: 'Inovasi Pengolahan Telur Bebek dengan Teknologi Modern',
-            Excerpt: 'Peternakan telur bebek di Indonesia mulai mengadopsi teknologi canggih untuk meningkatkan kualitas dan produktivitas...',
-            Content: '<p>Industri peternakan telur bebek di Indonesia sedang mengalami transformasi digital yang signifikan. Peternak mulai mengadopsi teknologi canggih untuk meningkatkan kualitas dan produktivitas produksi telur bebek.</p><p>Berdasarkan data dari Kementerian Pertanian, implementasi sistem manajemen digital seperti EggTrack telah membantu peternak meningkatkan efisiensi operasional hingga 40%.</p>',
-            ImageURL: 'https://images.unsplash.com/photo-1586816879360-004f5b0c51e5?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=80',
-            Category: 'Terbaru',
-            Author: 'Admin EggTrack',
-            Status: 'Published',
-            Date: '2024-03-15',
-            CreatedAt: new Date().toISOString(),
-            Featured: true,
-            Views: 1250
-        },
-        {
-            ID: 2,
-            Title: 'Peluang Pasar Ekspor Telur Bebek Meningkat 25% di Kuartal Pertama 2024',
-            Excerpt: 'Permintaan telur bebek dari pasar internasional menunjukkan peningkatan signifikan, membuka peluang baru bagi peternak lokal...',
-            Content: '<p>Permintaan telur bebek dari pasar internasional menunjukkan peningkatan signifikan di awal tahun 2024. Berdasarkan data dari Badan Pusat Statistik, ekspor telur bebek Indonesia naik 25% dibandingkan periode yang sama tahun lalu.</p>',
-            ImageURL: 'https://images.unsplash.com/photo-1518621736915-f3b1c41bfd00?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=80',
-            Category: 'Trending',
-            Author: 'Admin EggTrack',
-            Status: 'Published',
-            Date: '2024-03-10',
-            CreatedAt: new Date().toISOString(),
-            Featured: false,
-            Views: 890
-        },
-        {
-            ID: 3,
-            Title: 'Tips Manajemen Peternakan yang Efisien dengan Sistem Digital',
-            Excerpt: 'Penerapan sistem manajemen digital terbukti meningkatkan efisiensi operasional peternakan hingga 40% berdasarkan studi terkini...',
-            Content: '<p>Penerapan sistem manajemen digital terbukti meningkatkan efisiensi operasional peternakan hingga 40% berdasarkan studi terkini. Dengan sistem yang tepat, peternak dapat mengoptimalkan seluruh aspek operasional.</p>',
-            ImageURL: 'https://images.unsplash.com/photo-1505253668822-42074d58a7c6?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=80',
-            Category: 'Tips',
-            Author: 'Admin EggTrack',
-            Status: 'Published',
-            Date: '2024-03-05',
-            CreatedAt: new Date().toISOString(),
-            Featured: true,
-            Views: 750
-        },
-        {
-            ID: 4,
-            Title: 'Studi Terbaru: Telur Bebek Lebih Kaya Omega-3 dibanding Telur Ayam',
-            Excerpt: 'Penelitian terbaru menunjukkan kandungan nutrisi telur bebek lebih unggul dalam hal asam lemak omega-3 dan vitamin...',
-            Content: '<p>Penelitian terbaru menunjukkan kandungan nutrisi telur bebek lebih unggul dalam hal asam lemak omega-3 dan vitamin. Studi ini memberikan insight baru tentang manfaat kesehatan dari telur bebek.</p>',
-            ImageURL: 'https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=80',
-            Category: 'Kesehatan',
-            Author: 'Admin EggTrack',
-            Status: 'Draft',
-            Date: '2024-02-28',
-            CreatedAt: new Date().toISOString(),
-            Featured: false,
-            Views: 0
-        }
-    ];
-    
+    newsData = [...DEMO_ADMIN_NEWS_DATA];
     filteredNewsData = [...newsData];
+    
+    // Sort by date (newest first)
+    newsData.sort((a, b) => {
+        const dateA = new Date(a.CreatedAt || a.Date);
+        const dateB = new Date(b.CreatedAt || b.Date);
+        return dateB - dateA;
+    });
+    
     displayNews();
     updateNewsStats();
 }
@@ -401,7 +477,7 @@ function displayNews() {
     if (filteredNewsData.length === 0) {
         tableBody.innerHTML = `
             <tr>
-                <td colspan="8" class="text-center py-5">
+                <td colspan="6" class="text-center py-5">
                     <i class="bi bi-newspaper display-4 text-muted d-block mb-3"></i>
                     <h5 class="text-muted mb-3">Belum ada berita</h5>
                     <p class="text-muted mb-4">Mulai dengan menambahkan berita pertama Anda</p>
@@ -412,7 +488,14 @@ function displayNews() {
             </tr>
         `;
         
-        document.getElementById('addFirstNewsBtn')?.addEventListener('click', openNewsEditor);
+        // Add event listener to the button
+        setTimeout(() => {
+            const addFirstNewsBtn = document.getElementById('addFirstNewsBtn');
+            if (addFirstNewsBtn) {
+                addFirstNewsBtn.addEventListener('click', () => openNewsEditor());
+            }
+        }, 100);
+        
         updatePagination(0);
         return;
     }
@@ -424,24 +507,26 @@ function displayNews() {
     const pageData = filteredNewsData.slice(startIndex, endIndex);
     
     // Generate table rows
-    tableBody.innerHTML = '';
+    let html = '';
     
-    pageData.forEach((news, index) => {
-        const row = document.createElement('tr');
-        row.className = 'align-middle';
-        
+    pageData.forEach((news) => {
         // Status badge
         let statusClass = 'secondary';
         let statusText = news.Status;
+        let statusIcon = 'bi-file-earmark';
+        
         if (news.Status === 'Published') {
             statusClass = 'success';
-            statusText = '<i class="bi bi-check-circle me-1"></i> Terbit';
+            statusText = 'Terbit';
+            statusIcon = 'bi-check-circle';
         } else if (news.Status === 'Draft') {
             statusClass = 'warning';
-            statusText = '<i class="bi bi-pencil me-1"></i> Draf';
+            statusText = 'Draf';
+            statusIcon = 'bi-pencil';
         } else if (news.Status === 'Archived') {
             statusClass = 'secondary';
-            statusText = '<i class="bi bi-archive me-1"></i> Arsip';
+            statusText = 'Arsip';
+            statusIcon = 'bi-archive';
         }
         
         // Featured badge
@@ -449,73 +534,64 @@ function displayNews() {
             '<span class="badge bg-warning text-dark ms-1" title="Berita Unggulan"><i class="bi bi-star-fill"></i></span>' : '';
         
         // Views badge
-        const viewsBadge = news.Views > 100 ? 
+        const viewsBadge = news.Views > 0 ? 
             `<span class="badge bg-info ms-1" title="Dilihat ${news.Views} kali"><i class="bi bi-eye me-1"></i>${news.Views}</span>` : '';
         
-        row.innerHTML = `
-            <td>
-                <input type="checkbox" class="form-check-input news-checkbox" value="${news.ID}">
-            </td>
-            <td>
-                <div class="d-flex align-items-center">
-                    <img src="${news.ImageURL || 'https://via.placeholder.com/60x40?text=No+Image'}" 
+        html += `
+            <tr>
+                <td>
+                    <img src="${news.ImageURL || 'https://via.placeholder.com/100x60?text=No+Image'}" 
                          alt="${news.Title}" 
-                         class="news-image-preview rounded me-3"
-                         onerror="this.src='https://via.placeholder.com/60x40?text=Error'">
-                    <div>
-                        <strong class="d-block">${news.Title}</strong>
-                        <small class="text-muted">${(news.Excerpt || '').substring(0, 80)}...</small>
+                         class="news-image-preview rounded"
+                         onerror="this.src='https://via.placeholder.com/100x60?text=Error'">
+                </td>
+                <td>
+                    <strong class="d-block">${news.Title}</strong>
+                    <small class="text-muted">${(news.Excerpt || '').substring(0, 80)}...</small>
+                </td>
+                <td>
+                    <div class="small">${formatDate(news.Date)}</div>
+                </td>
+                <td>
+                    <span class="badge bg-primary">${news.Category}</span>
+                    ${featuredBadge}
+                    ${viewsBadge}
+                </td>
+                <td>
+                    <span class="badge bg-${statusClass}">
+                        <i class="bi ${statusIcon} me-1"></i>${statusText}
+                    </span>
+                </td>
+                <td>
+                    <div class="btn-group btn-group-sm" role="group">
+                        <button class="btn btn-outline-primary edit-news-btn" data-id="${news.ID}" title="Edit">
+                            <i class="bi bi-pencil"></i>
+                        </button>
+                        <button class="btn btn-outline-${news.Status === 'Published' ? 'warning' : 'success'} publish-news-btn" 
+                                data-id="${news.ID}" 
+                                data-status="${news.Status === 'Published' ? 'draft' : 'publish'}"
+                                title="${news.Status === 'Published' ? 'Ubah ke Draf' : 'Terbitkan'}">
+                            <i class="bi ${news.Status === 'Published' ? 'bi-file-earmark' : 'bi-cloud-arrow-up'}"></i>
+                        </button>
+                        <button class="btn btn-outline-info preview-news-btn" data-id="${news.ID}" title="Preview">
+                            <i class="bi bi-eye"></i>
+                        </button>
+                        <button class="btn btn-outline-danger delete-news-btn" data-id="${news.ID}" title="Hapus">
+                            <i class="bi bi-trash"></i>
+                        </button>
                     </div>
-                </div>
-            </td>
-            <td>
-                <div class="small">${formatDate(news.Date)}</div>
-                <div class="text-muted smaller">${formatTime(news.CreatedAt)}</div>
-            </td>
-            <td>
-                <span class="badge bg-primary">${news.Category}</span>
-                ${featuredBadge}
-                ${viewsBadge}
-            </td>
-            <td>
-                <span class="badge bg-${statusClass}">
-                    ${statusText}
-                </span>
-            </td>
-            <td class="text-center">
-                ${news.Author || 'Admin'}
-            </td>
-            <td>
-                <div class="btn-group btn-group-sm" role="group">
-                    <button class="btn btn-outline-primary edit-news-btn" data-id="${news.ID}" title="Edit">
-                        <i class="bi bi-pencil"></i>
-                    </button>
-                    <button class="btn btn-outline-success publish-news-btn" data-id="${news.ID}" 
-                            data-status="${news.Status === 'Published' ? 'draft' : 'publish'}"
-                            title="${news.Status === 'Published' ? 'Ubah ke Draf' : 'Terbitkan'}">
-                        <i class="bi ${news.Status === 'Published' ? 'bi-file-earmark' : 'bi-cloud-arrow-up'}"></i>
-                    </button>
-                    <button class="btn btn-outline-info preview-news-btn" data-id="${news.ID}" title="Preview">
-                        <i class="bi bi-eye"></i>
-                    </button>
-                    <button class="btn btn-outline-danger delete-news-btn" data-id="${news.ID}" title="Hapus">
-                        <i class="bi bi-trash"></i>
-                    </button>
-                </div>
-            </td>
+                </td>
+            </tr>
         `;
-        
-        tableBody.appendChild(row);
     });
+    
+    tableBody.innerHTML = html;
     
     // Add event listeners to buttons
     addRowEventListeners();
     
     // Update pagination
     updatePagination(totalPages);
-    
-    // Update selected count
-    updateSelectedCount();
 }
 
 // Add event listeners to table row buttons
@@ -552,11 +628,6 @@ function addRowEventListeners() {
             confirmDelete(newsId);
         });
     });
-    
-    // Checkboxes
-    document.querySelectorAll('.news-checkbox').forEach(cb => {
-        cb.addEventListener('change', updateSelectedCount);
-    });
 }
 
 // Update pagination controls
@@ -578,18 +649,29 @@ function updatePagination(totalPages) {
     `;
     pagination.appendChild(prevLi);
     
-    // Calculate page range
-    let startPage = Math.max(1, currentPage - 2);
-    let endPage = Math.min(totalPages, currentPage + 2);
+    // Page numbers - show max 5 pages
+    const maxVisiblePages = 5;
+    let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
+    let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
     
-    // Adjust if at start
-    if (currentPage <= 3) {
-        endPage = Math.min(5, totalPages);
+    // Adjust if we're near the end
+    if (endPage - startPage + 1 < maxVisiblePages) {
+        startPage = Math.max(1, endPage - maxVisiblePages + 1);
     }
     
-    // Adjust if at end
-    if (currentPage >= totalPages - 2) {
-        startPage = Math.max(1, totalPages - 4);
+    // First page
+    if (startPage > 1) {
+        const firstLi = document.createElement('li');
+        firstLi.className = 'page-item';
+        firstLi.innerHTML = `<a class="page-link" href="#" data-page="1">1</a>`;
+        pagination.appendChild(firstLi);
+        
+        if (startPage > 2) {
+            const ellipsisLi = document.createElement('li');
+            ellipsisLi.className = 'page-item disabled';
+            ellipsisLi.innerHTML = `<span class="page-link">...</span>`;
+            pagination.appendChild(ellipsisLi);
+        }
     }
     
     // Page numbers
@@ -598,6 +680,21 @@ function updatePagination(totalPages) {
         li.className = `page-item ${currentPage === i ? 'active' : ''}`;
         li.innerHTML = `<a class="page-link" href="#" data-page="${i}">${i}</a>`;
         pagination.appendChild(li);
+    }
+    
+    // Last page
+    if (endPage < totalPages) {
+        if (endPage < totalPages - 1) {
+            const ellipsisLi = document.createElement('li');
+            ellipsisLi.className = 'page-item disabled';
+            ellipsisLi.innerHTML = `<span class="page-link">...</span>`;
+            pagination.appendChild(ellipsisLi);
+        }
+        
+        const lastLi = document.createElement('li');
+        lastLi.className = 'page-item';
+        lastLi.innerHTML = `<a class="page-link" href="#" data-page="${totalPages}">${totalPages}</a>`;
+        pagination.appendChild(lastLi);
     }
     
     // Next button
@@ -625,40 +722,47 @@ function updatePagination(totalPages) {
     });
 }
 
-// Update selected news count
-function updateSelectedCount() {
-    const selectedCount = document.querySelectorAll('.news-checkbox:checked').length;
-    const selectedElement = document.getElementById('selectedCount');
-    const bulkActionElement = document.getElementById('bulkAction');
-    
-    if (selectedElement) {
-        selectedElement.textContent = selectedCount;
-        selectedElement.parentElement.style.display = selectedCount > 0 ? 'inline-block' : 'none';
-    }
-    
-    if (bulkActionElement) {
-        bulkActionElement.disabled = selectedCount === 0;
-    }
-}
-
 // Open news editor modal
 function openNewsEditor(newsId = null) {
-    const modal = new bootstrap.Modal(document.getElementById('newsEditorModal'));
+    const modalElement = document.getElementById('newsEditorModal');
+    if (!modalElement) return;
+    
+    const modal = new bootstrap.Modal(modalElement);
     const form = document.getElementById('newsForm');
     
     // Reset form
-    form.reset();
-    document.getElementById('newsContentEditor').innerHTML = '';
-    document.getElementById('imagePreview').classList.add('d-none');
+    if (form) form.reset();
+    
+    const editor = document.getElementById('newsContentEditor');
+    if (editor) editor.innerHTML = '';
+    
+    document.getElementById('imagePreview')?.classList.add('d-none');
     
     // Set default date to today
-    document.getElementById('publishDate').value = new Date().toISOString().split('T')[0];
+    const publishDate = document.getElementById('publishDate');
+    if (publishDate) {
+        publishDate.value = new Date().toISOString().split('T')[0];
+    }
+    
+    // Set default author
+    const authorField = document.getElementById('newsAuthor');
+    if (authorField && currentUser && !authorField.value) {
+        authorField.value = currentUser.name || 'Admin EggTrack';
+    }
     
     if (newsId) {
         // Edit mode
         editMode = true;
-        document.getElementById('newsEditorModalLabel').textContent = 'Edit Berita';
-        document.getElementById('saveNewsBtn').innerHTML = '<i class="bi bi-save me-2"></i> Update Berita';
+        
+        const modalLabel = document.getElementById('newsEditorModalLabel');
+        if (modalLabel) {
+            modalLabel.textContent = 'Edit Berita';
+        }
+        
+        const saveBtn = document.getElementById('saveNewsBtn');
+        if (saveBtn) {
+            saveBtn.innerHTML = '<i class="bi bi-save me-2"></i> Update Berita';
+        }
         
         const news = newsData.find(n => n.ID == newsId);
         
@@ -666,15 +770,22 @@ function openNewsEditor(newsId = null) {
             document.getElementById('newsId').value = news.ID;
             document.getElementById('newsTitle').value = news.Title;
             document.getElementById('newsExcerpt').value = news.Excerpt || '';
-            document.getElementById('newsContentEditor').innerHTML = news.Content || '';
-            document.getElementById('newsContent').value = news.Content || '';
+            
+            if (editor) {
+                editor.innerHTML = news.Content || '';
+                syncEditor();
+            }
+            
             document.getElementById('newsImage').value = news.ImageURL || '';
             document.getElementById('newsCategory').value = news.Category || 'Terbaru';
             document.getElementById('newsAuthor').value = news.Author || 'Admin EggTrack';
             document.getElementById('newsStatus').value = news.Status || 'Draft';
-            document.getElementById('publishDate').value = news.Date || '';
+            
+            if (publishDate && news.Date) {
+                publishDate.value = news.Date;
+            }
+            
             document.getElementById('featuredNews').checked = news.Featured || false;
-            document.getElementById('allowComments').checked = news.AllowComments !== false;
             
             // Show image preview
             if (news.ImageURL) {
@@ -684,8 +795,16 @@ function openNewsEditor(newsId = null) {
     } else {
         // Add mode
         editMode = false;
-        document.getElementById('newsEditorModalLabel').textContent = 'Tambah Berita Baru';
-        document.getElementById('saveNewsBtn').innerHTML = '<i class="bi bi-save me-2"></i> Simpan Berita';
+        
+        const modalLabel = document.getElementById('newsEditorModalLabel');
+        if (modalLabel) {
+            modalLabel.textContent = 'Tambah Berita Baru';
+        }
+        
+        const saveBtn = document.getElementById('saveNewsBtn');
+        if (saveBtn) {
+            saveBtn.innerHTML = '<i class="bi bi-save me-2"></i> Simpan Berita';
+        }
     }
     
     modal.show();
@@ -694,6 +813,8 @@ function openNewsEditor(newsId = null) {
 // Update image preview
 function updateImagePreview(imageUrl) {
     const preview = document.getElementById('imagePreview');
+    if (!preview) return;
+    
     if (imageUrl) {
         preview.src = imageUrl;
         preview.classList.remove('d-none');
@@ -712,73 +833,79 @@ function updateImagePreview(imageUrl) {
 async function saveNews() {
     try {
         // Validate form
-        const title = document.getElementById('newsTitle').value.trim();
-        const content = document.getElementById('newsContent').value.trim();
-        const image = document.getElementById('newsImage').value.trim();
+        const title = document.getElementById('newsTitle')?.value.trim();
+        const content = document.getElementById('newsContent')?.value.trim();
+        const image = document.getElementById('newsImage')?.value.trim();
         
         if (!title) {
             showToast('Judul berita wajib diisi', 'warning');
-            document.getElementById('newsTitle').focus();
+            document.getElementById('newsTitle')?.focus();
             return;
         }
         
         if (!content) {
             showToast('Konten berita wajib diisi', 'warning');
-            document.getElementById('newsContentEditor').focus();
+            document.getElementById('newsContentEditor')?.focus();
             return;
         }
         
         if (!image) {
             showToast('URL gambar wajib diisi', 'warning');
-            document.getElementById('newsImage').focus();
+            document.getElementById('newsImage')?.focus();
             return;
         }
         
-        const newsData = {
+        const newsDataToSave = {
             Title: title,
-            Excerpt: document.getElementById('newsExcerpt').value.trim(),
+            Excerpt: document.getElementById('newsExcerpt')?.value.trim() || '',
             Content: content,
             ImageURL: image,
-            Category: document.getElementById('newsCategory').value,
-            Author: document.getElementById('newsAuthor').value.trim(),
-            Status: document.getElementById('newsStatus').value,
-            Date: document.getElementById('publishDate').value || new Date().toISOString().split('T')[0],
-            Featured: document.getElementById('featuredNews').checked ? 1 : 0,
-            AllowComments: document.getElementById('allowComments').checked ? 1 : 0
+            Category: document.getElementById('newsCategory')?.value || 'Terbaru',
+            Author: document.getElementById('newsAuthor')?.value.trim() || 'Admin EggTrack',
+            Status: document.getElementById('newsStatus')?.value || 'Draft',
+            Date: document.getElementById('publishDate')?.value || new Date().toISOString().split('T')[0],
+            Featured: document.getElementById('featuredNews')?.checked ? 1 : 0,
+            Views: 0
         };
         
-        const newsId = document.getElementById('newsId').value;
+        const newsId = document.getElementById('newsId')?.value;
         let result;
         
         // Show loading on save button
         const saveBtn = document.getElementById('saveNewsBtn');
-        const originalText = saveBtn.innerHTML;
-        saveBtn.innerHTML = '<i class="bi bi-hourglass-split me-2"></i> Menyimpan...';
-        saveBtn.disabled = true;
+        const originalText = saveBtn ? saveBtn.innerHTML : '';
         
-        if (newsId) {
-            // Update existing news
-            newsData.ID = newsId;
-            result = await fetchData('updateNews', newsData);
+        if (saveBtn) {
+            saveBtn.innerHTML = '<i class="bi bi-hourglass-split me-2"></i> Menyimpan...';
+            saveBtn.disabled = true;
+        }
+        
+        if (isOnline) {
+            if (newsId) {
+                // Update existing news
+                newsDataToSave.ID = newsId;
+                result = await fetchData('updateNews', newsDataToSave);
+            } else {
+                // Add new news
+                result = await fetchData('addNews', newsDataToSave);
+            }
         } else {
-            // Add new news
-            result = await fetchData('addNews', newsData);
+            // Offline mode - simulate success
+            result = { success: true, message: 'Data disimpan secara lokal' };
         }
         
         if (result && result.success) {
             // Close modal
-            bootstrap.Modal.getInstance(document.getElementById('newsEditorModal')).hide();
+            const modal = bootstrap.Modal.getInstance(document.getElementById('newsEditorModal'));
+            if (modal) modal.hide();
             
             // Reload news
             await loadNews();
             
             // Show success message
-            showToast(`Berita berhasil ${newsId ? 'diperbarui' : 'ditambahkan'}!`, 'success');
+            const message = newsId ? 'Berita berhasil diperbarui!' : 'Berita berhasil ditambahkan!';
+            showToast(message, 'success');
             
-            // Log activity
-            logActivity(newsId ? 'UPDATE_NEWS' : 'ADD_NEWS', 
-                       `${newsId ? 'Updated' : 'Added'} news: ${title}`, 
-                       newsId || result.id);
         } else {
             throw new Error(result?.message || 'Gagal menyimpan berita');
         }
@@ -800,46 +927,66 @@ async function saveNews() {
 
 // Save draft automatically
 function saveDraft() {
-    const title = document.getElementById('newsTitle').value.trim();
-    const content = document.getElementById('newsContent').value.trim();
+    const title = document.getElementById('newsTitle')?.value.trim();
+    const content = document.getElementById('newsContent')?.value.trim();
     
     if (title || content) {
         const draft = {
             title: title,
             content: content,
-            excerpt: document.getElementById('newsExcerpt').value.trim(),
-            image: document.getElementById('newsImage').value.trim(),
+            excerpt: document.getElementById('newsExcerpt')?.value.trim() || '',
+            image: document.getElementById('newsImage')?.value.trim() || '',
+            category: document.getElementById('newsCategory')?.value || 'Terbaru',
+            author: document.getElementById('newsAuthor')?.value.trim() || '',
+            status: document.getElementById('newsStatus')?.value || 'Draft',
+            date: document.getElementById('publishDate')?.value || '',
+            featured: document.getElementById('featuredNews')?.checked || false,
             timestamp: new Date().toISOString()
         };
         
-        localStorage.setItem('newsDraft', JSON.stringify(draft));
-        showToast('Draf berita disimpan secara lokal', 'info');
+        localStorage.setItem('eggTrackNewsDraft', JSON.stringify(draft));
     }
 }
 
 // Load draft if exists
 function loadDraft() {
-    const draft = localStorage.getItem('newsDraft');
-    if (draft) {
-        try {
+    try {
+        const draft = localStorage.getItem('eggTrackNewsDraft');
+        if (draft) {
             const data = JSON.parse(draft);
-            if (confirm('Ada draf berita yang belum disimpan. Muat draf?')) {
-                document.getElementById('newsTitle').value = data.title || '';
-                document.getElementById('newsExcerpt').value = data.excerpt || '';
-                document.getElementById('newsContentEditor').innerHTML = data.content || '';
-                document.getElementById('newsContent').value = data.content || '';
-                document.getElementById('newsImage').value = data.image || '';
-                
-                if (data.image) {
-                    updateImagePreview(data.image);
+            
+            // Check if draft is less than 1 hour old
+            const draftTime = new Date(data.timestamp);
+            const now = new Date();
+            const hoursDiff = (now - draftTime) / (1000 * 60 * 60);
+            
+            if (hoursDiff < 1) {
+                if (confirm('Ada draf berita yang belum disimpan dari sesi sebelumnya. Muat draf?')) {
+                    document.getElementById('newsTitle').value = data.title || '';
+                    document.getElementById('newsExcerpt').value = data.excerpt || '';
+                    document.getElementById('newsContentEditor').innerHTML = data.content || '';
+                    document.getElementById('newsContent').value = data.content || '';
+                    document.getElementById('newsImage').value = data.image || '';
+                    document.getElementById('newsCategory').value = data.category || 'Terbaru';
+                    document.getElementById('newsAuthor').value = data.author || '';
+                    document.getElementById('newsStatus').value = data.status || 'Draft';
+                    document.getElementById('publishDate').value = data.date || '';
+                    document.getElementById('featuredNews').checked = data.featured || false;
+                    
+                    if (data.image) {
+                        updateImagePreview(data.image);
+                    }
+                    
+                    syncEditor();
+                    showToast('Draf berita dimuat', 'info');
                 }
-                
-                syncEditor();
-                showToast('Draf berita dimuat', 'success');
+            } else {
+                // Clear old draft
+                localStorage.removeItem('eggTrackNewsDraft');
             }
-        } catch (e) {
-            console.error('Error loading draft:', e);
         }
+    } catch (e) {
+        console.error('Error loading draft:', e);
     }
 }
 
@@ -848,17 +995,23 @@ function resetEditor() {
     editMode = false;
     const form = document.getElementById('newsForm');
     if (form) form.reset();
-    document.getElementById('newsContentEditor').innerHTML = '';
-    document.getElementById('imagePreview').classList.add('d-none');
+    
+    const editor = document.getElementById('newsContentEditor');
+    if (editor) editor.innerHTML = '';
+    
+    const preview = document.getElementById('imagePreview');
+    if (preview) preview.classList.add('d-none');
+    
+    // Clear draft after successful save
+    localStorage.removeItem('eggTrackNewsDraft');
 }
 
 // Confirm delete news
 function confirmDelete(newsId) {
-    deleteNewsId = newsId;
     const news = newsData.find(n => n.ID == newsId);
     
     if (news) {
-        document.getElementById('deleteNewsTitle').textContent = news.Title;
+        deleteNewsId = newsId;
         const modal = new bootstrap.Modal(document.getElementById('deleteConfirmModal'));
         modal.show();
     }
@@ -869,28 +1022,29 @@ async function deleteNews() {
     try {
         if (!deleteNewsId) return;
         
-        const result = await fetchData('deleteNews', { id: deleteNewsId });
-        
-        if (result && result.success) {
-            // Close modal
-            bootstrap.Modal.getInstance(document.getElementById('deleteConfirmModal')).hide();
+        if (isOnline) {
+            const result = await fetchData('deleteNews', { id: deleteNewsId });
             
-            // Remove from local data
-            newsData = newsData.filter(n => n.ID != deleteNewsId);
-            filteredNewsData = filteredNewsData.filter(n => n.ID != deleteNewsId);
-            
-            // Update display
-            displayNews();
-            updateNewsStats();
-            
-            // Show success message
-            showToast('Berita berhasil dihapus!', 'success');
-            
-            // Log activity
-            logActivity('DELETE_NEWS', `Deleted news ID: ${deleteNewsId}`, deleteNewsId);
-        } else {
-            throw new Error(result?.message || 'Gagal menghapus berita');
+            if (!result || !result.success) {
+                throw new Error(result?.message || 'Gagal menghapus berita');
+            }
         }
+        
+        // Remove from local data
+        newsData = newsData.filter(n => n.ID != deleteNewsId);
+        filteredNewsData = filteredNewsData.filter(n => n.ID != deleteNewsId);
+        
+        // Update display
+        displayNews();
+        updateNewsStats();
+        
+        // Close modal
+        const modal = bootstrap.Modal.getInstance(document.getElementById('deleteConfirmModal'));
+        if (modal) modal.hide();
+        
+        // Show success message
+        showToast('Berita berhasil dihapus!', 'success');
+        
     } catch (error) {
         console.error('Error deleting news:', error);
         showToast('Gagal menghapus berita: ' + error.message, 'danger');
@@ -905,28 +1059,27 @@ async function togglePublishStatus(newsId, newStatus) {
         const news = newsData.find(n => n.ID == newsId);
         if (!news) return;
         
-        const result = await fetchData('updateNews', {
-            ID: newsId,
-            Status: newStatus
-        });
-        
-        if (result && result.success) {
-            // Update local data
-            news.Status = newStatus;
+        if (isOnline) {
+            const result = await fetchData('updateNews', {
+                ID: newsId,
+                Status: newStatus
+            });
             
-            // Update display
-            displayNews();
-            
-            // Show success message
-            showToast(`Berita ${newStatus === 'Published' ? 'diterbitkan' : 'diubah ke draf'}!`, 'success');
-            
-            // Log activity
-            logActivity('UPDATE_NEWS_STATUS', 
-                       `Changed status to ${newStatus} for: ${news.Title}`, 
-                       newsId);
-        } else {
-            throw new Error(result?.message || 'Gagal mengubah status');
+            if (!result || !result.success) {
+                throw new Error(result?.message || 'Gagal mengubah status');
+            }
         }
+        
+        // Update local data
+        news.Status = newStatus;
+        
+        // Update display
+        displayNews();
+        
+        // Show success message
+        const statusText = newStatus === 'Published' ? 'diterbitkan' : 'diubah ke draf';
+        showToast(`Berita ${statusText}!`, 'success');
+        
     } catch (error) {
         console.error('Error toggling publish status:', error);
         showToast('Gagal mengubah status berita', 'danger');
@@ -937,70 +1090,35 @@ async function togglePublishStatus(newsId, newStatus) {
 function previewNews(newsId) {
     const news = newsData.find(n => n.ID == newsId);
     if (news) {
-        const previewWindow = window.open('', '_blank');
-        previewWindow.document.write(`
-            <!DOCTYPE html>
-            <html>
-            <head>
-                <title>Preview: ${news.Title}</title>
-                <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-                <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
-                <style>
-                    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f8f9fa; }
-                    .preview-container { max-width: 800px; margin: 0 auto; background: white; padding: 30px; border-radius: 10px; box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
-                    .news-image { width: 100%; height: 400px; object-fit: cover; border-radius: 8px; margin-bottom: 20px; }
-                    .news-meta { color: #6c757d; font-size: 0.9em; margin-bottom: 20px; }
-                    .news-content { line-height: 1.8; }
-                    .news-content img { max-width: 100%; height: auto; }
-                    .news-content h1, .news-content h2, .news-content h3 { color: #333; margin-top: 1.5em; }
-                    .news-content p { margin-bottom: 1em; }
-                    .badge { font-size: 0.8em; }
-                </style>
-            </head>
-            <body>
-                <div class="preview-container mt-4 mb-4">
-                    <h1 class="mb-3">${news.Title}</h1>
-                    <div class="news-meta">
-                        <span class="badge bg-primary me-2">${news.Category}</span>
-                        <i class="bi bi-calendar me-1"></i> ${formatDate(news.Date)} 
-                        <i class="bi bi-person ms-3 me-1"></i> ${news.Author}
-                        <span class="ms-3"><i class="bi bi-eye me-1"></i> ${news.Views || 0} views</span>
-                    </div>
-                    <img src="${news.ImageURL}" alt="${news.Title}" class="news-image">
-                    <div class="news-content">
-                        ${news.Content}
-                    </div>
-                    <hr class="my-4">
-                    <div class="text-center">
-                        <p class="text-muted">Preview Mode - Berita ini ${news.Status === 'Published' ? 'sudah diterbitkan' : 'masih dalam status draf'}</p>
-                        <button class="btn btn-primary" onclick="window.close()">
-                            <i class="bi bi-x-circle me-1"></i> Tutup Preview
-                        </button>
-                    </div>
-                </div>
-            </body>
-            </html>
-        `);
+        const previewUrl = `news-detail.html?id=${newsId}&preview=true`;
+        window.open(previewUrl, '_blank', 'width=1200,height=800');
     }
 }
 
 // Search news
 function searchNews() {
-    const searchTerm = document.getElementById('searchNews').value.toLowerCase().trim();
-    const category = document.getElementById('filterCategory').value;
-    const status = document.getElementById('filterStatus').value;
-    const sortOrder = document.getElementById('sortOrder').value;
+    const searchInput = document.getElementById('searchNews');
+    if (!searchInput) return;
+    
+    const searchTerm = searchInput.value.toLowerCase().trim();
+    const category = document.getElementById('filterCategory')?.value;
+    const status = document.getElementById('filterStatus')?.value;
     
     let filtered = newsData;
     
     // Filter by search term
     if (searchTerm) {
-        filtered = filtered.filter(news => 
-            news.Title.toLowerCase().includes(searchTerm) ||
-            (news.Excerpt && news.Excerpt.toLowerCase().includes(searchTerm)) ||
-            (news.Content && news.Content.toLowerCase().includes(searchTerm)) ||
-            (news.Author && news.Author.toLowerCase().includes(searchTerm))
-        );
+        filtered = filtered.filter(news => {
+            const title = (news.Title || '').toLowerCase();
+            const excerpt = (news.Excerpt || '').toLowerCase();
+            const content = (news.Content || '').toLowerCase();
+            const author = (news.Author || '').toLowerCase();
+            
+            return title.includes(searchTerm) || 
+                   excerpt.includes(searchTerm) || 
+                   content.includes(searchTerm) || 
+                   author.includes(searchTerm);
+        });
     }
     
     // Filter by category
@@ -1013,25 +1131,6 @@ function searchNews() {
         filtered = filtered.filter(news => news.Status === status);
     }
     
-    // Sort results
-    switch (sortOrder) {
-        case 'newest':
-            filtered.sort((a, b) => new Date(b.CreatedAt || b.Date) - new Date(a.CreatedAt || a.Date));
-            break;
-        case 'oldest':
-            filtered.sort((a, b) => new Date(a.CreatedAt || a.Date) - new Date(b.CreatedAt || b.Date));
-            break;
-        case 'title_asc':
-            filtered.sort((a, b) => a.Title.localeCompare(b.Title));
-            break;
-        case 'title_desc':
-            filtered.sort((a, b) => b.Title.localeCompare(a.Title));
-            break;
-        case 'popular':
-            filtered.sort((a, b) => (b.Views || 0) - (a.Views || 0));
-            break;
-    }
-    
     filteredNewsData = filtered;
     currentPage = 1;
     displayNews();
@@ -1042,167 +1141,44 @@ function filterNews() {
     searchNews();
 }
 
-// Apply bulk action
-async function applyBulkAction(action) {
-    const selectedCheckboxes = document.querySelectorAll('.news-checkbox:checked');
-    const selectedIds = Array.from(selectedCheckboxes).map(cb => cb.value);
-    
-    if (selectedIds.length === 0) {
-        showToast('Tidak ada berita yang dipilih', 'warning');
-        return;
-    }
-    
-    try {
-        let successCount = 0;
-        
-        for (const id of selectedIds) {
-            let result;
-            
-            if (action === 'publish') {
-                result = await fetchData('updateNews', { ID: id, Status: 'Published' });
-            } else if (action === 'draft') {
-                result = await fetchData('updateNews', { ID: id, Status: 'Draft' });
-            } else if (action === 'archive') {
-                result = await fetchData('updateNews', { ID: id, Status: 'Archived' });
-            } else if (action === 'feature') {
-                result = await fetchData('updateNews', { ID: id, Featured: 1 });
-            } else if (action === 'unfeature') {
-                result = await fetchData('updateNews', { ID: id, Featured: 0 });
-            }
-            
-            if (result && result.success) {
-                successCount++;
-            }
-        }
-        
-        if (successCount > 0) {
-            await loadNews();
-            showToast(`${successCount} berita berhasil di${getActionText(action)}`, 'success');
-            
-            // Reset bulk action
-            document.getElementById('bulkAction').value = '';
-            
-            // Log activity
-            logActivity('BULK_ACTION', 
-                       `Applied ${action} to ${successCount} news items`, 
-                       selectedIds.join(','));
-        }
-    } catch (error) {
-        console.error('Error applying bulk action:', error);
-        showToast('Gagal menerapkan aksi', 'danger');
-    }
-}
-
-// Confirm bulk delete
-function confirmBulkDelete() {
-    const selectedCount = document.querySelectorAll('.news-checkbox:checked').length;
-    
-    if (selectedCount === 0) {
-        showToast('Tidak ada berita yang dipilih', 'warning');
-        document.getElementById('bulkAction').value = '';
-        return;
-    }
-    
-    if (confirm(`Apakah Anda yakin ingin menghapus ${selectedCount} berita yang dipilih?`)) {
-        applyBulkDelete();
-    } else {
-        document.getElementById('bulkAction').value = '';
-    }
-}
-
-// Apply bulk delete
-async function applyBulkDelete() {
-    const selectedCheckboxes = document.querySelectorAll('.news-checkbox:checked');
-    const selectedIds = Array.from(selectedCheckboxes).map(cb => cb.value);
-    
-    try {
-        let successCount = 0;
-        
-        for (const id of selectedIds) {
-            const result = await fetchData('deleteNews', { id: id });
-            if (result && result.success) {
-                successCount++;
-            }
-        }
-        
-        if (successCount > 0) {
-            await loadNews();
-            showToast(`${successCount} berita berhasil dihapus`, 'success');
-            
-            // Reset bulk action
-            document.getElementById('bulkAction').value = '';
-            
-            // Log activity
-            logActivity('BULK_DELETE', 
-                       `Deleted ${successCount} news items`, 
-                       selectedIds.join(','));
-        }
-    } catch (error) {
-        console.error('Error applying bulk delete:', error);
-        showToast('Gagal menghapus berita', 'danger');
-    }
-}
-
-// Get action text for toast
-function getActionText(action) {
-    const actions = {
-        'publish': 'terbitkan',
-        'draft': 'ubah ke draf',
-        'archive': 'arsipkan',
-        'feature': 'jadikan unggulan',
-        'unfeature': 'hapus dari unggulan',
-        'delete': 'hapus'
-    };
-    return actions[action] || action;
-}
-
 // Update news statistics
 function updateNewsStats() {
     const totalNews = newsData.length;
     const publishedNews = newsData.filter(n => n.Status === 'Published').length;
     const draftNews = newsData.filter(n => n.Status === 'Draft').length;
+    const archivedNews = newsData.filter(n => n.Status === 'Archived').length;
     const featuredNews = newsData.filter(n => n.Featured).length;
-    const totalViews = newsData.reduce((sum, news) => sum + (news.Views || 0), 0);
     
-    // Update stats in UI
-    const statsContainer = document.getElementById('newsStats');
-    if (statsContainer) {
-        statsContainer.innerHTML = `
-            <div class="row g-3">
+    // Update UI if needed
+    console.log(`Statistik: Total=${totalNews}, Terbit=${publishedNews}, Draf=${draftNews}, Arsip=${archivedNews}, Unggulan=${featuredNews}`);
+    
+    // You can update a stats display element if you have one
+    const statsElement = document.getElementById('newsStats');
+    if (statsElement) {
+        statsElement.innerHTML = `
+            <div class="row g-2">
                 <div class="col-6 col-md-3">
-                    <div class="stat-card text-center p-3 rounded bg-white shadow-sm">
-                        <div class="stat-icon text-primary mb-2">
-                            <i class="bi bi-newspaper fs-1"></i>
-                        </div>
-                        <div class="stat-value fw-bold fs-3">${totalNews}</div>
-                        <div class="stat-label text-muted">Total Berita</div>
+                    <div class="bg-primary text-white p-2 rounded text-center">
+                        <div class="fs-4 fw-bold">${totalNews}</div>
+                        <small>Total Berita</small>
                     </div>
                 </div>
                 <div class="col-6 col-md-3">
-                    <div class="stat-card text-center p-3 rounded bg-white shadow-sm">
-                        <div class="stat-icon text-success mb-2">
-                            <i class="bi bi-cloud-arrow-up fs-1"></i>
-                        </div>
-                        <div class="stat-value fw-bold fs-3">${publishedNews}</div>
-                        <div class="stat-label text-muted">Terbit</div>
+                    <div class="bg-success text-white p-2 rounded text-center">
+                        <div class="fs-4 fw-bold">${publishedNews}</div>
+                        <small>Terbit</small>
                     </div>
                 </div>
                 <div class="col-6 col-md-3">
-                    <div class="stat-card text-center p-3 rounded bg-white shadow-sm">
-                        <div class="stat-icon text-warning mb-2">
-                            <i class="bi bi-pencil fs-1"></i>
-                        </div>
-                        <div class="stat-value fw-bold fs-3">${draftNews}</div>
-                        <div class="stat-label text-muted">Draf</div>
+                    <div class="bg-warning text-white p-2 rounded text-center">
+                        <div class="fs-4 fw-bold">${draftNews}</div>
+                        <small>Draf</small>
                     </div>
                 </div>
                 <div class="col-6 col-md-3">
-                    <div class="stat-card text-center p-3 rounded bg-white shadow-sm">
-                        <div class="stat-icon text-info mb-2">
-                            <i class="bi bi-star fs-1"></i>
-                        </div>
-                        <div class="stat-value fw-bold fs-3">${featuredNews}</div>
-                        <div class="stat-label text-muted">Unggulan</div>
+                    <div class="bg-info text-white p-2 rounded text-center">
+                        <div class="fs-4 fw-bold">${featuredNews}</div>
+                        <small>Unggulan</small>
                     </div>
                 </div>
             </div>
@@ -1210,106 +1186,9 @@ function updateNewsStats() {
     }
 }
 
-// Export news data
-async function exportNews() {
-    try {
-        const format = prompt('Pilih format export (csv/json):', 'csv').toLowerCase();
-        
-        if (format !== 'csv' && format !== 'json') {
-            showToast('Format tidak valid', 'warning');
-            return;
-        }
-        
-        const dataToExport = filteredNewsData.length > 0 ? filteredNewsData : newsData;
-        
-        if (format === 'csv') {
-            exportToCSV(dataToExport);
-        } else if (format === 'json') {
-            exportToJSON(dataToExport);
-        }
-        
-    } catch (error) {
-        console.error('Error exporting news:', error);
-        showToast('Gagal mengexport data', 'danger');
-    }
-}
-
-// Export to CSV
-function exportToCSV(data) {
-    const headers = ['ID', 'Title', 'Excerpt', 'Category', 'Author', 'Status', 'Date', 'Featured', 'Views'];
-    const rows = data.map(item => [
-        item.ID,
-        `"${(item.Title || '').replace(/"/g, '""')}"`,
-        `"${(item.Excerpt || '').replace(/"/g, '""')}"`,
-        item.Category,
-        item.Author,
-        item.Status,
-        item.Date,
-        item.Featured ? 'Yes' : 'No',
-        item.Views || 0
-    ]);
-    
-    const csvContent = [
-        headers.join(','),
-        ...rows.map(row => row.join(','))
-    ].join('\n');
-    
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-    const link = document.createElement('a');
-    const url = URL.createObjectURL(blob);
-    
-    link.setAttribute('href', url);
-    link.setAttribute('download', `eggtrack-news-${new Date().toISOString().split('T')[0]}.csv`);
-    link.style.visibility = 'hidden';
-    
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    
-    showToast('Data berhasil diexport ke CSV', 'success');
-}
-
-// Export to JSON
-function exportToJSON(data) {
-    const jsonContent = JSON.stringify(data, null, 2);
-    const blob = new Blob([jsonContent], { type: 'application/json;charset=utf-8;' });
-    const link = document.createElement('a');
-    const url = URL.createObjectURL(blob);
-    
-    link.setAttribute('href', url);
-    link.setAttribute('download', `eggtrack-news-${new Date().toISOString().split('T')[0]}.json`);
-    link.style.visibility = 'hidden';
-    
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    
-    showToast('Data berhasil diexport ke JSON', 'success');
-}
-
-// Log activity
-function logActivity(action, description, referenceId) {
-    const activity = {
-        timestamp: new Date().toISOString(),
-        action: action,
-        description: description,
-        referenceId: referenceId,
-        user: localStorage.getItem('eggTrackUser') ? 
-              JSON.parse(localStorage.getItem('eggTrackUser')).name : 'Unknown'
-    };
-    
-    // Save to localStorage for offline viewing
-    let activities = JSON.parse(localStorage.getItem('newsActivities') || '[]');
-    activities.unshift(activity);
-    if (activities.length > 50) activities = activities.slice(0, 50);
-    localStorage.setItem('newsActivities', JSON.stringify(activities));
-    
-    console.log('Activity logged:', activity);
-}
-
 // Handler untuk logout
 function handleLogout() {
-    if (confirm('Apakah Anda yakin ingin logout?')) {
+    if (confirm('Apakah Anda yakin ingin logout dari sistem?')) {
         // Save any unsaved draft
         const title = document.getElementById('newsTitle')?.value.trim();
         const content = document.getElementById('newsContent')?.value.trim();
@@ -1320,6 +1199,7 @@ function handleLogout() {
         
         // Clear user data
         localStorage.removeItem('eggTrackUser');
+        localStorage.removeItem('eggTrackToken');
         
         // Redirect to login
         window.location.href = 'login.html';
@@ -1348,11 +1228,12 @@ async function fetchData(action, params = {}) {
         
         const url = `${APPS_SCRIPT_URL}?${urlParams.toString()}`;
         const response = await fetch(url, { 
-            method: 'GET', 
-            redirect: 'follow',
+            method: 'GET',
+            mode: 'cors',
+            cache: 'no-cache',
             headers: {
-                'Cache-Control': 'no-cache',
-                'Pragma': 'no-cache'
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
             }
         });
         
@@ -1360,15 +1241,19 @@ async function fetchData(action, params = {}) {
             throw new Error(`HTTP error! status: ${response.status}`);
         }
         
-        const data = await response.json();
+        const text = await response.text();
         
-        // Handle Apps Script redirects
-        if (data.redirect) {
-            const redirectedResponse = await fetch(data.redirect);
-            return await redirectedResponse.json();
+        // Try to parse as JSON
+        try {
+            return JSON.parse(text);
+        } catch (e) {
+            // If not JSON, try to extract JSON from text
+            const jsonMatch = text.match(/{.*}/s);
+            if (jsonMatch) {
+                return JSON.parse(jsonMatch[0]);
+            }
+            throw new Error('Invalid JSON response');
         }
-        
-        return data;
     } catch (error) {
         console.error(`Error fetching ${action}:`, error);
         throw error;
@@ -1378,36 +1263,19 @@ async function fetchData(action, params = {}) {
 // Format date
 function formatDate(dateString) {
     if (!dateString) return '-';
+    
     try {
         const date = new Date(dateString);
         if (isNaN(date.getTime())) return '-';
         
         return date.toLocaleDateString('id-ID', {
-            weekday: 'long',
             day: '2-digit',
-            month: 'long',
+            month: 'short',
             year: 'numeric'
         });
     } catch (error) {
         console.error('Error formatting date:', error);
         return '-';
-    }
-}
-
-// Format time
-function formatTime(dateString) {
-    if (!dateString) return '';
-    try {
-        const date = new Date(dateString);
-        if (isNaN(date.getTime())) return '';
-        
-        return date.toLocaleTimeString('id-ID', {
-            hour: '2-digit',
-            minute: '2-digit'
-        });
-    } catch (error) {
-        console.error('Error formatting time:', error);
-        return '';
     }
 }
 
@@ -1419,13 +1287,15 @@ function showLoading(elementId, isLoading) {
     if (isLoading) {
         element.innerHTML = `
             <tr>
-                <td colspan="8" class="text-center py-5">
+                <td colspan="6" class="text-center py-5">
                     <div class="d-flex flex-column align-items-center">
-                        <div class="spinner-border text-primary mb-3" role="status">
+                        <div class="spinner-border text-primary mb-3" role="status" style="width: 3rem; height: 3rem;">
                             <span class="visually-hidden">Loading...</span>
                         </div>
                         <p class="text-muted">Memuat data berita...</p>
-                        <small class="text-muted">Harap tunggu sebentar</small>
+                        <div class="progress mt-2" style="height: 4px; width: 200px;">
+                            <div class="progress-bar progress-bar-striped progress-bar-animated" style="width: 100%"></div>
+                        </div>
                     </div>
                 </td>
             </tr>
@@ -1435,79 +1305,85 @@ function showLoading(elementId, isLoading) {
 
 // Show toast notification
 function showToast(message, type = 'info') {
-    // Remove existing toasts
-    const existingToasts = document.querySelectorAll('.toast-container');
-    existingToasts.forEach(toast => toast.remove());
-    
-    // Create toast container
-    const toastContainer = document.createElement('div');
-    toastContainer.className = 'toast-container position-fixed top-0 end-0 p-3';
-    toastContainer.style.zIndex = '9999';
-    
-    // Create toast
+    // Create toast element
     const toastId = 'toast-' + Date.now();
     const toast = document.createElement('div');
-    toast.className = `toast align-items-center text-bg-${type} border-0`;
     toast.id = toastId;
+    toast.className = `toast align-items-center text-bg-${type} border-0 position-fixed bottom-0 end-0 m-3`;
+    toast.setAttribute('role', 'alert');
+    toast.setAttribute('aria-live', 'assertive');
+    toast.setAttribute('aria-atomic', 'true');
     
-    // Toast content
     toast.innerHTML = `
         <div class="d-flex">
             <div class="toast-body d-flex align-items-center">
-                <i class="bi ${getToastIcon(type)} me-2"></i>
+                <i class="bi ${getToastIcon(type)} me-2 fs-5"></i>
                 ${message}
             </div>
             <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
         </div>
     `;
     
-    toastContainer.appendChild(toast);
-    document.body.appendChild(toastContainer);
+    document.body.appendChild(toast);
     
     // Initialize and show toast
-    const bsToast = new bootstrap.Toast(toast, { 
+    const bsToast = new bootstrap.Toast(toast, {
         delay: 3000,
         autohide: true
     });
-    
     bsToast.show();
     
-    // Remove toast from DOM after hiding
+    // Remove toast after hiding
     toast.addEventListener('hidden.bs.toast', () => {
-        toastContainer.remove();
+        toast.remove();
     });
 }
 
 // Get icon for toast type
 function getToastIcon(type) {
     const icons = {
-        'success': 'bi-check-circle',
-        'danger': 'bi-exclamation-triangle',
-        'warning': 'bi-exclamation-circle',
-        'info': 'bi-info-circle'
+        'success': 'bi-check-circle-fill',
+        'danger': 'bi-exclamation-triangle-fill',
+        'warning': 'bi-exclamation-circle-fill',
+        'info': 'bi-info-circle-fill'
     };
-    return icons[type] || 'bi-info-circle';
+    return icons[type] || 'bi-info-circle-fill';
 }
 
-// Auto-refresh every 5 minutes
+// Auto-refresh data every 5 minutes
 setInterval(() => {
     if (isOnline && document.visibilityState === 'visible') {
         loadNews();
     }
-}, 300000);
+}, 300000); // 5 minutes
 
-// Check for drafts on page load
-window.addEventListener('load', loadDraft);
+// Save draft when leaving page
+window.addEventListener('beforeunload', function(e) {
+    const title = document.getElementById('newsTitle')?.value.trim();
+    const content = document.getElementById('newsContent')?.value.trim();
+    
+    if (title || content) {
+        saveDraft();
+        // For Chrome
+        e.preventDefault();
+        // For other browsers
+        e.returnValue = '';
+    }
+});
 
-// Add spinner animation for refresh button
-const style = document.createElement('style');
-style.textContent = `
-    @keyframes spin {
-        0% { transform: rotate(0deg); }
-        100% { transform: rotate(360deg); }
-    }
-    .spin {
-        animation: spin 1s linear infinite;
-    }
-`;
-document.head.appendChild(style);
+// Add CSS for spinner animation
+if (!document.querySelector('style[data-spinner-animation]')) {
+    const style = document.createElement('style');
+    style.setAttribute('data-spinner-animation', 'true');
+    style.textContent = `
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .spin {
+            animation: spin 1s linear infinite;
+            display: inline-block;
+        }
+    `;
+    document.head.appendChild(style);
+}

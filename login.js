@@ -1,22 +1,16 @@
-// Konfigurasi Apps Script URL
-const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxLWrZZ6CInf510NDjaX4HeZ2MYgbl_OSt0cScLDzb7YzjwfeFPcQdoj8_3J_f36yEz/exec';
-
-// Inisialisasi saat halaman dimuat
+// login.js - Sistem Login Sederhana untuk EggTrack
 document.addEventListener('DOMContentLoaded', function() {
-    initializeLogin();
-});
-
-// Fungsi inisialisasi login
-function initializeLogin() {
-    // Check koneksi
-    checkConnection();
+    console.log('Login page loaded');
+    
+    // Cek jika user sudah login
+    checkExistingLogin();
     
     // Setup event listeners
     setupEventListeners();
     
-    // Check jika user sudah login
-    checkExistingLogin();
-}
+    // Update connection status
+    updateConnectionStatus(true);
+});
 
 // Setup event listeners
 function setupEventListeners() {
@@ -33,54 +27,60 @@ function setupEventListeners() {
     });
 }
 
-// Check koneksi ke server
-async function checkConnection() {
-    try {
-        const result = await fetchData('test');
-        const isConnected = result && result.success;
-        
-        updateConnectionStatus(isConnected);
-        
-        if (isConnected) {
-            showToast('Terhubung ke server', 'success');
-        } else {
-            showToast('Tidak terhubung ke server', 'warning');
+// Check jika user sudah login
+function checkExistingLogin() {
+    const savedUser = localStorage.getItem('eggUser');
+    if (savedUser) {
+        try {
+            const user = JSON.parse(savedUser);
+            
+            // Cek apakah session masih valid (24 jam)
+            const loginTime = new Date(user.loginTime);
+            const now = new Date();
+            const hoursDiff = (now - loginTime) / (1000 * 60 * 60);
+            
+            if (hoursDiff < 24) {
+                // Auto redirect ke dashboard
+                console.log('User already logged in, redirecting to dashboard');
+                window.location.href = 'dashboard.html';
+            } else {
+                // Session expired, hapus data
+                localStorage.removeItem('eggUser');
+            }
+        } catch (error) {
+            console.error('Error parsing user data:', error);
+            localStorage.removeItem('eggUser');
         }
-    } catch (error) {
-        console.error('Connection check failed:', error);
-        updateConnectionStatus(false);
-        showToast('Tidak dapat terhubung ke server', 'danger');
     }
 }
 
 // Update status koneksi
 function updateConnectionStatus(isConnected) {
-    const statusIndicator = document.querySelector('#loginConnectionStatus .status-indicator');
-    const statusText = document.querySelector('#loginConnectionStatus span');
+    const connectionStatus = document.getElementById('loginConnectionStatus');
+    if (!connectionStatus) return;
+    
+    const indicator = connectionStatus.querySelector('.status-indicator');
+    const statusText = connectionStatus.querySelector('span');
     
     if (isConnected) {
-        statusIndicator.classList.remove('status-disconnected');
-        statusIndicator.classList.add('status-connected');
-        statusText.textContent = 'Terhubung ke server';
+        if (indicator) {
+            indicator.className = 'status-indicator status-connected';
+        }
+        if (statusText) {
+            statusText.textContent = 'Terhubung ke server';
+        }
     } else {
-        statusIndicator.classList.remove('status-connected');
-        statusIndicator.classList.add('status-disconnected');
-        statusText.textContent = 'Terputus dari server';
-    }
-}
-
-// Check jika user sudah login
-function checkExistingLogin() {
-    const savedUser = localStorage.getItem('eggTrackUser');
-    if (savedUser) {
-        const user = JSON.parse(savedUser);
-        // Auto redirect ke dashboard
-        window.location.href = 'dashboard.html';
+        if (indicator) {
+            indicator.className = 'status-indicator status-disconnected';
+        }
+        if (statusText) {
+            statusText.textContent = 'Terputus dari server';
+        }
     }
 }
 
 // Handler untuk submit login
-async function handleLoginSubmit(e) {
+function handleLoginSubmit(e) {
     e.preventDefault();
     
     const username = document.getElementById('loginUsername').value.trim();
@@ -114,6 +114,7 @@ async function handleLoginSubmit(e) {
     
     if (!isValid) return;
     
+    // Show loading
     const loginBtn = document.getElementById('loginForm').querySelector('button[type="submit"]');
     const loginSpinner = document.getElementById('loginSpinner');
     const loginText = document.getElementById('loginText');
@@ -122,105 +123,86 @@ async function handleLoginSubmit(e) {
     loginText.classList.add('d-none');
     loginBtn.disabled = true;
     
-    try {
-        const result = await handleLogin(username, password, role);
-        
-        if (result.success) {
-            showToast('Login berhasil! Mengarahkan ke dashboard...', 'success');
-            
-            // Simpan data user
-            localStorage.setItem('eggTrackUser', JSON.stringify(result.user));
-            
-            // Redirect ke dashboard setelah delay
-            setTimeout(() => {
-                window.location.href = 'dashboard.html';
-            }, 1500);
-        } else {
-            showToast(result.message || 'Login gagal!', 'danger');
-            document.getElementById('passwordError').textContent = result.message;
-            document.getElementById('passwordError').classList.add('show');
-        }
-    } catch (error) {
-        console.error('Login error:', error);
-        showToast('Terjadi kesalahan saat login', 'danger');
-    } finally {
-        loginSpinner.classList.add('d-none');
-        loginText.classList.remove('d-none');
-        loginBtn.disabled = false;
-    }
+    // Simulasi proses login
+    setTimeout(() => {
+        handleLogin(username, password, role);
+    }, 1000);
 }
 
 // Fungsi untuk login
-async function handleLogin(username, password, role) {
-    try {
-        // Untuk demo, gunakan data sederhana
-        const validUsers = {
-            'admin': { password: 'admin123', role: 'admin', name: 'Administrator' },
-            'manager': { password: 'manager123', role: 'manager', name: 'Manager' },
-            'staff': { password: 'staff123', role: 'staff', name: 'Staff' }
+function handleLogin(username, password, role) {
+    // Data user valid (untuk demo)
+    const validUsers = {
+        'admin': { password: 'admin123', role: 'admin', name: 'Administrator' },
+        'manager': { password: 'manager123', role: 'manager', name: 'Manager' },
+        'staff': { password: 'staff123', role: 'staff', name: 'Staff' }
+    };
+
+    const loginBtn = document.getElementById('loginForm').querySelector('button[type="submit"]');
+    const loginSpinner = document.getElementById('loginSpinner');
+    const loginText = document.getElementById('loginText');
+    
+    if (validUsers[username] && 
+        validUsers[username].password === password && 
+        validUsers[username].role === role) {
+        
+        // Buat data user
+        const userData = {
+            username: username,
+            name: validUsers[username].name,
+            role: role,
+            email: `${username}@eggtrack.com`,
+            loginTime: new Date().toISOString(),
+            permissions: getPermissionsByRole(role)
         };
-
-        if (validUsers[username] && validUsers[username].password === password && validUsers[username].role === role) {
-            return {
-                success: true,
-                user: {
-                    username: username,
-                    name: validUsers[username].name,
-                    role: role,
-                    email: `${username}@eggtrack.com`
-                }
-            };
-        } else {
-            return {
-                success: false,
-                message: 'Username, password, atau peran tidak sesuai'
-            };
-        }
-    } catch (error) {
-        console.error('Login error:', error);
-        return {
-            success: false,
-            message: 'Terjadi kesalahan saat login'
-        };
-    }
-}
-
-// Fungsi utility
-async function fetchData(action, params = {}) {
-    try {
-        const urlParams = new URLSearchParams();
-        urlParams.append('action', action);
         
-        Object.keys(params).forEach(key => {
-            if (params[key] !== undefined && params[key] !== null) {
-                urlParams.append(key, params[key].toString());
-            }
-        });
-
-        const url = `${APPS_SCRIPT_URL}?${urlParams.toString()}`;
-        const response = await fetch(url, { method: 'GET', redirect: 'follow' });
+        // Simpan ke localStorage
+        localStorage.setItem('eggUser', JSON.stringify(userData));
         
-        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+        // Tampilkan pesan sukses
+        showToast('Login berhasil! Mengarahkan ke dashboard...', 'success');
         
-        return await response.json();
-    } catch (error) {
-        console.error(`Error fetching ${action}:`, error);
-        throw error;
-    }
-}
-
-function showToast(message, type = 'info') {
-    let toastContainer = document.querySelector('.toast-container');
-    if (!toastContainer) {
-        toastContainer = document.createElement('div');
-        toastContainer.className = 'toast-container position-fixed top-0 end-0 p-3';
-        document.body.appendChild(toastContainer);
+        // Redirect ke dashboard setelah 1.5 detik
+        setTimeout(() => {
+            window.location.href = 'dashboard.html';
+        }, 1500);
+        
+    } else {
+        // Tampilkan pesan error
+        showToast('Username, password, atau peran tidak sesuai', 'danger');
+        document.getElementById('passwordError').textContent = 'Username, password, atau peran tidak sesuai';
+        document.getElementById('passwordError').classList.add('show');
     }
     
-    const toastId = 'toast-' + Date.now();
+    // Reset button
+    loginSpinner.classList.add('d-none');
+    loginText.classList.remove('d-none');
+    loginBtn.disabled = false;
+}
+
+// Fungsi untuk mendapatkan permissions berdasarkan role
+function getPermissionsByRole(role) {
+    const permissions = {
+        'admin': ['dashboard', 'production', 'sales', 'expenses', 'inventory', 'customer', 'reports', 'settings', 'hpp', 'news'],
+        'manager': ['dashboard', 'production', 'sales', 'expenses', 'inventory', 'customer', 'reports', 'news'],
+        'staff': ['dashboard', 'production', 'sales', 'inventory', 'news']
+    };
+    return permissions[role] || [];
+}
+
+// Fungsi untuk menampilkan toast
+function showToast(message, type = 'info') {
+    // Buat container jika belum ada
+    let container = document.querySelector('.toast-container');
+    if (!container) {
+        container = document.createElement('div');
+        container.className = 'toast-container position-fixed top-0 end-0 p-3';
+        document.body.appendChild(container);
+    }
+    
+    // Buat toast
     const toast = document.createElement('div');
     toast.className = `toast align-items-center text-bg-${type} border-0`;
-    toast.id = toastId;
     
     toast.innerHTML = `
         <div class="d-flex">
@@ -231,9 +213,14 @@ function showToast(message, type = 'info') {
         </div>
     `;
     
-    toastContainer.appendChild(toast);
-    const bsToast = new bootstrap.Toast(toast, { delay: 4000 });
+    container.appendChild(toast);
+    
+    // Tampilkan dengan Bootstrap
+    const bsToast = new bootstrap.Toast(toast, { delay: 3000 });
     bsToast.show();
     
-    toast.addEventListener('hidden.bs.toast', () => toast.remove());
+    // Hapus setelah selesai
+    toast.addEventListener('hidden.bs.toast', () => {
+        toast.remove();
+    });
 }

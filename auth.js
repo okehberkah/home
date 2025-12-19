@@ -16,29 +16,59 @@ class AuthSystem {
     }
 
     checkAuthStatus() {
-        // Ambil data user dari localStorage
-        const userData = localStorage.getItem('eggTrackUser');
-        const sessionToken = sessionStorage.getItem('eggTrackSession');
+        // Safe Storage Helper
+        const safeStorage = {
+            get: (key) => {
+                try {
+                    return localStorage.getItem(key);
+                } catch (e) {
+                    console.warn('localStorage tidak dapat diakses:', e.message);
+                    try {
+                        return sessionStorage.getItem(key);
+                    } catch (e2) {
+                        console.warn('sessionStorage juga tidak dapat diakses:', e2.message);
+                        return window._eggTrackMemoryStorage?.[key] || null;
+                    }
+                }
+            }
+        };
+        
+        // Ambil data user dari storage
+        const userData = safeStorage.get('eggTrackUser');
+        const sessionToken = safeStorage.get('eggTrackSession');
         
         if (userData && sessionToken) {
             try {
                 const user = JSON.parse(userData);
-                this.currentUser = user;
-                this.isAuthenticated = true;
                 
-                // Update display role di sidebar
-                this.updateUserDisplay(user);
+                // Cek apakah session masih valid (24 jam)
+                const loginTime = new Date(user.loginTime);
+                const now = new Date();
+                const hoursDiff = (now - loginTime) / (1000 * 60 * 60);
                 
-                // Tambahkan event listener untuk logout jika belum ada
-                this.setupLogoutListeners();
-                
-                console.log('User authenticated:', user.username);
+                if (hoursDiff < 24) {
+                    this.currentUser = user;
+                    this.isAuthenticated = true;
+                    
+                    // Update display role di sidebar
+                    this.updateUserDisplay(user);
+                    
+                    // Tambahkan event listener untuk logout jika belum ada
+                    this.setupLogoutListeners();
+                    
+                    console.log('User authenticated:', user.username);
+                } else {
+                    // Session expired
+                    console.log('Session expired');
+                    this.logout();
+                }
             } catch (error) {
                 console.error('Error parsing user data:', error);
                 this.logout();
             }
         } else {
             this.isAuthenticated = false;
+            console.log('User not authenticated');
         }
     }
 
@@ -52,11 +82,11 @@ class AuthSystem {
             // Simulasi API call dengan timeout
             await new Promise(resolve => setTimeout(resolve, 1000));
 
-            // Validasi kredensial (dalam aplikasi real, ini akan panggil API)
+            // Validasi kredensial
             const users = [
                 { username: 'admin', password: 'admin123', role: 'Administrator', name: 'Administrator' },
-                { username: 'operator', password: 'op123', role: 'Operator', name: 'Operator Produksi' },
-                { username: 'demo', password: 'demo123', role: 'Demo User', name: 'Pengguna Demo' }
+                { username: 'manager', password: 'manager123', role: 'Manager', name: 'Manager Produksi' },
+                { username: 'staff', password: 'staff123', role: 'Staff', name: 'Staff Peternakan' }
             ];
 
             const user = users.find(u => u.username === username && u.password === password);
@@ -75,16 +105,36 @@ class AuthSystem {
                 permissions: this.getPermissionsByRole(user.role)
             };
 
-            // Simpan ke localStorage/sessionStorage
-            localStorage.setItem('eggTrackUser', JSON.stringify(userData));
+            // Safe Storage Helper
+            const safeStorage = {
+                set: (key, value) => {
+                    try {
+                        localStorage.setItem(key, value);
+                    } catch (e) {
+                        console.warn('localStorage tidak dapat diakses:', e.message);
+                        try {
+                            sessionStorage.setItem(key, value);
+                        } catch (e2) {
+                            console.warn('sessionStorage juga tidak dapat diakses:', e2.message);
+                            if (!window._eggTrackMemoryStorage) {
+                                window._eggTrackMemoryStorage = {};
+                            }
+                            window._eggTrackMemoryStorage[key] = value;
+                        }
+                    }
+                }
+            };
+
+            // Simpan ke storage
+            safeStorage.set('eggTrackUser', JSON.stringify(userData));
             
             // Buat session token
             const sessionToken = this.generateSessionToken();
-            sessionStorage.setItem('eggTrackSession', sessionToken);
+            safeStorage.set('eggTrackSession', sessionToken);
             
-            // Jika remember me dicentang, simpan juga di localStorage
+            // Jika remember me dicentang, simpan flag
             if (rememberMe) {
-                localStorage.setItem('eggTrackRemember', 'true');
+                safeStorage.set('eggTrackRemember', 'true');
             }
 
             this.currentUser = userData;
@@ -108,10 +158,42 @@ class AuthSystem {
     }
 
     logout() {
+        // Safe Storage Helper
+        const safeStorage = {
+            remove: (key) => {
+                try {
+                    localStorage.removeItem(key);
+                } catch (e) {
+                    console.warn('localStorage tidak dapat diakses:', e.message);
+                    try {
+                        sessionStorage.removeItem(key);
+                    } catch (e2) {
+                        console.warn('sessionStorage juga tidak dapat diakses:', e2.message);
+                        if (window._eggTrackMemoryStorage) {
+                            delete window._eggTrackMemoryStorage[key];
+                        }
+                    }
+                }
+            },
+            clear: () => {
+                try {
+                    localStorage.clear();
+                } catch (e) {
+                    console.warn('localStorage tidak dapat diakses:', e.message);
+                    try {
+                        sessionStorage.clear();
+                    } catch (e2) {
+                        console.warn('sessionStorage juga tidak dapat diakses:', e2.message);
+                        window._eggTrackMemoryStorage = {};
+                    }
+                }
+            }
+        };
+        
         // Hapus data dari storage
-        localStorage.removeItem('eggTrackUser');
-        localStorage.removeItem('eggTrackRemember');
-        sessionStorage.removeItem('eggTrackSession');
+        safeStorage.remove('eggTrackUser');
+        safeStorage.remove('eggTrackRemember');
+        safeStorage.remove('eggTrackSession');
         
         // Reset state
         this.currentUser = null;
@@ -137,8 +219,8 @@ class AuthSystem {
 
         const userRole = this.currentUser?.role;
         const rolesHierarchy = {
-            'Demo User': 1,
-            'Operator': 2,
+            'Staff': 1,
+            'Manager': 2,
             'Administrator': 3
         };
 
@@ -153,6 +235,8 @@ class AuthSystem {
     }
 
     updateUserDisplay(user) {
+        if (!user) return;
+        
         // Update semua elemen dengan class user-role-display
         const displayElements = document.querySelectorAll('.user-role-display, #userRoleDisplay');
         displayElements.forEach(el => {
@@ -195,8 +279,8 @@ class AuthSystem {
     getPermissionsByRole(role) {
         const permissions = {
             'Administrator': ['dashboard', 'production', 'sales', 'expenses', 'inventory', 'customer', 'reports', 'settings', 'hpp'],
-            'Operator': ['dashboard', 'production', 'sales', 'inventory'],
-            'Demo User': ['dashboard', 'production', 'sales', 'inventory', 'reports']
+            'Manager': ['dashboard', 'production', 'sales', 'expenses', 'inventory', 'customer', 'reports'],
+            'Staff': ['dashboard', 'production', 'sales', 'inventory']
         };
         return permissions[role] || [];
     }
