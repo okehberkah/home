@@ -288,6 +288,130 @@
             border-color: transparent rgba(0, 0, 0, 0.8) transparent transparent;
         }
         
+        /* ==================== SIDEBAR HOVER EFFECTS ==================== */
+        /* Efek untuk sidebar normal (tidak minimized) */
+        .sidebar:not(.minimized) .nav-link:hover {
+            background: linear-gradient(90deg, rgba(255, 255, 255, 0.15) 0%, rgba(255, 255, 255, 0.05) 100%);
+            transform: translateX(5px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        }
+        
+        .sidebar:not(.minimized) .nav-link:hover i {
+            color: var(--success);
+            transform: scale(1.1);
+            transition: all 0.3s ease;
+        }
+        
+        .sidebar:not(.minimized) .nav-link:hover .nav-text {
+            color: white;
+            font-weight: 500;
+            text-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
+        }
+        
+        /* Efek untuk sidebar minimized */
+        .sidebar.minimized .nav-link:hover {
+            background: rgba(255, 255, 255, 0.25);
+            transform: scale(1.1);
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        
+        .sidebar.minimized .nav-link:hover i {
+            color: white;
+            transform: scale(1.2);
+            text-shadow: 0 0 15px rgba(255, 255, 255, 0.5);
+            transition: all 0.3s ease;
+        }
+        
+        /* Efek untuk tombol logout khusus */
+        #logoutBtn:hover {
+            background: rgba(220, 53, 69, 0.2) !important;
+            border-left: 4px solid #dc3545 !important;
+        }
+        
+        .sidebar.minimized #logoutBtn:hover {
+            background: rgba(220, 53, 69, 0.3) !important;
+            border-left: none !important;
+        }
+        
+        /* Efek untuk menu aktif saat hover */
+        .sidebar .nav-link.active:hover {
+            background: linear-gradient(90deg, rgba(76, 201, 240, 0.2) 0%, rgba(76, 201, 240, 0.1) 100%);
+            border-left: 4px solid white;
+        }
+        
+        .sidebar.minimized .nav-link.active:hover {
+            border-left: none;
+            background: rgba(76, 201, 240, 0.3);
+        }
+        
+        /* Efek ripple pada klik */
+        .nav-link {
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .nav-link::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 5px;
+            height: 5px;
+            background: rgba(255, 255, 255, 0.5);
+            opacity: 0;
+            border-radius: 100%;
+            transform: scale(1, 1) translate(-50%);
+            transform-origin: 50% 50%;
+        }
+        
+        .nav-link:focus:not(:active)::after {
+            animation: ripple 1s ease-out;
+        }
+        
+        @keyframes ripple {
+            0% {
+                transform: scale(0, 0);
+                opacity: 0.5;
+            }
+            100% {
+                transform: scale(20, 20);
+                opacity: 0;
+            }
+        }
+        
+        /* Efek glow untuk notifikasi badge */
+        .nav-link .notification-badge {
+            box-shadow: 0 0 10px rgba(220, 53, 69, 0.7);
+            transition: all 0.3s ease;
+        }
+        
+        .nav-link:hover .notification-badge {
+            box-shadow: 0 0 15px rgba(220, 53, 69, 1);
+            transform: scale(1.1);
+        }
+        
+        /* Efek untuk sidebar header saat hover */
+        .sidebar-header:hover {
+            background: rgba(255, 255, 255, 0.05);
+            transition: background 0.3s ease;
+        }
+        
+        /* Efek untuk sidebar toggle button */
+        .sidebar-toggle:hover {
+            transform: translateY(-50%) scale(1.15);
+            box-shadow: 0 0 15px rgba(255, 255, 255, 0.3);
+        }
+        
+        /* Efek untuk tooltip */
+        .nav-link:hover .nav-link-tooltip {
+            opacity: 1;
+            transform: translateX(5px);
+            transition: all 0.3s ease 0.1s;
+        }
+        
         /* MAIN CONTENT - Responsif dengan sidebar */
         .main-content {
             margin-left: var(--sidebar-width);
@@ -843,6 +967,16 @@
             .sidebar.mobile-open.minimized {
                 transform: translateX(0);
             }
+            
+            /* Efek hover untuk mobile */
+            .sidebar.mobile-open .nav-link:hover {
+                background: rgba(255, 255, 255, 0.2);
+                transform: translateX(5px);
+            }
+            
+            .sidebar.mobile-open.minimized .nav-link:hover {
+                transform: scale(1.05);
+            }
         }
         
         @media (max-width: 576px) {
@@ -934,42 +1068,34 @@
                 <a href="dashboard.html" class="nav-link active">
                     <i class="bi bi-speedometer2"></i>
                     <span class="nav-text">Dashboard Utama</span>
-                    <span class="notification-badge" id="dashboardNotifications" style="display: none;">0</span>
                 </a>
                 <a href="production.html" class="nav-link">
                     <i class="bi bi-egg-fried"></i>
                     <span class="nav-text">Manajemen Produksi</span>
-                    <span class="notification-badge" id="productionNotifications" style="display: none;">0</span>
                 </a>
                 <a href="sales.html" class="nav-link">
                     <i class="bi bi-cart"></i>
                     <span class="nav-text">Penjualan & Order</span>
-                    <span class="notification-badge" id="salesNotifications" style="display: none;">0</span>
                 </a>
                 <a href="expenses.html" class="nav-link">
                     <i class="bi bi-cash-coin"></i>
                     <span class="nav-text">Pengeluaran</span>
-                    <span class="notification-badge" id="expensesNotifications" style="display: none;">0</span>
                 </a>
                 <a href="inventory.html" class="nav-link">
                     <i class="bi bi-box-seam"></i>
                     <span class="nav-text">Inventaris Stok</span>
-                    <span class="notification-badge" id="inventoryNotifications" style="display: none;">0</span>
                 </a>
                 <a href="customer.html" class="nav-link">
                     <i class="bi bi-people"></i>
                     <span class="nav-text">Manajemen Pelanggan</span>
-                    <span class="notification-badge" id="customerNotifications" style="display: none;">0</span>
                 </a>
                 <a href="reports.html" class="nav-link">
                     <i class="bi bi-graph-up"></i>
                     <span class="nav-text">Laporan & Analisis</span>
-                    <span class="notification-badge" id="reportsNotifications" style="display: none;">0</span>
                 </a>
                 <a href="settings.html" class="nav-link">
                     <i class="bi bi-gear"></i>
                     <span class="nav-text">Pengaturan Sistem</span>
-                    <span class="notification-badge" id="settingsNotifications" style="display: none;">0</span>
                 </a>
                 <a href="#" class="nav-link mt-4" id="logoutBtn">
                     <i class="bi bi-box-arrow-right"></i>

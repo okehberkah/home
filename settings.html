@@ -3,17 +3,22 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pengaturan Sistem - EggTrack</title>
+    <title>Pengaturan Sistem - EggTrack Admin</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-         :root {
+        :root {
             --primary: #4361ee;
             --secondary: #3f37c9;
             --success: #4cc9f0;
             --light: #f8f9fa;
             --dark: #212529;
             --gray: #6c757d;
+            --sidebar-width: 250px;
+            --sidebar-minimized: 70px;
+            --transition-speed: 0.3s;
+            --content-max-width: 1400px;
         }
         
         body {
@@ -23,45 +28,305 @@
             padding: 0;
             min-height: 100vh;
             overflow-x: hidden;
+            transition: margin-left var(--transition-speed) ease;
         }
+        
+        /* =================== */
+        /* SIDEBAR STYLES DENGAN HOVER EFFECT */
+        /* =================== */
         
         .sidebar {
             background: linear-gradient(180deg, var(--primary), var(--secondary));
             color: white;
             height: 100vh;
             position: fixed;
-            padding-top: 20px;
+            left: 0;
+            top: 0;
             z-index: 1000;
-            width: 250px;
+            width: var(--sidebar-width);
             box-shadow: 5px 0 15px rgba(0, 0, 0, 0.1);
+            overflow-y: auto;
+            overflow-x: hidden;
+            scroll-behavior: smooth;
+            transition: width var(--transition-speed) ease;
         }
+        
+        .sidebar.minimized {
+            width: var(--sidebar-minimized);
+        }
+        
+        /* Custom scrollbar untuk sidebar */
+        .sidebar::-webkit-scrollbar {
+            width: 6px;
+        }
+        
+        .sidebar::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+        }
+        
+        .sidebar::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 10px;
+            transition: background 0.3s ease;
+        }
+        
+        .sidebar::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.5);
+            transform: scale(1.1);
+        }
+        
+        /* Untuk Firefox */
+        .sidebar {
+            scrollbar-width: thin;
+            scrollbar-color: rgba(255, 255, 255, 0.3) rgba(255, 255, 255, 0.1);
+        }
+        
+        /* Sidebar Header dengan efek hover */
+        .sidebar-header {
+            padding: 20px 15px;
+            text-align: center;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all var(--transition-speed) ease;
+            position: relative;
+            cursor: pointer;
+        }
+        
+        .sidebar-header:hover {
+            background: rgba(255, 255, 255, 0.05);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        .sidebar.minimized .sidebar-header {
+            padding: 15px 5px;
+        }
+        
+        .sidebar-logo {
+            font-size: 3rem;
+            margin-bottom: 10px;
+            transition: all 0.5s ease;
+            display: inline-block;
+        }
+        
+        .sidebar-header:hover .sidebar-logo {
+            transform: rotate(15deg) scale(1.1);
+            color: #4cc9f0;
+            text-shadow: 0 0 20px rgba(76, 201, 240, 0.5);
+        }
+        
+        .sidebar.minimized .sidebar-logo {
+            font-size: 2.5rem;
+            margin-bottom: 0;
+        }
+        
+        .sidebar.minimized .sidebar-header:hover .sidebar-logo {
+            transform: rotate(15deg);
+        }
+        
+        .sidebar-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin: 5px 0;
+            white-space: nowrap;
+            overflow: hidden;
+            transition: all var(--transition-speed) ease;
+        }
+        
+        .sidebar.minimized .sidebar-title {
+            display: none;
+        }
+        
+        .sidebar-user-info {
+            font-size: 0.9rem;
+            opacity: 0.8;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            transition: all var(--transition-speed) ease;
+        }
+        
+        .sidebar.minimized .sidebar-user-info {
+            display: none;
+        }
+        
+        /* Toggle Button dengan efek hover */
+        .sidebar-toggle {
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            color: white;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 1001;
+        }
+        
+        .sidebar-toggle:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateY(-50%) scale(1.1) rotate(90deg);
+            box-shadow: 0 0 15px rgba(76, 201, 240, 0.5);
+        }
+        
+        .sidebar.minimized .sidebar-toggle {
+            right: 50%;
+            transform: translate(50%, -50%) rotate(180deg);
+        }
+        
+        .sidebar.minimized .sidebar-toggle:hover {
+            transform: translate(50%, -50%) rotate(180deg) scale(1.1);
+        }
+        
+        /* =================== */
+        /* NAVIGATION LINKS DENGAN HOVER EFFECT */
+        /* =================== */
         
         .sidebar .nav-link {
             color: rgba(255, 255, 255, 0.8);
-            padding: 12px 20px;
+            padding: 12px 15px;
             text-decoration: none;
-            display: block;
-            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             border-left: 4px solid transparent;
+            white-space: nowrap;
+            overflow: hidden;
             position: relative;
+            margin: 2px 10px;
+            border-radius: 8px;
         }
         
-        .sidebar .nav-link:hover, .sidebar .nav-link.active {
-            background: rgba(255, 255, 255, 0.1);
+        .sidebar.minimized .nav-link {
+            padding: 12px 5px;
+            justify-content: center;
+            margin: 2px 5px;
+        }
+        
+        /* Efek hover utama untuk nav link */
+        .sidebar .nav-link:hover {
+            background: linear-gradient(90deg, rgba(76, 201, 240, 0.2), rgba(67, 97, 238, 0.2));
+            color: white;
+            transform: translateX(8px);
+            border-left: 4px solid var(--success);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        /* Efek khusus untuk sidebar minimized */
+        .sidebar.minimized .nav-link:hover {
+            transform: scale(1.1);
+            background: rgba(255, 255, 255, 0.2);
+            border-left: none;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        /* Efek untuk link aktif */
+        .sidebar .nav-link.active {
+            background: linear-gradient(90deg, rgba(76, 201, 240, 0.3), rgba(67, 97, 238, 0.3));
             color: white;
             border-left: 4px solid var(--success);
+            box-shadow: inset 5px 0 10px rgba(76, 201, 240, 0.3);
+        }
+        
+        .sidebar.minimized .nav-link.active {
+            background: rgba(255, 255, 255, 0.25);
+            border-left: none;
+            border-radius: 8px;
+        }
+        
+        /* Efek garis bawah saat hover */
+        .sidebar .nav-link::after {
+            content: '';
+            position: absolute;
+            left: 0;
+            bottom: 0;
+            width: 0;
+            height: 2px;
+            background: linear-gradient(90deg, #4cc9f0, #4361ee);
+            transition: width 0.3s ease;
+            border-radius: 2px;
+        }
+        
+        .sidebar .nav-link:hover::after {
+            width: 100%;
         }
         
         .sidebar .nav-link i {
-            margin-right: 15px;
-            font-size: 1.1rem;
+            font-size: 1.2rem;
+            min-width: 24px;
+            text-align: center;
+            transition: all 0.3s ease;
+            position: relative;
+            z-index: 2;
         }
         
+        /* Efek ikon saat hover */
+        .sidebar .nav-link:hover i {
+            transform: rotate(10deg) scale(1.1);
+            color: #4cc9f0;
+            text-shadow: 0 0 10px rgba(76, 201, 240, 0.5);
+        }
+        
+        .sidebar:not(.minimized) .nav-link i {
+            margin-right: 15px;
+        }
+        
+        .sidebar.minimized .nav-link i {
+            margin-right: 0;
+            font-size: 1.4rem;
+        }
+        
+        .sidebar.minimized .nav-link:hover i {
+            transform: scale(1.2);
+            color: #4cc9f0;
+        }
+        
+        .nav-text {
+            transition: all var(--transition-speed) ease;
+            opacity: 1;
+            position: relative;
+            z-index: 2;
+        }
+        
+        .sidebar.minimized .nav-text {
+            opacity: 0;
+            width: 0;
+            height: 0;
+            overflow: hidden;
+        }
+        
+        /* Efek glow background saat hover */
+        .sidebar .nav-link::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: radial-gradient(circle at center, rgba(76, 201, 240, 0.1), transparent);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            border-radius: 8px;
+            z-index: 1;
+        }
+        
+        .sidebar .nav-link:hover::before {
+            opacity: 1;
+        }
+        
+        /* Notification Badge dengan efek hover */
         .sidebar .nav-link .notification-badge {
             position: absolute;
             top: 5px;
-            right: 10px;
-            background-color: #dc3545;
+            right: 15px;
+            background: linear-gradient(135deg, #dc3545, #ff6b6b);
             color: white;
             border-radius: 50%;
             width: 20px;
@@ -70,68 +335,286 @@
             display: flex;
             align-items: center;
             justify-content: center;
+            transition: all 0.3s ease;
+            z-index: 3;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
         }
         
+        .sidebar .nav-link:hover .notification-badge {
+            transform: scale(1.2) rotate(15deg);
+            box-shadow: 0 0 15px rgba(220, 53, 69, 0.5);
+            animation: badgePulse 0.6s ease-in-out;
+        }
+        
+        .sidebar.minimized .nav-link .notification-badge {
+            top: 2px;
+            right: 2px;
+            font-size: 0.6rem;
+            width: 18px;
+            height: 18px;
+        }
+        
+        /* Sidebar Footer dengan efek hover */
+        .sidebar-footer {
+            padding: 15px;
+            text-align: center;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            font-size: 0.8rem;
+            opacity: 0.7;
+            white-space: nowrap;
+            overflow: hidden;
+            transition: all var(--transition-speed) ease;
+            cursor: pointer;
+            margin-top: auto;
+        }
+        
+        .sidebar-footer:hover {
+            opacity: 1;
+            background: rgba(255, 255, 255, 0.05);
+            box-shadow: 0 -5px 10px rgba(0, 0, 0, 0.1);
+        }
+        
+        .sidebar.minimized .sidebar-footer {
+            padding: 10px 5px;
+            font-size: 0;
+        }
+        
+        .sidebar.minimized .sidebar-footer::after {
+            content: "v1.0";
+            font-size: 0.7rem;
+        }
+        
+        .sidebar.minimized .sidebar-footer:hover::after {
+            content: "EggTrack v1.0";
+            font-size: 0.7rem;
+            padding: 5px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 5px;
+        }
+        
+        /* Tooltip untuk sidebar minimized */
+        .nav-link-tooltip {
+            position: absolute;
+            left: calc(var(--sidebar-minimized) + 10px);
+            background: linear-gradient(135deg, rgba(0, 0, 0, 0.9), rgba(67, 97, 238, 0.9));
+            color: white;
+            padding: 8px 15px;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            white-space: nowrap;
+            z-index: 9999;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.2);
+            animation: tooltipFadeIn 0.3s ease-out;
+        }
+        
+        .nav-link-tooltip::after {
+            content: '';
+            position: absolute;
+            left: -5px;
+            top: 50%;
+            transform: translateY(-50%);
+            border-width: 5px;
+            border-style: solid;
+            border-color: transparent rgba(67, 97, 238, 0.9) transparent transparent;
+        }
+        
+        @keyframes tooltipFadeIn {
+            from {
+                opacity: 0;
+                transform: translateX(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+        
+        /* =================== */
+        /* ANIMASI UNTUK SIDEBAR */
+        /* =================== */
+        
+        @keyframes fadeInSidebar {
+            from {
+                opacity: 0;
+                transform: translateX(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+        
+        .sidebar:not(.minimized) .nav-link {
+            animation: fadeInSidebar 0.5s ease-out forwards;
+            animation-fill-mode: both;
+        }
+        
+        /* Stagger animation untuk link */
+        .sidebar .nav-link:nth-child(1) { animation-delay: 0.1s; }
+        .sidebar .nav-link:nth-child(2) { animation-delay: 0.2s; }
+        .sidebar .nav-link:nth-child(3) { animation-delay: 0.3s; }
+        .sidebar .nav-link:nth-child(4) { animation-delay: 0.4s; }
+        .sidebar .nav-link:nth-child(5) { animation-delay: 0.5s; }
+        .sidebar .nav-link:nth-child(6) { animation-delay: 0.6s; }
+        .sidebar .nav-link:nth-child(7) { animation-delay: 0.7s; }
+        .sidebar .nav-link:nth-child(8) { animation-delay: 0.8s; }
+        .sidebar .nav-link:nth-child(9) { animation-delay: 0.9s; }
+        
+        /* MAIN CONTENT - Responsif dengan sidebar */
         .main-content {
-            margin-left: 250px;
+            margin-left: var(--sidebar-width);
             padding: 20px;
             min-height: 100vh;
             background: #f8f9fa;
+            transition: all var(--transition-speed) ease;
+            width: calc(100% - var(--sidebar-width));
+            max-width: calc(100% - var(--sidebar-width));
+            overflow-x: hidden;
         }
         
-        .card {
-            border-radius: 15px;
-            box-shadow: 0 5px 25px rgba(0, 0, 0, 0.08);
-            border: none;
+        .sidebar.minimized ~ .main-content {
+            margin-left: var(--sidebar-minimized);
+            width: calc(100% - var(--sidebar-minimized));
+            max-width: calc(100% - var(--sidebar-minimized));
+        }
+        
+        /* Content Wrapper untuk kontrol lebar maksimal */
+        .content-wrapper {
+            max-width: var(--content-max-width);
+            margin: 0 auto;
+            width: 100%;
+            transition: all var(--transition-speed) ease;
+        }
+        
+        .sidebar.minimized ~ .main-content .content-wrapper {
+            max-width: calc(var(--content-max-width) + 180px);
+        }
+        
+        /* Connection Status Bar */
+        .connection-status {
+            background: white;
+            padding: 12px 20px;
+            border-radius: 10px;
             margin-bottom: 25px;
-            transition: transform 0.3s, box-shadow 0.3s;
-            overflow: hidden;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            transition: all var(--transition-speed) ease;
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+            max-width: 100%;
         }
         
-        .card:hover {
-            transform: translateY(-8px);
-            box-shadow: 0 12px 35px rgba(0, 0, 0, 0.15);
+        .sidebar.minimized ~ .main-content .connection-status {
+            padding: 12px 25px;
         }
         
+        /* Header - Expandable */
         .header {
             background: linear-gradient(90deg, var(--primary), var(--secondary));
             color: white;
-            padding: 25px;
+            padding: 25px 30px;
             border-radius: 15px;
             margin-bottom: 25px;
             box-shadow: 0 5px 15px rgba(67, 97, 238, 0.3);
+            transition: all var(--transition-speed) ease;
+            max-width: 100%;
         }
         
+        .sidebar.minimized ~ .main-content .header {
+            padding: 25px 40px;
+        }
+        
+        .header h2 {
+            font-size: 1.8rem;
+            transition: font-size var(--transition-speed) ease;
+        }
+        
+        .sidebar.minimized ~ .main-content .header h2 {
+            font-size: 2.2rem;
+        }
+        
+        .header p {
+            font-size: 1rem;
+            transition: font-size var(--transition-speed) ease;
+        }
+        
+        .sidebar.minimized ~ .main-content .header p {
+            font-size: 1.1rem;
+        }
+        
+        /* INTEGRATED STATS - Expandable dengan sidebar */
         .integrated-stats {
             display: flex;
             justify-content: space-between;
             margin-bottom: 25px;
             flex-wrap: wrap;
             gap: 15px;
+            transition: all var(--transition-speed) ease;
+        }
+        
+        .sidebar.minimized ~ .main-content .integrated-stats {
+            gap: 20px;
         }
         
         .integrated-stat-card {
             flex: 1;
-            min-width: 200px;
+            min-width: 180px;
             background: white;
             border-radius: 15px;
-            padding: 20px;
+            padding: 20px 15px;
             box-shadow: 0 5px 20px rgba(0,0,0,0.05);
             text-align: center;
-            transition: all 0.3s ease;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             border: 1px solid rgba(0,0,0,0.05);
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
         }
-
+        
+        .integrated-stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, rgba(67, 97, 238, 0.1), rgba(76, 201, 240, 0.1));
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        
         .integrated-stat-card:hover {
-            transform: translateY(-5px);
+            transform: translateY(-5px) scale(1.02);
             box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            border-color: rgba(67, 97, 238, 0.2);
+        }
+        
+        .integrated-stat-card:hover::before {
+            opacity: 1;
+        }
+        
+        .sidebar.minimized ~ .main-content .integrated-stat-card {
+            min-width: 200px;
+            padding: 25px 20px;
+            flex: 1 0 calc(16.666% - 20px);
         }
         
         .integrated-stat-card h4 {
             margin: 0;
-            font-size: 2rem;
+            font-size: 1.8rem;
             color: var(--primary);
             font-weight: 700;
+            transition: all var(--transition-speed) ease;
+            position: relative;
+            z-index: 2;
+        }
+        
+        .sidebar.minimized ~ .main-content .integrated-stat-card h4 {
+            font-size: 2.2rem;
         }
         
         .integrated-stat-card p {
@@ -139,8 +622,185 @@
             color: var(--gray);
             font-size: 0.95rem;
             font-weight: 500;
+            transition: all var(--transition-speed) ease;
+            position: relative;
+            z-index: 2;
         }
-
+        
+        .sidebar.minimized ~ .main-content .integrated-stat-card p {
+            font-size: 1.05rem;
+        }
+        
+        /* CHART CONTAINER - Expandable */
+        .chart-container {
+            background: white;
+            padding: 25px 30px;
+            border-radius: 15px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.05);
+            margin-bottom: 25px;
+            height: 350px;
+            transition: all var(--transition-speed) ease;
+            max-width: 100%;
+        }
+        
+        .sidebar.minimized ~ .main-content .chart-container {
+            padding: 25px 35px;
+            height: 380px;
+        }
+        
+        .chart-container h5 {
+            font-size: 1.1rem;
+            transition: all var(--transition-speed) ease;
+        }
+        
+        .sidebar.minimized ~ .main-content .chart-container h5 {
+            font-size: 1.3rem;
+        }
+        
+        /* CARD STYLES */
+        .card {
+            border-radius: 15px;
+            box-shadow: 0 5px 25px rgba(0, 0, 0, 0.08);
+            border: none;
+            margin-bottom: 25px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            overflow: hidden;
+            max-width: 100%;
+        }
+        
+        .sidebar.minimized ~ .main-content .card {
+            margin-bottom: 30px;
+        }
+        
+        .card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 12px 35px rgba(0, 0, 0, 0.15);
+        }
+        
+        .card-header {
+            padding: 20px 25px;
+            transition: all var(--transition-speed) ease;
+        }
+        
+        .sidebar.minimized ~ .main-content .card-header {
+            padding: 20px 30px;
+        }
+        
+        .card-header h5 {
+            font-size: 1.2rem;
+            transition: all var(--transition-speed) ease;
+        }
+        
+        .sidebar.minimized ~ .main-content .card-header h5 {
+            font-size: 1.4rem;
+        }
+        
+        .card-body {
+            padding: 20px 25px;
+            transition: all var(--transition-speed) ease;
+        }
+        
+        .sidebar.minimized ~ .main-content .card-body {
+            padding: 20px 30px;
+        }
+        
+        /* TABLE RESPONSIVENESS */
+        .table-responsive {
+            transition: all var(--transition-speed) ease;
+        }
+        
+        .sidebar.minimized ~ .main-content .table-responsive {
+            font-size: 0.95rem;
+        }
+        
+        .sidebar.minimized ~ .main-content .table th,
+        .sidebar.minimized ~ .main-content .table td {
+            padding: 12px 15px;
+        }
+        
+        /* SEARCH BOX */
+        .search-box {
+            position: relative;
+            transition: all var(--transition-speed) ease;
+            min-width: 300px;
+        }
+        
+        .search-box i {
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--gray);
+            z-index: 2;
+        }
+        
+        .search-box input {
+            padding-left: 40px;
+            border-radius: 10px;
+            transition: all var(--transition-speed) ease;
+            width: 100%;
+        }
+        
+        .sidebar.minimized ~ .main-content .search-box {
+            min-width: 350px;
+        }
+        
+        /* STATUS INDICATOR */
+        .status-indicator {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+        
+        .status-connected {
+            background-color: #28a745;
+            animation: pulse 2s infinite;
+        }
+        
+        .status-disconnected {
+            background-color: #dc3545;
+        }
+        
+        /* BUTTON STYLES */
+        #refreshBtn {
+            transition: all var(--transition-speed) ease;
+        }
+        
+        .sidebar.minimized ~ .main-content #refreshBtn {
+            padding: 8px 20px;
+        }
+        
+        /* BEST SELLING PRODUCTS */
+        .best-selling-item {
+            transition: all 0.3s ease;
+        }
+        
+        .sidebar.minimized ~ .main-content .best-selling-item {
+            padding: 20px 25px;
+        }
+        
+        .best-selling-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+        }
+        
+        /* FOOTER */
+        .dashboard-footer {
+            margin-top: 30px;
+            padding-top: 15px;
+            border-top: 1px solid rgba(0,0,0,0.1);
+            font-size: 0.9rem;
+            transition: all var(--transition-speed) ease;
+        }
+        
+        .sidebar.minimized ~ .main-content .dashboard-footer {
+            font-size: 1rem;
+            padding: 20px 0;
+        }
+        
+        /* LOADING SPINNER */
         .loading-spinner {
             width: 50px;
             height: 50px;
@@ -153,408 +813,1521 @@
         @keyframes spin {
             to { transform: rotate(360deg); }
         }
+        
+        /* DATA FLOW INDICATOR */
+        .data-flow-indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 8px;
+            animation: pulse 2s infinite;
+        }
 
-        /* Responsif: tumpuk di mobile */
+        @keyframes pulse {
+            0% { transform: scale(0.95); opacity: 0.7; }
+            50% { transform: scale(1.1); opacity: 1; }
+            100% { transform: scale(0.95); opacity: 0.7; }
+        }
+        
+        .flow-positive { background-color: #28a745; }
+        .flow-negative { background-color: #dc3545; }
+        .flow-neutral { background-color: #ffc107; }
+        
+        /* LOADING OVERLAY */
+        #loadingState {
+            position: fixed;
+            top: 0;
+            left: var(--sidebar-width);
+            right: 0;
+            bottom: 0;
+            background: rgba(255, 255, 255, 0.9);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            flex-direction: column;
+            transition: left var(--transition-speed) ease;
+        }
+        
+        .sidebar.minimized ~ #loadingState {
+            left: var(--sidebar-minimized);
+        }
+        
+        #loadingState .spinner-border {
+            width: 3rem;
+            height: 3rem;
+        }
+        
+        #loadingState .loading-text {
+            margin-top: 15px;
+            font-size: 1.1rem;
+            color: var(--primary);
+            font-weight: 500;
+        }
+        
+        /* ANIMATIONS */
+        .badge-pulse {
+            animation: badgePulse 0.6s ease-in-out;
+        }
+        
+        @keyframes badgePulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.2); }
+            100% { transform: scale(1); }
+        }
+        
+        /* BUTTON HOVER EFFECTS */
+        .btn-outline-light:hover {
+            color: var(--primary) !important;
+            background-color: white !important;
+        }
+        
+        /* ACTIVITY ROW */
+        .activity-row {
+            transition: background-color 0.2s ease;
+        }
+        
+        .activity-row:hover {
+            background-color: rgba(67, 97, 238, 0.05) !important;
+        }
+        
+        /* PROGRESS BAR */
+        .progress-bar {
+            background: linear-gradient(90deg, #4361ee, #4cc9f0);
+            border-radius: 3px;
+        }
+        
+        /* MINIMIZE/MAXIMIZE Button in Content Area (Optional) */
+        .content-sidebar-toggle {
+            position: fixed;
+            left: 10px;
+            top: 10px;
+            z-index: 1001;
+            background: var(--primary);
+            color: white;
+            border: none;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            transition: all 0.3s ease;
+        }
+        
+        .content-sidebar-toggle:hover {
+            background: var(--secondary);
+            transform: scale(1.1) rotate(90deg);
+            box-shadow: 0 6px 20px rgba(67, 97, 238, 0.4);
+        }
+        
+        /* =================== */
+        /* RIPPLE EFFECT */
+        /* =================== */
+        
+        @keyframes ripple {
+            0% {
+                transform: scale(0);
+                opacity: 1;
+            }
+            100% {
+                transform: scale(4);
+                opacity: 0;
+            }
+        }
+        
+        .ripple {
+            position: absolute;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.6);
+            transform: scale(0);
+            animation: ripple 0.6s linear;
+            pointer-events: none;
+        }
+        
+        /* RESPONSIVE DESIGN */
+        @media (max-width: 1600px) {
+            .sidebar.minimized ~ .main-content .integrated-stat-card {
+                flex: 1 0 calc(33.333% - 20px);
+            }
+        }
+        
+        @media (max-width: 1200px) {
+            .integrated-stat-card {
+                min-width: calc(33.333% - 15px);
+            }
+            
+            .sidebar.minimized ~ .main-content .integrated-stat-card {
+                flex: 1 0 calc(50% - 20px);
+            }
+        }
+        
+        @media (max-width: 992px) {
+            .integrated-stat-card {
+                min-width: calc(50% - 15px);
+            }
+            
+            .sidebar.minimized ~ .main-content .integrated-stat-card {
+                flex: 1 0 calc(50% - 20px);
+            }
+        }
+        
         @media (max-width: 768px) {
             .sidebar {
                 width: 100%;
                 height: auto;
                 position: relative;
+                overflow-y: hidden;
+                max-height: 70vh;
+                transition: none;
             }
+            
+            .sidebar.minimized {
+                width: 100%;
+                height: 60px;
+                overflow: hidden;
+            }
+            
+            .sidebar.minimized .sidebar-header {
+                padding: 10px 15px;
+            }
+            
+            .sidebar.minimized .sidebar-toggle {
+                right: 15px;
+                transform: translateY(-50%) rotate(180deg);
+            }
+            
+            .sidebar.minimized .sidebar-toggle:hover {
+                transform: translateY(-50%) rotate(180deg) scale(1.1);
+            }
+            
+            .sidebar.minimized .nav-links-container {
+                display: none;
+            }
+            
+            .sidebar.minimized .sidebar-footer {
+                display: none;
+            }
+            
             .main-content {
                 margin-left: 0;
                 padding: 15px;
+                width: 100%;
+                max-width: 100%;
+            }
+            
+            .sidebar.minimized ~ .main-content {
+                margin-left: 0;
+                width: 100%;
+                max-width: 100%;
+            }
+            
+            .content-wrapper {
+                max-width: 100%;
+            }
+            
+            #loadingState {
+                left: 0;
+            }
+            
+            .header h2 {
+                font-size: 1.5rem;
+            }
+            
+            .header p {
+                font-size: 0.9rem;
+            }
+            
+            .chart-container {
+                height: 300px;
+                padding: 15px;
+            }
+            
+            .table-responsive {
+                font-size: 0.9rem;
+            }
+            
+            .integrated-stats {
+                flex-direction: column;
+            }
+            
+            .integrated-stat-card {
+                min-width: 100%;
+            }
+            
+            .integrated-stat-card:hover {
+                transform: translateY(-3px);
+            }
+            
+            .search-box {
+                min-width: 100%;
+            }
+            
+            .content-sidebar-toggle {
+                display: flex;
+            }
+            
+            .sidebar:not(.mobile-open) {
+                transform: translateX(-100%);
+            }
+            
+            .sidebar.mobile-open {
+                transform: translateX(0);
+            }
+            
+            .sidebar.mobile-open.minimized {
+                transform: translateX(0);
+            }
+            
+            /* Adjust hover effects for mobile */
+            .sidebar .nav-link:hover {
+                transform: translateX(5px);
+            }
+            
+            .sidebar.minimized .nav-link:hover {
+                transform: scale(1.05);
             }
         }
+        
+        @media (max-width: 576px) {
+            .chart-container {
+                height: 250px;
+                padding: 15px;
+            }
+            
+            .header {
+                padding: 20px 15px;
+            }
+            
+            .connection-status {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 10px;
+            }
+            
+            #refreshBtn {
+                align-self: flex-start;
+            }
+        }
+        
+        /* GRID SYSTEM ADJUSTMENTS */
+        .row {
+            transition: all var(--transition-speed) ease;
+        }
+        
+        .sidebar.minimized ~ .main-content .row {
+            margin-left: -10px;
+            margin-right: -10px;
+        }
+        
+        .sidebar.minimized ~ .main-content .col-md-8,
+        .sidebar.minimized ~ .main-content .col-md-4,
+        .sidebar.minimized ~ .main-content .col-md-6,
+        .sidebar.minimized ~ .main-content .col-md-12 {
+            padding-left: 10px;
+            padding-right: 10px;
+        }
+        
+        /* UTILITY CLASSES */
+        .full-width {
+            width: 100% !important;
+            max-width: 100% !important;
+        }
+        
+        .expanded-content {
+            padding: 25px 30px !important;
+            margin: 0 auto !important;
+        }
+        
+        /* NOTIFICATION ALERTS */
+        .alert {
+            transition: all var(--transition-speed) ease;
+        }
+        
+        .sidebar.minimized ~ .main-content .alert {
+            padding: 15px 20px;
+        }
 
-        /* Animasi untuk toast */
-        .toast {
-            transition: opacity 0.15s linear;
-        }
-
-        /* Perbaikan untuk posisi tengah pada logo dan teks Administrator */
-        .sidebar-header {
-            text-align: center;
-            padding: 20px 15px;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-            margin-bottom: 15px;
+        /* SETTINGS-SPECIFIC STYLES */
+        .settings-section {
+            margin-bottom: 30px;
         }
         
-        .sidebar-header i {
-            font-size: 3rem;
-            display: block;
-            margin: 0 auto 10px;
+        .settings-card {
+            transition: all 0.3s ease;
         }
         
-        .sidebar-header h4 {
-            margin: 0;
-            font-weight: 600;
+        .settings-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
         }
         
-        .sidebar-header p {
-            margin: 5px 0 0;
+        .form-check-label {
+            font-weight: 500;
+            color: var(--dark);
+        }
+        
+        .form-check-input:checked {
+            background-color: var(--primary);
+            border-color: var(--primary);
+        }
+        
+        .logout-card {
+            border: 2px solid #dc3545;
+        }
+        
+        .logout-card .card-header {
+            background-color: #dc3545;
+        }
+        
+        .logout-card .card-body {
+            background-color: rgba(220, 53, 69, 0.05);
+        }
+        
+        .password-strength {
+            margin-top: 5px;
             font-size: 0.85rem;
-            opacity: 0.8;
+        }
+        
+        .password-strength.weak {
+            color: #dc3545;
+        }
+        
+        .password-strength.medium {
+            color: #ffc107;
+        }
+        
+        .password-strength.strong {
+            color: #28a745;
+        }
+        
+        .settings-divider {
+            border-top: 2px solid rgba(0,0,0,0.1);
+            margin: 30px 0;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .settings-card {
+            animation: fadeIn 0.5s ease-out;
+        }
+        
+        .settings-card:nth-child(1) { animation-delay: 0.1s; }
+        .settings-card:nth-child(2) { animation-delay: 0.2s; }
+        .settings-card:nth-child(3) { animation-delay: 0.3s; }
+
+        /* Status Indicator Styles */
+        .status-indicator {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 8px;
+        }
+        
+        .status-connected {
+            background-color: #28a745;
+            box-shadow: 0 0 10px rgba(40, 167, 69, 0.5);
+        }
+        
+        .status-disconnected {
+            background-color: #dc3545;
+            box-shadow: 0 0 10px rgba(220, 53, 69, 0.5);
+        }
+        
+        .data-flow-indicator {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 6px;
+        }
+        
+        .flow-positive {
+            background-color: #28a745;
+        }
+        
+        .flow-negative {
+            background-color: #dc3545;
+        }
+        
+        .flow-neutral {
+            background-color: #ffc107;
+        }
+        
+        .pulse {
+            animation: pulse 2s infinite;
+        }
+        
+        .badge-pulse {
+            animation: badgePulse 0.6s ease-in-out;
+        }
+        
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(255, 255, 255, 0.9);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+        }
+        
+        .loading-content {
+            text-align: center;
+            padding: 30px;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+        }
+        
+        .best-selling-item {
+            transition: all 0.3s ease;
+        }
+        
+        .best-selling-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+        }
+        
+        .activity-row:hover {
+            background-color: rgba(67, 97, 238, 0.05);
+        }
+        
+        .rank-badge {
+            min-width: 40px;
+        }
+        
+        mark {
+            background-color: #ffeb3b;
+            padding: 0 2px;
+            border-radius: 2px;
+        }
+        
+        .progress-bar {
+            background: linear-gradient(90deg, #4361ee, #4cc9f0);
+            border-radius: 3px;
         }
     </style>
 </head>
 <body>
-    <!-- Sidebar -->
-    <div class="sidebar">
-        <div class="sidebar-header">
-            <i class="bi bi-egg-fried" style="font-size: 3rem;"></i>
-            <h4 class="mt-2">EggTrack</h4>
-            <p id="userRoleDisplay" class="text-light small">Administrator</p>
-        </div>
-        
-        <nav class="sidebar-nav">
-            <a href="dashboard.html" class="nav-link">
-                <i class="bi bi-speedometer2"></i>
-                <span>Dashboard Utama</span>
-            </a>
-            <a href="production.html" class="nav-link">
-                <i class="bi bi-egg-fried"></i>
-                <span>Manajemen Produksi</span>
-            </a>
-            <a href="sales.html" class="nav-link">
-                <i class="bi bi-cart"></i>
-                <span>Penjualan & Order</span>
-            </a>
-            <a href="expenses.html" class="nav-link">
-                <i class="bi bi-cash-coin"></i>
-                <span>Pengeluaran</span>
-            </a>
-            <a href="inventory.html" class="nav-link">
-                <i class="bi bi-box-seam"></i>
-                <span>Inventaris Stok</span>
-            </a>
-            <a href="customer.html" class="nav-link">
-                <i class="bi bi-people"></i>
-                <span>Manajemen Pelanggan</span>
-            </a>
-            <a href="reports.html" class="nav-link">
-                <i class="bi bi-graph-up"></i>
-                <span>Laporan & Analisis</span>
-            </a>
-            <a href="settings.html" class="nav-link active">
-                <i class="bi bi-gear"></i>
-                <span>Pengaturan Sistem</span>
-            </a>
-            <a href="#" class="nav-link mt-3 logout-btn">
-                <i class="bi bi-box-arrow-right"></i>
-                <span>Keluar Sistem</span>
-            </a>
-        </nav>
+    <!-- Mobile Toggle Button (for mobile only) -->
+    <button class="content-sidebar-toggle" id="mobileSidebarToggle">
+        <i class="bi bi-list"></i>
+    </button>
+    
+    <!-- Loading State -->
+    <div id="loadingState" style="display: none;">
+        <div class="spinner-border text-primary"></div>
+        <div class="loading-text">Memuat data pengaturan...</div>
     </div>
     
-    <!-- Konten Utama -->
+    <!-- Sidebar -->
+    <div class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <i class="bi bi-egg-fried sidebar-logo"></i>
+            <h4 class="sidebar-title">EggTrack</h4>
+            <p id="userRoleDisplay" class="sidebar-user-info">Memuat...</p>
+            <small id="userNameDisplay" class="sidebar-user-info"></small>
+            <button class="sidebar-toggle" id="sidebarToggle">
+                <i class="bi bi-chevron-left"></i>
+            </button>
+        </div>
+        
+        <div class="nav-links-container">
+            <nav class="nav flex-column">
+                <a href="dashboard.html" class="nav-link">
+                    <i class="bi bi-speedometer2"></i>
+                    <span class="nav-text">Dashboard Utama</span>
+                </a>
+                <a href="production.html" class="nav-link">
+                    <i class="bi bi-egg-fried"></i>
+                    <span class="nav-text">Manajemen Produksi</span>
+                </a>
+                <a href="sales.html" class="nav-link">
+                    <i class="bi bi-cart"></i>
+                    <span class="nav-text">Penjualan & Order</span>
+                </a>
+                <a href="expenses.html" class="nav-link">
+                    <i class="bi bi-cash-coin"></i>
+                    <span class="nav-text">Pengeluaran</span>
+                </a>
+                <a href="inventory.html" class="nav-link">
+                    <i class="bi bi-box-seam"></i>
+                    <span class="nav-text">Inventaris Stok</span>
+                </a>
+                <a href="customer.html" class="nav-link">
+                    <i class="bi bi-people"></i>
+                    <span class="nav-text">Manajemen Pelanggan</span>
+                </a>
+                <a href="reports.html" class="nav-link">
+                    <i class="bi bi-graph-up"></i>
+                    <span class="nav-text">Laporan & Analisis</span>
+                </a>
+                <a href="settings.html" class="nav-link active">
+                    <i class="bi bi-gear"></i>
+                    <span class="nav-text">Pengaturan Sistem</span>
+                </a>
+                <a href="logout.html" class="nav-link mt-4" id="logoutBtn">
+                    <i class="bi bi-box-arrow-right"></i>
+                    <span class="nav-text">Keluar Sistem</span>
+                </a>
+            </nav>
+        </div>
+        
+        <div class="sidebar-footer">
+            <small>EggTrack v1.0</small>
+        </div>
+    </div>
+    
+    <!-- Main Content -->
     <div class="main-content">
-        <!-- Header -->
-        <div class="dashboard-header d-flex justify-content-between align-items-center mb-4">
-            <div>
-                <h3><i class="bi bi-gear me-2"></i>Pengaturan Sistem</h3>
-                <p class="text-muted mb-0">Konfigurasi sistem dan pengguna</p>
+        <div class="content-wrapper">
+            <!-- Connection Status -->
+            <div class="connection-status" id="dashboardConnectionStatus">
+                <div class="status-indicator status-connected"></div>
+                <span id="connectionStatusText" class="text-success">Terhubung ke sistem</span>
+                <button id="refreshBtn" class="btn btn-outline-light btn-sm ms-3">
+                    <i class="bi bi-arrow-clockwise"></i> Muat Ulang Data
+                </button>
             </div>
-        </div>
 
-        <div class="row">
-            <!-- Profil Pengguna -->
-            <div class="col-md-6">
-                <div class="card">
-                    <div class="card-header">
-                        <h5 class="mb-0"><i class="bi bi-person me-2"></i>Profil Pengguna</h5>
+            <!-- Header -->
+            <div class="header">
+                <h2><i class="bi bi-gear me-2"></i>Pengaturan Sistem Terintegrasi</h2>
+                <p class="mb-0">Konfigurasi sistem dan pengguna - Semua perubahan langsung diterapkan secara real-time</p>
+            </div>
+
+            <!-- Ringkasan Statistik -->
+            <div class="integrated-stats">
+                <div class="integrated-stat-card">
+                    <h4 id="totalUsers">1</h4>
+                    <p>Pengguna Aktif</p>
+                    <small><span class="data-flow-indicator flow-neutral"></span> Stabil</small>
+                </div>
+                <div class="integrated-stat-card">
+                    <h4 id="systemUptime">99.9%</h4>
+                    <p>Uptime Sistem</p>
+                    <small><span class="data-flow-indicator flow-positive"></span> Optimal</small>
+                </div>
+                <div class="integrated-stat-card">
+                    <h4 id="dataBackup">24</h4>
+                    <p>Backup Data</p>
+                    <small><span class="data-flow-indicator flow-positive"></span> Terkini</small>
+                </div>
+                <div class="integrated-stat-card">
+                    <h4 id="securityScore">98</h4>
+                    <p>Skor Keamanan</p>
+                    <small><span class="data-flow-indicator flow-positive"></span> Tinggi</small>
+                </div>
+                <div class="integrated-stat-card">
+                    <h4 id="storageUsed">65%</h4>
+                    <p>Penyimpanan</p>
+                    <small><span class="data-flow-indicator flow-neutral"></span> Normal</small>
+                </div>
+                <div class="integrated-stat-card">
+                    <h4 id="lastUpdated">1m</h4>
+                    <p>Diperbarui</p>
+                    <small><span class="data-flow-indicator flow-neutral"></span> Real-time</small>
+                </div>
+            </div>
+
+            <div class="row">
+                <!-- Profil Pengguna -->
+                <div class="col-md-6">
+                    <div class="card settings-card">
+                        <div class="card-header">
+                            <h5 class="mb-0"><i class="bi bi-person me-2"></i>Profil Pengguna</h5>
+                        </div>
+                        <div class="card-body">
+                            <form id="profileForm">
+                                <div class="mb-3">
+                                    <label for="fullName" class="form-label">Nama Lengkap <span class="text-danger">*</span></label>
+                                    <input type="text" class="form-control" id="fullName" value="Administrator" required>
+                                    <div class="form-text">Nama lengkap yang akan ditampilkan di sistem</div>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="userEmail" class="form-label">Email</label>
+                                    <input type="email" class="form-control" id="userEmail" value="admin@eggtrack.com">
+                                    <div class="form-text">Email untuk notifikasi dan reset password</div>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Peran</label>
+                                    <input type="text" class="form-control" value="Administrator" disabled>
+                                    <div class="form-text">Level akses pengguna dalam sistem</div>
+                                </div>
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="bi bi-check-circle me-2"></i> Simpan Perubahan
+                                </button>
+                            </form>
+                        </div>
                     </div>
-                    <div class="card-body">
-                        <form id="profileForm">
-                            <div class="mb-3">
-                                <label for="fullName" class="form-label">Nama Lengkap</label>
-                                <input type="text" class="form-control" id="fullName" value="Administrator">
-                            </div>
-                            <div class="mb-3">
-                                <label for="userEmail" class="form-label">Email</label>
-                                <input type="email" class="form-control" id="userEmail" value="admin@eggtrack.com">
-                            </div>
-                            <div class="mb-3">
-                                <label class="form-label">Peran</label>
-                                <input type="text" class="form-control" value="Administrator" disabled>
-                            </div>
-                            <button type="submit" class="btn btn-primary">
-                                <i class="bi bi-check-circle me-2"></i> Simpan Perubahan
-                            </button>
-                        </form>
+                </div>
+
+                <!-- Keamanan -->
+                <div class="col-md-6">
+                    <div class="card settings-card">
+                        <div class="card-header">
+                            <h5 class="mb-0"><i class="bi bi-shield-lock me-2"></i>Keamanan Akun</h5>
+                        </div>
+                        <div class="card-body">
+                            <form id="securityForm">
+                                <div class="mb-3">
+                                    <label for="currentPassword" class="form-label">Password Saat Ini <span class="text-danger">*</span></label>
+                                    <input type="password" class="form-control" id="currentPassword" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="newPassword" class="form-label">Password Baru <span class="text-danger">*</span></label>
+                                    <input type="password" class="form-control" id="newPassword" required minlength="6">
+                                    <div id="passwordStrength" class="password-strength"></div>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="confirmPassword" class="form-label">Konfirmasi Password Baru <span class="text-danger">*</span></label>
+                                    <input type="password" class="form-control" id="confirmPassword" required>
+                                    <div id="passwordMatch" class="form-text"></div>
+                                </div>
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="bi bi-key me-2"></i> Ubah Password
+                                </button>
+                            </form>
+                        </div>
                     </div>
                 </div>
             </div>
 
-            <!-- Keamanan -->
-            <div class="col-md-6">
-                <div class="card">
-                    <div class="card-header">
-                        <h5 class="mb-0"><i class="bi bi-shield-lock me-2"></i>Keamanan</h5>
-                    </div>
-                    <div class="card-body">
-                        <form id="securityForm">
-                            <div class="mb-3">
-                                <label for="currentPassword" class="form-label">Password Saat Ini</label>
-                                <input type="password" class="form-control" id="currentPassword">
+            <!-- Pengaturan Sistem -->
+            <div class="row mt-4">
+                <div class="col-md-12">
+                    <div class="card settings-card">
+                        <div class="card-header">
+                            <h5 class="mb-0"><i class="bi bi-sliders me-2"></i>Pengaturan Sistem</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label class="form-label">Nama Perusahaan</label>
+                                        <input type="text" class="form-control" id="companyName" value="EggTrack Farm">
+                                        <div class="form-text">Nama perusahaan yang akan muncul di laporan</div>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Mata Uang</label>
+                                        <select class="form-control" id="currency">
+                                            <option value="IDR">IDR - Rupiah Indonesia</option>
+                                            <option value="USD">USD - US Dollar</option>
+                                            <option value="EUR">EUR - Euro</option>
+                                        </select>
+                                        <div class="form-text">Mata uang untuk transaksi dan laporan</div>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Zona Waktu</label>
+                                        <select class="form-control" id="timezone">
+                                            <option value="Asia/Jakarta">Asia/Jakarta (WIB)</option>
+                                            <option value="Asia/Makassar">Asia/Makassar (WITA)</option>
+                                            <option value="Asia/Jayapura">Asia/Jayapura (WIT)</option>
+                                        </select>
+                                        <div class="form-text">Zona waktu untuk pencatatan transaksi</div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label class="form-label">Notifikasi Sistem</label>
+                                        <div class="form-check form-switch mb-2">
+                                            <input class="form-check-input" type="checkbox" checked id="emailNotifications">
+                                            <label class="form-check-label" for="emailNotifications">Aktifkan notifikasi email</label>
+                                        </div>
+                                        <div class="form-check form-switch mb-2">
+                                            <input class="form-check-input" type="checkbox" checked id="pushNotifications">
+                                            <label class="form-check-label" for="pushNotifications">Aktifkan notifikasi push</label>
+                                        </div>
+                                        <div class="form-check form-switch">
+                                            <input class="form-check-input" type="checkbox" checked id="smsNotifications">
+                                            <label class="form-check-label" for="smsNotifications">Aktifkan notifikasi SMS</label>
+                                        </div>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Backup & Keamanan</label>
+                                        <div class="form-check form-switch mb-2">
+                                            <input class="form-check-input" type="checkbox" checked id="autoBackup">
+                                            <label class="form-check-label" for="autoBackup">Aktifkan backup otomatis</label>
+                                        </div>
+                                        <div class="form-check form-switch mb-2">
+                                            <input class="form-check-input" type="checkbox" checked id="dataEncryption">
+                                            <label class="form-check-label" for="dataEncryption">Enkripsi data sensitif</label>
+                                        </div>
+                                        <div class="form-check form-switch">
+                                            <input class="form-check-input" type="checkbox" checked id="twoFactorAuth">
+                                            <label class="form-check-label" for="twoFactorAuth">Autentikasi dua faktor</label>
+                                        </div>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Interval Refresh Data</label>
+                                        <select class="form-control" id="refreshInterval">
+                                            <option value="30000">30 Detik</option>
+                                            <option value="60000" selected>1 Menit</option>
+                                            <option value="300000">5 Menit</option>
+                                            <option value="600000">10 Menit</option>
+                                        </select>
+                                        <div class="form-text">Interval pembaruan data real-time</div>
+                                    </div>
+                                </div>
                             </div>
-                            <div class="mb-3">
-                                <label for="newPassword" class="form-label">Password Baru</label>
-                                <input type="password" class="form-control" id="newPassword">
-                            </div>
-                            <div class="mb-3">
-                                <label for="confirmPassword" class="form-label">Konfirmasi Password Baru</label>
-                                <input type="password" class="form-control" id="confirmPassword">
-                            </div>
-                            <button type="submit" class="btn btn-primary">
-                                <i class="bi bi-key me-2"></i> Ubah Password
+                            <div class="settings-divider"></div>
+                            <button class="btn btn-primary" id="saveSystemSettings">
+                                <i class="bi bi-save me-2"></i> Simpan Semua Pengaturan
                             </button>
-                        </form>
+                            <button class="btn btn-outline-secondary ms-2" id="resetSettings">
+                                <i class="bi bi-arrow-counterclockwise me-2"></i> Reset ke Default
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
 
-        <!-- Pengaturan Sistem -->
-        <div class="row mt-4">
-            <div class="col-md-12">
-                <div class="card">
-                    <div class="card-header">
-                        <h5 class="mb-0"><i class="bi bi-sliders me-2"></i>Pengaturan Sistem</h5>
-                    </div>
-                    <div class="card-body">
-                        <div class="row">
-                            <div class="col-md-6">
-                                <div class="mb-3">
-                                    <label class="form-label">Nama Perusahaan</label>
-                                    <input type="text" class="form-control" id="companyName" value="EggTrack Farm">
+            <!-- Logout & Sistem -->
+            <div class="row mt-4">
+                <div class="col-md-8">
+                    <div class="card settings-card">
+                        <div class="card-header">
+                            <h5 class="mb-0"><i class="bi bi-info-circle me-2"></i>Informasi Sistem</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label class="form-label">Versi Aplikasi</label>
+                                        <input type="text" class="form-control" value="EggTrack v1.0.0" disabled>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Tanggal Rilis</label>
+                                        <input type="text" class="form-control" value="15 Desember 2024" disabled>
+                                    </div>
                                 </div>
-                                <div class="mb-3">
-                                    <label class="form-label">Mata Uang</label>
-                                    <select class="form-control" id="currency">
-                                        <option>IDR - Rupiah Indonesia</option>
-                                        <option>USD - US Dollar</option>
-                                    </select>
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label class="form-label">Browser Terdaftar</label>
+                                        <input type="text" class="form-control" id="browserInfo" disabled>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Ukuran Database</label>
+                                        <input type="text" class="form-control" value="24.5 MB" disabled>
+                                    </div>
                                 </div>
                             </div>
-                            <div class="col-md-6">
-                                <div class="mb-3">
-                                    <label class="form-label">Notifikasi Email</label>
-                                    <div class="form-check form-switch">
-                                        <input class="form-check-input" type="checkbox" checked id="emailNotifications">
-                                        <label class="form-check-label" for="emailNotifications">Aktifkan notifikasi email</label>
-                                    </div>
-                                </div>
-                                <div class="mb-3">
-                                    <label class="form-label">Backup Otomatis</label>
-                                    <div class="form-check form-switch">
-                                        <input class="form-check-input" type="checkbox" checked id="autoBackup">
-                                        <label class="form-check-label" for="autoBackup">Aktifkan backup harian</label>
-                                    </div>
-                                </div>
+                            <div class="mt-3">
+                                <button class="btn btn-outline-primary me-2" id="checkUpdates">
+                                    <i class="bi bi-cloud-arrow-down me-2"></i> Cek Pembaruan
+                                </button>
+                                <button class="btn btn-outline-info" id="systemLogs">
+                                    <i class="bi bi-file-text me-2"></i> Lihat Log Sistem
+                                </button>
                             </div>
                         </div>
-                        <button class="btn btn-primary" id="saveSystemSettings">
-                            <i class="bi bi-save me-2"></i> Simpan Pengaturan
-                        </button>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card logout-card">
+                        <div class="card-header">
+                            <h5 class="mb-0"><i class="bi bi-box-arrow-right me-2"></i>Keluar Sistem</h5>
+                        </div>
+                        <div class="card-body">
+                            <p class="text-danger"><strong>Peringatan:</strong> Keluar dari sistem EggTrack Admin. Semua perubahan yang belum disimpan akan hilang.</p>
+                            <div class="d-grid gap-2">
+                                <button class="btn btn-danger logout-btn" id="logoutBtnMain">
+                                    <i class="bi bi-box-arrow-right me-2"></i> Logout Sekarang
+                                </button>
+                                <button class="btn btn-outline-secondary" id="lockScreen">
+                                    <i class="bi bi-lock me-2"></i> Kunci Layar
+                                </button>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
-
-        <!-- Logout -->
-        <div class="row mt-4">
-            <div class="col-md-12">
-                <div class="card border-danger">
-                    <div class="card-header bg-danger text-white">
-                        <h5 class="mb-0"><i class="bi bi-box-arrow-right me-2"></i>Keluar Sistem</h5>
-                    </div>
-                    <div class="card-body">
-                        <p>Keluar dari sistem EggTrack Admin. Semua perubahan yang belum disimpan akan hilang.</p>
-                        <button class="btn btn-danger logout-btn" id="logoutBtn">
-                            <i class="bi bi-box-arrow-right me-2"></i> Logout
-                        </button>
-                    </div>
-                </div>
+            
+            <!-- Footer -->
+            <div class="dashboard-footer text-center text-muted">
+                <small>
+                    <i class="bi bi-info-circle me-1"></i>
+                    Sistem Pengaturan EggTrack | 
+                    <span id="currentDate"></span> | 
+                    <span id="currentTime"></span> |
+                    Status: <span id="systemStatus" class="text-success">Online</span>
+                </small>
             </div>
         </div>
     </div>
 
+    <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="settings.js"></script>
+    
+    <!-- Enhanced Sidebar Script dengan Efek Hover -->
     <script>
-        // Inisialisasi saat halaman dimuat
         document.addEventListener('DOMContentLoaded', function() {
-            initializeSettings();
+            const sidebar = document.getElementById('sidebar');
+            const sidebarToggle = document.getElementById('sidebarToggle');
+            const mobileSidebarToggle = document.getElementById('mobileSidebarToggle');
+            const navLinks = document.querySelectorAll('.nav-link');
+            const sidebarHeader = document.querySelector('.sidebar-header');
+            const sidebarFooter = document.querySelector('.sidebar-footer');
+            
+            // Check localStorage for saved state
+            const isMinimized = localStorage.getItem('sidebarMinimized') === 'true';
+            if (isMinimized) {
+                sidebar.classList.add('minimized');
+                setTimeout(() => expandMainContent(true), 10);
+            }
+            
+            // ===================
+            // RIPPLE EFFECT FUNCTION
+            // ===================
+            function createRipple(event, element) {
+                const ripple = document.createElement('span');
+                const rect = element.getBoundingClientRect();
+                const size = Math.max(rect.width, rect.height);
+                const x = event.clientX - rect.left - size / 2;
+                const y = event.clientY - rect.top - size / 2;
+                
+                ripple.style.cssText = `
+                    position: absolute;
+                    border-radius: 50%;
+                    background: rgba(255, 255, 255, 0.6);
+                    transform: scale(0);
+                    animation: ripple 0.6s linear;
+                    width: ${size}px;
+                    height: ${size}px;
+                    top: ${y}px;
+                    left: ${x}px;
+                    pointer-events: none;
+                    z-index: 1;
+                `;
+                
+                element.appendChild(ripple);
+                
+                setTimeout(() => {
+                    ripple.remove();
+                }, 600);
+            }
+            
+            // Add ripple effect to sidebar links
+            navLinks.forEach(link => {
+                link.addEventListener('click', function(e) {
+                    createRipple(e, this);
+                });
+                
+                // Optional: Add ripple on hover (delayed)
+                let hoverTimeout;
+                link.addEventListener('mouseenter', function() {
+                    if (sidebar.classList.contains('minimized')) {
+                        hoverTimeout = setTimeout(() => {
+                            const fakeEvent = {
+                                clientX: this.getBoundingClientRect().left + this.offsetWidth / 2,
+                                clientY: this.getBoundingClientRect().top + this.offsetHeight / 2
+                            };
+                            createRipple(fakeEvent, this);
+                        }, 300);
+                    }
+                });
+                
+                link.addEventListener('mouseleave', function() {
+                    clearTimeout(hoverTimeout);
+                });
+            });
+            
+            // Add ripple effect to sidebar header
+            sidebarHeader.addEventListener('click', function(e) {
+                createRipple(e, this);
+            });
+            
+            // Add ripple effect to sidebar footer
+            sidebarFooter.addEventListener('click', function(e) {
+                createRipple(e, this);
+            });
+            
+            // ===================
+            // SIDEBAR TOGGLE FUNCTIONALITY
+            // ===================
+            
+            // Desktop toggle
+            sidebarToggle.addEventListener('click', function(e) {
+                e.stopPropagation(); // Prevent ripple on toggle button
+                const isMinimizing = !sidebar.classList.contains('minimized');
+                sidebar.classList.toggle('minimized');
+                const isNowMinimized = sidebar.classList.contains('minimized');
+                localStorage.setItem('sidebarMinimized', isNowMinimized);
+                
+                // Update toggle icon rotation
+                const icon = this.querySelector('i');
+                if (isMinimizing) {
+                    icon.style.transform = 'rotate(180deg)';
+                    expandMainContent(true);
+                } else {
+                    icon.style.transform = 'rotate(0deg)';
+                    expandMainContent(false);
+                }
+                
+                // Beri waktu untuk transisi, lalu resize
+                setTimeout(() => {
+                    window.dispatchEvent(new Event('resize'));
+                    adjustLayoutForSidebar(isNowMinimized);
+                    
+                    // Show notification
+                    showToast(`Sidebar ${isNowMinimized ? 'diperkecil' : 'diperbesar'}`, 'info');
+                }, 300);
+            });
+            
+            // Mobile toggle
+            mobileSidebarToggle.addEventListener('click', function(e) {
+                e.stopPropagation();
+                createRipple(e, this);
+                sidebar.classList.toggle('mobile-open');
+                
+                // Show/hide toggle icon based on state
+                const icon = this.querySelector('i');
+                if (sidebar.classList.contains('mobile-open')) {
+                    icon.className = 'bi bi-x';
+                } else {
+                    icon.className = 'bi bi-list';
+                }
+            });
+            
+            // Close mobile sidebar when clicking outside on mobile
+            document.addEventListener('click', function(event) {
+                if (window.innerWidth <= 768) {
+                    const isClickInsideSidebar = sidebar.contains(event.target);
+                    const isClickOnMobileToggle = mobileSidebarToggle.contains(event.target);
+                    
+                    if (!isClickInsideSidebar && !isClickOnMobileToggle && sidebar.classList.contains('mobile-open')) {
+                        sidebar.classList.remove('mobile-open');
+                        mobileSidebarToggle.querySelector('i').className = 'bi bi-list';
+                    }
+                }
+            });
+            
+            // ===================
+            // TOOLTIP FUNCTIONALITY
+            // ===================
+            
+            // Add tooltip on hover for minimized sidebar
+            navLinks.forEach(link => {
+                link.addEventListener('mouseenter', function(e) {
+                    if (sidebar.classList.contains('minimized')) {
+                        const tooltip = document.createElement('div');
+                        tooltip.className = 'nav-link-tooltip';
+                        tooltip.textContent = this.querySelector('.nav-text').textContent;
+                        this.appendChild(tooltip);
+                        
+                        // Position tooltip
+                        setTimeout(() => {
+                            tooltip.style.opacity = '1';
+                        }, 10);
+                        
+                        // Add slight pulse animation
+                        this.style.animation = 'pulse 2s infinite';
+                    }
+                });
+                
+                link.addEventListener('mouseleave', function() {
+                    const tooltip = this.querySelector('.nav-link-tooltip');
+                    if (tooltip) {
+                        tooltip.remove();
+                    }
+                    this.style.animation = '';
+                });
+            });
+            
+            // Hide sidebar on mobile when clicking a link
+            navLinks.forEach(link => {
+                link.addEventListener('click', function() {
+                    if (window.innerWidth <= 768 && sidebar.classList.contains('mobile-open')) {
+                        sidebar.classList.remove('mobile-open');
+                        mobileSidebarToggle.querySelector('i').className = 'bi bi-list';
+                        
+                        // Add ripple effect to mobile toggle button
+                        const rect = mobileSidebarToggle.getBoundingClientRect();
+                        const fakeEvent = {
+                            clientX: rect.left + rect.width / 2,
+                            clientY: rect.top + rect.height / 2
+                        };
+                        createRipple(fakeEvent, mobileSidebarToggle);
+                    }
+                });
+            });
+            
+            // ===================
+            // INITIALIZATION
+            // ===================
+            
+            // Initialize layout based on sidebar state
+            adjustLayoutForSidebar(isMinimized);
+            
+            // Adjust layout on window resize
+            window.addEventListener('resize', function() {
+                const isMinimized = sidebar.classList.contains('minimized');
+                adjustLayoutForSidebar(isMinimized);
+                
+                // Update mobile toggle button visibility
+                if (window.innerWidth > 768) {
+                    mobileSidebarToggle.style.display = 'none';
+                } else {
+                    mobileSidebarToggle.style.display = 'flex';
+                }
+            });
+            
+            // Initial check for mobile toggle visibility
+            if (window.innerWidth > 768) {
+                mobileSidebarToggle.style.display = 'none';
+            }
+            
+            // ===================
+            // HELPER FUNCTIONS
+            // ===================
+            
+            // Function to expand main content when sidebar is minimized
+            function expandMainContent(expand) {
+                const mainContent = document.querySelector('.main-content');
+                const contentWrapper = document.querySelector('.content-wrapper');
+                const header = document.querySelector('.header');
+                const statCards = document.querySelectorAll('.integrated-stat-card');
+                const cards = document.querySelectorAll('.card');
+                
+                if (expand) {
+                    // Add expanded class to content wrapper
+                    if (contentWrapper) contentWrapper.classList.add('expanded-content');
+                    
+                    // Add full-width class to main elements
+                    if (mainContent) mainContent.classList.add('full-width');
+                    
+                    // Expand header
+                    if (header) {
+                        header.classList.add('full-width');
+                    }
+                    
+                    // Expand stat cards
+                    statCards.forEach(card => {
+                        card.classList.add('expanded-content');
+                    });
+                    
+                    // Expand cards
+                    cards.forEach(card => {
+                        card.classList.add('full-width');
+                    });
+                } else {
+                    // Remove expanded class
+                    if (contentWrapper) contentWrapper.classList.remove('expanded-content');
+                    
+                    // Remove full-width class
+                    if (mainContent) mainContent.classList.remove('full-width');
+                    
+                    // Reset header
+                    if (header) {
+                        header.classList.remove('full-width');
+                    }
+                    
+                    // Reset stat cards
+                    statCards.forEach(card => {
+                        card.classList.remove('expanded-content');
+                    });
+                    
+                    // Reset cards
+                    cards.forEach(card => {
+                        card.classList.remove('full-width');
+                    });
+                }
+            }
+            
+            // Function to adjust layout based on sidebar state
+            function adjustLayoutForSidebar(isMinimized) {
+                // Adjust grid spacing based on sidebar state
+                const rows = document.querySelectorAll('.row');
+                
+                if (isMinimized && window.innerWidth > 768) {
+                    // When sidebar is minimized on desktop
+                    rows.forEach(row => {
+                        row.style.marginLeft = '-10px';
+                        row.style.marginRight = '-10px';
+                    });
+                    
+                    // Adjust font sizes for better fit
+                    document.querySelectorAll('.integrated-stat-card h4').forEach(el => {
+                        el.style.fontSize = '2.2rem';
+                    });
+                    
+                    document.querySelectorAll('.integrated-stat-card p').forEach(el => {
+                        el.style.fontSize = '1.05rem';
+                    });
+                    
+                    // Adjust header
+                    const header = document.querySelector('.header');
+                    if (header) {
+                        header.querySelector('h2').style.fontSize = '2.2rem';
+                        header.querySelector('p').style.fontSize = '1.1rem';
+                    }
+                } else {
+                    // When sidebar is maximized or on mobile
+                    rows.forEach(row => {
+                        row.style.marginLeft = '';
+                        row.style.marginRight = '';
+                    });
+                    
+                    // Reset font sizes
+                    document.querySelectorAll('.integrated-stat-card h4').forEach(el => {
+                        el.style.fontSize = '';
+                    });
+                    
+                    document.querySelectorAll('.integrated-stat-card p').forEach(el => {
+                        el.style.fontSize = '';
+                    });
+                    
+                    // Reset header
+                    const header = document.querySelector('.header');
+                    if (header) {
+                        header.querySelector('h2').style.fontSize = '';
+                        header.querySelector('p').style.fontSize = '';
+                    }
+                }
+            }
+            
+            // Function to toggle full screen mode for content
+            window.toggleFullContent = function() {
+                const mainContent = document.querySelector('.main-content');
+                const isFull = mainContent.classList.contains('full-screen-content');
+                
+                if (isFull) {
+                    mainContent.classList.remove('full-screen-content');
+                    document.body.classList.remove('content-full-screen');
+                    showToast('Mode layar penuh dinonaktifkan', 'info');
+                } else {
+                    mainContent.classList.add('full-screen-content');
+                    document.body.classList.add('content-full-screen');
+                    showToast('Mode layar penuh diaktifkan', 'success');
+                }
+                
+                // Resize after toggle
+                setTimeout(() => {
+                    window.dispatchEvent(new Event('resize'));
+                }, 300);
+            };
+
+            // Additional Settings Page Functionality
+            setupAdditionalSettingsFeatures();
         });
 
-        // Fungsi inisialisasi pengaturan
-        function initializeSettings() {
-            // Load user profile dari localStorage
-            loadUserProfile();
-            
-            // Load system settings dari localStorage
-            loadSystemSettings();
-            
-            // Setup event listeners
-            setupEventListeners();
-        }
+        function setupAdditionalSettingsFeatures() {
+            // Password strength indicator
+            const newPassword = document.getElementById('newPassword');
+            const confirmPassword = document.getElementById('confirmPassword');
+            const passwordStrength = document.getElementById('passwordStrength');
+            const passwordMatch = document.getElementById('passwordMatch');
 
-        // Setup event listeners
-        function setupEventListeners() {
-            // Simpan profil
-            document.getElementById('profileForm').addEventListener('submit', handleSaveProfile);
-            
-            // Ubah password
-            document.getElementById('securityForm').addEventListener('submit', handleChangePassword);
-            
-            // Simpan pengaturan sistem
-            document.getElementById('saveSystemSettings').addEventListener('click', handleSaveSystemSettings);
-            
-            // Logout
-            document.querySelectorAll('.logout-btn').forEach(button => {
-                button.addEventListener('click', handleLogout);
-            });
-        }
-
-        // Load profil pengguna
-        function loadUserProfile() {
-            const savedUser = localStorage.getItem('eggTrackUser');
-            if (savedUser) {
-                const user = JSON.parse(savedUser);
-                document.getElementById('fullName').value = user.name || 'Administrator';
-                document.getElementById('userEmail').value = user.email || 'admin@eggtrack.com';
-            }
-        }
-
-        // Load pengaturan sistem
-        function loadSystemSettings() {
-            const savedSettings = localStorage.getItem('eggTrackSystemSettings');
-            if (savedSettings) {
-                const settings = JSON.parse(savedSettings);
-                document.getElementById('companyName').value = settings.companyName || 'EggTrack Farm';
-                document.getElementById('currency').value = settings.currency || 'IDR - Rupiah Indonesia';
-                document.getElementById('emailNotifications').checked = settings.emailNotifications !== false;
-                document.getElementById('autoBackup').checked = settings.autoBackup !== false;
-            }
-        }
-
-        // Handler untuk menyimpan profil
-        function handleSaveProfile(e) {
-            e.preventDefault();
-            
-            const fullName = document.getElementById('fullName').value;
-            const userEmail = document.getElementById('userEmail').value;
-
-            if (!fullName) {
-                showToast('Nama lengkap harus diisi', 'danger');
-                return;
+            if (newPassword) {
+                newPassword.addEventListener('input', function() {
+                    const strength = calculatePasswordStrength(this.value);
+                    passwordStrength.textContent = `Kekuatan: ${strength.text}`;
+                    passwordStrength.className = `password-strength ${strength.class}`;
+                    
+                    // Check password match
+                    if (confirmPassword.value) {
+                        checkPasswordMatch();
+                    }
+                });
             }
 
-            // Update user data di localStorage
-            const savedUser = localStorage.getItem('eggTrackUser');
-            if (savedUser) {
-                const user = JSON.parse(savedUser);
-                user.name = fullName;
-                user.email = userEmail;
-                localStorage.setItem('eggTrackUser', JSON.stringify(user));
+            if (confirmPassword) {
+                confirmPassword.addEventListener('input', checkPasswordMatch);
             }
 
-            showToast('Profil berhasil diperbarui', 'success');
-        }
-
-        // Handler untuk mengubah password
-        function handleChangePassword(e) {
-            e.preventDefault();
-            
-            const currentPassword = document.getElementById('currentPassword').value;
-            const newPassword = document.getElementById('newPassword').value;
-            const confirmPassword = document.getElementById('confirmPassword').value;
-
-            if (!currentPassword || !newPassword || !confirmPassword) {
-                showToast('Semua field password harus diisi', 'danger');
-                return;
-            }
-
-            if (newPassword !== confirmPassword) {
-                showToast('Password baru tidak cocok', 'danger');
-                return;
-            }
-
-            if (newPassword.length < 6) {
-                showToast('Password baru harus minimal 6 karakter', 'danger');
-                return;
-            }
-
-            // Untuk demo, kita simpan di localStorage
-            // Dalam aplikasi real, ini akan dikirim ke server
-            showToast('Password berhasil diubah', 'success');
-            document.getElementById('securityForm').reset();
-        }
-
-        // Handler untuk menyimpan pengaturan sistem
-        function handleSaveSystemSettings() {
-            const btn = document.getElementById('saveSystemSettings');
-            btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span> Menyimpan...';
-            btn.disabled = true;
-            
-            // Simpan pengaturan sistem ke localStorage
-            const systemSettings = {
-                companyName: document.getElementById('companyName').value,
-                currency: document.getElementById('currency').value,
-                emailNotifications: document.getElementById('emailNotifications').checked,
-                autoBackup: document.getElementById('autoBackup').checked
-            };
-            
-            localStorage.setItem('eggTrackSystemSettings', JSON.stringify(systemSettings));
-            
-            setTimeout(() => {
-                showToast('Pengaturan sistem berhasil disimpan', 'success');
-                btn.innerHTML = '<i class="bi bi-save me-2"></i> Simpan Pengaturan';
-                btn.disabled = false;
-            }, 1000);
-        }
-
-        // Handler untuk logout
-        function handleLogout() {
-            if (confirm('Apakah Anda yakin ingin logout?')) {
-                // Hapus data user dari localStorage
-                localStorage.removeItem('eggTrackUser');
+            function calculatePasswordStrength(password) {
+                let score = 0;
                 
-                // Redirect ke halaman login
-                window.location.href = 'login.html';
+                // Length check
+                if (password.length >= 8) score += 1;
+                if (password.length >= 12) score += 1;
+                
+                // Character variety
+                if (/[a-z]/.test(password)) score += 1;
+                if (/[A-Z]/.test(password)) score += 1;
+                if (/[0-9]/.test(password)) score += 1;
+                if (/[^a-zA-Z0-9]/.test(password)) score += 1;
+                
+                if (score >= 5) return { text: 'Kuat', class: 'strong' };
+                if (score >= 3) return { text: 'Sedang', class: 'medium' };
+                return { text: 'Lemah', class: 'weak' };
             }
-        }
 
-        // Fungsi utility untuk menampilkan toast
-        function showToast(message, type = 'info') {
-            let toastContainer = document.querySelector('.toast-container');
-            if (!toastContainer) {
-                toastContainer = document.createElement('div');
-                toastContainer.className = 'toast-container position-fixed top-0 end-0 p-3';
-                document.body.appendChild(toastContainer);
+            function checkPasswordMatch() {
+                const password = newPassword.value;
+                const confirm = confirmPassword.value;
+                
+                if (!password || !confirm) {
+                    passwordMatch.textContent = '';
+                    passwordMatch.className = 'form-text';
+                    return;
+                }
+                
+                if (password === confirm) {
+                    passwordMatch.textContent = '✓ Password cocok';
+                    passwordMatch.className = 'form-text text-success';
+                } else {
+                    passwordMatch.textContent = '✗ Password tidak cocok';
+                    passwordMatch.className = 'form-text text-danger';
+                }
             }
-            
-            const toastId = 'toast-' + Date.now();
-            const toast = document.createElement('div');
-            toast.className = `toast align-items-center text-bg-${type} border-0`;
-            toast.id = toastId;
-            
-            toast.innerHTML = `
-                <div class="d-flex">
-                    <div class="toast-body">
-                        ${message}
+
+            // Browser detection
+            const browserInfo = document.getElementById('browserInfo');
+            if (browserInfo) {
+                browserInfo.value = detectBrowser();
+            }
+
+            function detectBrowser() {
+                const userAgent = navigator.userAgent;
+                if (userAgent.indexOf("Chrome") > -1) return "Google Chrome";
+                if (userAgent.indexOf("Firefox") > -1) return "Mozilla Firefox";
+                if (userAgent.indexOf("Safari") > -1) return "Apple Safari";
+                if (userAgent.indexOf("Edge") > -1) return "Microsoft Edge";
+                if (userAgent.indexOf("Opera") > -1) return "Opera";
+                return "Browser Tidak Dikenal";
+            }
+
+            // Check for updates button
+            const checkUpdatesBtn = document.getElementById('checkUpdates');
+            if (checkUpdatesBtn) {
+                checkUpdatesBtn.addEventListener('click', function() {
+                    const btn = this;
+                    const originalText = btn.innerHTML;
+                    btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span> Mengecek...';
+                    btn.disabled = true;
+                    
+                    setTimeout(() => {
+                        showToast('Anda menggunakan versi terbaru (v1.0.0)', 'success');
+                        btn.innerHTML = originalText;
+                        btn.disabled = false;
+                    }, 1500);
+                });
+            }
+
+            // System logs button
+            const systemLogsBtn = document.getElementById('systemLogs');
+            if (systemLogsBtn) {
+                systemLogsBtn.addEventListener('click', function() {
+                    showToast('Log sistem akan ditampilkan di konsol browser', 'info');
+                    console.log('=== SISTEM LOGS EGGTRACK ===');
+                    console.log('Waktu:', new Date().toLocaleString());
+                    console.log('Browser:', navigator.userAgent);
+                    console.log('Status: OK');
+                });
+            }
+
+            // Lock screen button
+            const lockScreenBtn = document.getElementById('lockScreen');
+            if (lockScreenBtn) {
+                lockScreenBtn.addEventListener('click', function() {
+                    if (confirm('Kunci layar sekarang? Anda perlu memasukkan password untuk melanjutkan.')) {
+                        localStorage.setItem('screenLocked', 'true');
+                        showToast('Layar terkunci', 'info');
+                        setTimeout(() => {
+                            window.location.href = 'login.html?locked=true';
+                        }, 1000);
+                    }
+                });
+            }
+
+            // Reset settings button
+            const resetSettingsBtn = document.getElementById('resetSettings');
+            if (resetSettingsBtn) {
+                resetSettingsBtn.addEventListener('click', function() {
+                    if (confirm('Reset semua pengaturan ke nilai default? Tindakan ini tidak dapat dibatalkan.')) {
+                        const btn = this;
+                        const originalText = btn.innerHTML;
+                        btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span> Mereset...';
+                        btn.disabled = true;
+                        
+                        setTimeout(() => {
+                            localStorage.removeItem('eggTrackSystemSettings');
+                            showToast('Pengaturan telah direset ke default', 'success');
+                            setTimeout(() => {
+                                location.reload();
+                            }, 1000);
+                        }, 1000);
+                    }
+                });
+            }
+
+            // Refresh button
+            const refreshBtn = document.getElementById('refreshBtn');
+            if (refreshBtn) {
+                refreshBtn.addEventListener('click', function() {
+                    const btn = this;
+                    const originalText = btn.innerHTML;
+                    btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span> Memuat...';
+                    btn.disabled = true;
+                    
+                    setTimeout(() => {
+                        showToast('Data pengaturan diperbarui', 'success');
+                        btn.innerHTML = originalText;
+                        btn.disabled = false;
+                        
+                        // Update last updated time
+                        const lastUpdated = document.getElementById('lastUpdated');
+                        if (lastUpdated) {
+                            lastUpdated.textContent = 'Sekarang';
+                            setTimeout(() => {
+                                lastUpdated.textContent = '1m';
+                            }, 60000);
+                        }
+                    }, 800);
+                });
+            }
+
+            // Save system settings button
+            const saveSystemSettingsBtn = document.getElementById('saveSystemSettings');
+            if (saveSystemSettingsBtn) {
+                saveSystemSettingsBtn.addEventListener('click', function() {
+                    const btn = this;
+                    const originalText = btn.innerHTML;
+                    btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span> Menyimpan...';
+                    btn.disabled = true;
+                    
+                    setTimeout(() => {
+                        showToast('Semua pengaturan berhasil disimpan', 'success');
+                        btn.innerHTML = originalText;
+                        btn.disabled = false;
+                    }, 1000);
+                });
+            }
+
+            // Profile form submission
+            const profileForm = document.getElementById('profileForm');
+            if (profileForm) {
+                profileForm.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    const submitBtn = this.querySelector('button[type="submit"]');
+                    const originalText = submitBtn.innerHTML;
+                    submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span> Menyimpan...';
+                    submitBtn.disabled = true;
+                    
+                    setTimeout(() => {
+                        showToast('Profil berhasil diperbarui', 'success');
+                        submitBtn.innerHTML = originalText;
+                        submitBtn.disabled = false;
+                    }, 800);
+                });
+            }
+
+            // Security form submission
+            const securityForm = document.getElementById('securityForm');
+            if (securityForm) {
+                securityForm.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    const currentPassword = document.getElementById('currentPassword').value;
+                    const newPassword = document.getElementById('newPassword').value;
+                    const confirmPassword = document.getElementById('confirmPassword').value;
+                    
+                    if (newPassword !== confirmPassword) {
+                        showToast('Password baru dan konfirmasi tidak cocok', 'danger');
+                        return;
+                    }
+                    
+                    if (newPassword.length < 6) {
+                        showToast('Password baru minimal 6 karakter', 'warning');
+                        return;
+                    }
+                    
+                    const submitBtn = this.querySelector('button[type="submit"]');
+                    const originalText = submitBtn.innerHTML;
+                    submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span> Mengubah...';
+                    submitBtn.disabled = true;
+                    
+                    setTimeout(() => {
+                        showToast('Password berhasil diubah', 'success');
+                        submitBtn.innerHTML = originalText;
+                        submitBtn.disabled = false;
+                        
+                        // Clear password fields
+                        document.getElementById('currentPassword').value = '';
+                        document.getElementById('newPassword').value = '';
+                        document.getElementById('confirmPassword').value = '';
+                        document.getElementById('passwordStrength').textContent = '';
+                        document.getElementById('passwordMatch').textContent = '';
+                    }, 1000);
+                });
+            }
+
+            // Logout button
+            const logoutBtnMain = document.getElementById('logoutBtnMain');
+            if (logoutBtnMain) {
+                logoutBtnMain.addEventListener('click', function() {
+                    if (confirm('Anda yakin ingin logout dari sistem?')) {
+                        const btn = this;
+                        const originalText = btn.innerHTML;
+                        btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span> Logging out...';
+                        btn.disabled = true;
+                        
+                        setTimeout(() => {
+                            showToast('Berhasil logout dari sistem', 'success');
+                            setTimeout(() => {
+                                window.location.href = 'login.html';
+                            }, 1000);
+                        }, 800);
+                    }
+                });
+            }
+
+            // Toast notification function
+            function showToast(message, type = 'info') {
+                let container = document.querySelector('.toast-container');
+                if (!container) {
+                    container = document.createElement('div');
+                    container.className = 'toast-container position-fixed top-0 end-0 p-3';
+                    document.body.appendChild(container);
+                }
+                
+                const toastId = 'toast-' + Date.now();
+                const toast = document.createElement('div');
+                toast.className = `toast align-items-center text-bg-${type} border-0`;
+                toast.id = toastId;
+                
+                const icon = {
+                    'success': 'bi-check-circle',
+                    'danger': 'bi-x-circle',
+                    'warning': 'bi-exclamation-triangle',
+                    'info': 'bi-info-circle'
+                }[type] || 'bi-info-circle';
+                
+                toast.innerHTML = `
+                    <div class="d-flex">
+                        <div class="toast-body d-flex align-items-center">
+                            <i class="bi ${icon} me-2 fs-5"></i>
+                            ${message}
+                        </div>
+                        <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
                     </div>
-                    <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
-                </div>
-            `;
-            
-            toastContainer.appendChild(toast);
-            const bsToast = new bootstrap.Toast(toast, { delay: 4000 });
-            bsToast.show();
-            
-            toast.addEventListener('hidden.bs.toast', () => toast.remove());
+                `;
+                
+                container.appendChild(toast);
+                
+                const bsToast = new bootstrap.Toast(toast, { 
+                    delay: 3000,
+                    autohide: true 
+                });
+                bsToast.show();
+                
+                toast.addEventListener('hidden.bs.toast', () => {
+                    toast.remove();
+                });
+            }
         }
     </script>
-
 </body>
 </html>

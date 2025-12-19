@@ -3,7 +3,7 @@
 // ==================== KONFIGURASI ====================
 const CONFIG = {
     APP_NAME: 'EggTrack Admin',
-    API_URL: 'https://script.google.com/macros/s/AKfycbxLWrZZ6CInf510NDjaX4HeZ2MYgbl_OSt0cScLDzb7YzjwfeFPcQdoj8_3J_f36yEz/exec',
+    API_URL: 'https://script.google.com/macros/s/AKfycbw33dktX5-SK_8A84pVDpKh8JtUQOhHGg6rB54CWO4hdlpUhgfBwPuKSMqoJ18QsZBp/exec',
     SESSION_TIMEOUT: 24 * 60 * 60 * 1000, // 24 jam
     AUTO_REFRESH_INTERVAL: 60000 // 1 menit
 };

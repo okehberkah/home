@@ -8,13 +8,17 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-         :root {
+        :root {
             --primary: #4361ee;
             --secondary: #3f37c9;
             --success: #4cc9f0;
             --light: #f8f9fa;
             --dark: #212529;
             --gray: #6c757d;
+            --sidebar-width: 250px;
+            --sidebar-minimized: 70px;
+            --transition-speed: 0.3s;
+            --content-max-width: 1400px;
         }
         
         body {
@@ -24,27 +28,148 @@
             padding: 0;
             min-height: 100vh;
             overflow-x: hidden;
+            transition: margin-left var(--transition-speed) ease;
         }
         
+        /* SIDEBAR STYLES */
         .sidebar {
             background: linear-gradient(180deg, var(--primary), var(--secondary));
             color: white;
             height: 100vh;
             position: fixed;
-            padding-top: 20px;
+            left: 0;
+            top: 0;
             z-index: 1000;
-            width: 250px;
+            width: var(--sidebar-width);
             box-shadow: 5px 0 15px rgba(0, 0, 0, 0.1);
+            overflow-y: auto;
+            overflow-x: hidden;
+            scroll-behavior: smooth;
+            transition: width var(--transition-speed) ease;
         }
         
+        .sidebar.minimized {
+            width: var(--sidebar-minimized);
+        }
+        
+        .sidebar::-webkit-scrollbar {
+            width: 6px;
+        }
+        
+        .sidebar::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+        }
+        
+        .sidebar::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 10px;
+        }
+        
+        .sidebar::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.5);
+        }
+        
+        .sidebar {
+            scrollbar-width: thin;
+            scrollbar-color: rgba(255, 255, 255, 0.3) rgba(255, 255, 255, 0.1);
+        }
+        
+        /* Sidebar Header */
+        .sidebar-header {
+            padding: 20px 15px;
+            text-align: center;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            transition: padding var(--transition-speed) ease;
+            position: relative;
+        }
+        
+        .sidebar.minimized .sidebar-header {
+            padding: 15px 5px;
+        }
+        
+        .sidebar-logo {
+            font-size: 3rem;
+            margin-bottom: 10px;
+            transition: all var(--transition-speed) ease;
+        }
+        
+        .sidebar.minimized .sidebar-logo {
+            font-size: 2.5rem;
+            margin-bottom: 0;
+        }
+        
+        .sidebar-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin: 5px 0;
+            white-space: nowrap;
+            overflow: hidden;
+            transition: all var(--transition-speed) ease;
+        }
+        
+        .sidebar.minimized .sidebar-title {
+            display: none;
+        }
+        
+        .sidebar-user-info {
+            font-size: 0.9rem;
+            opacity: 0.8;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            transition: all var(--transition-speed) ease;
+        }
+        
+        .sidebar.minimized .sidebar-user-info {
+            display: none;
+        }
+        
+        /* Toggle Button */
+        .sidebar-toggle {
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            color: white;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .sidebar-toggle:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateY(-50%) scale(1.1);
+        }
+        
+        .sidebar.minimized .sidebar-toggle {
+            right: 50%;
+            transform: translate(50%, -50%) rotate(180deg);
+        }
+        
+        /* Navigation Links */
         .sidebar .nav-link {
             color: rgba(255, 255, 255, 0.8);
-            padding: 12px 20px;
+            padding: 12px 15px;
             text-decoration: none;
-            display: block;
-            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            transition: all var(--transition-speed) ease;
             border-left: 4px solid transparent;
-            position: relative;
+            white-space: nowrap;
+            overflow: hidden;
+        }
+        
+        .sidebar.minimized .nav-link {
+            padding: 12px 5px;
+            justify-content: center;
         }
         
         .sidebar .nav-link:hover, .sidebar .nav-link.active {
@@ -53,15 +178,44 @@
             border-left: 4px solid var(--success);
         }
         
+        .sidebar.minimized .nav-link:hover, 
+        .sidebar.minimized .nav-link.active {
+            border-left: none;
+            border-radius: 8px;
+        }
+        
         .sidebar .nav-link i {
+            font-size: 1.2rem;
+            min-width: 24px;
+            text-align: center;
+            transition: margin var(--transition-speed) ease;
+        }
+        
+        .sidebar:not(.minimized) .nav-link i {
             margin-right: 15px;
-            font-size: 1.1rem;
+        }
+        
+        .sidebar.minimized .nav-link i {
+            margin-right: 0;
+            font-size: 1.4rem;
+        }
+        
+        .nav-text {
+            transition: all var(--transition-speed) ease;
+            opacity: 1;
+        }
+        
+        .sidebar.minimized .nav-text {
+            opacity: 0;
+            width: 0;
+            height: 0;
+            overflow: hidden;
         }
         
         .sidebar .nav-link .notification-badge {
             position: absolute;
             top: 5px;
-            right: 10px;
+            right: 15px;
             background-color: #dc3545;
             color: white;
             border-radius: 50%;
@@ -71,22 +225,170 @@
             display: flex;
             align-items: center;
             justify-content: center;
+            transition: all var(--transition-speed) ease;
         }
         
+        .sidebar.minimized .nav-link .notification-badge {
+            top: 2px;
+            right: 2px;
+            font-size: 0.6rem;
+            width: 18px;
+            height: 18px;
+        }
+        
+        /* Sidebar Footer */
+        .sidebar-footer {
+            padding: 15px;
+            text-align: center;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            font-size: 0.8rem;
+            opacity: 0.7;
+            white-space: nowrap;
+            overflow: hidden;
+            transition: all var(--transition-speed) ease;
+        }
+        
+        .sidebar.minimized .sidebar-footer {
+            padding: 10px 5px;
+            font-size: 0;
+        }
+        
+        .sidebar.minimized .sidebar-footer::after {
+            content: "v1.0";
+            font-size: 0.7rem;
+        }
+        
+        /* Tooltip for minimized sidebar */
+        .nav-link-tooltip {
+            position: absolute;
+            left: calc(var(--sidebar-minimized) + 10px);
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            white-space: nowrap;
+            z-index: 9999;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.2s ease;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+        
+        .nav-link-tooltip::after {
+            content: '';
+            position: absolute;
+            left: -5px;
+            top: 50%;
+            transform: translateY(-50%);
+            border-width: 5px;
+            border-style: solid;
+            border-color: transparent rgba(0, 0, 0, 0.8) transparent transparent;
+        }
+        
+        /* MAIN CONTENT */
         .main-content {
-            margin-left: 250px;
+            margin-left: var(--sidebar-width);
             padding: 20px;
             min-height: 100vh;
             background: #f8f9fa;
+            transition: all var(--transition-speed) ease;
+            width: calc(100% - var(--sidebar-width));
+            max-width: calc(100% - var(--sidebar-width));
+            overflow-x: hidden;
         }
         
+        .sidebar.minimized ~ .main-content {
+            margin-left: var(--sidebar-minimized);
+            width: calc(100% - var(--sidebar-minimized));
+            max-width: calc(100% - var(--sidebar-minimized));
+        }
+        
+        /* Content Wrapper */
+        .content-wrapper {
+            max-width: var(--content-max-width);
+            margin: 0 auto;
+            width: 100%;
+            transition: all var(--transition-speed) ease;
+        }
+        
+        .sidebar.minimized ~ .main-content .content-wrapper {
+            max-width: calc(var(--content-max-width) + 180px);
+        }
+        
+        /* HEADER STYLES */
+        .dashboard-header {
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            color: white;
+            padding: 25px 30px;
+            border-radius: 15px;
+            margin-bottom: 25px;
+            box-shadow: 0 5px 15px rgba(67, 97, 238, 0.3);
+            transition: all var(--transition-speed) ease;
+            max-width: 100%;
+        }
+        
+        .sidebar.minimized ~ .main-content .dashboard-header {
+            padding: 25px 40px;
+        }
+        
+        .dashboard-header h3 {
+            font-size: 1.8rem;
+            transition: font-size var(--transition-speed) ease;
+        }
+        
+        .sidebar.minimized ~ .main-content .dashboard-header h3 {
+            font-size: 2.2rem;
+        }
+        
+        .dashboard-header p {
+            font-size: 1rem;
+            transition: font-size var(--transition-speed) ease;
+        }
+        
+        .sidebar.minimized ~ .main-content .dashboard-header p {
+            font-size: 1.1rem;
+        }
+        
+        /* CHART CONTAINER */
+        .chart-container {
+            background: white;
+            padding: 25px 30px;
+            border-radius: 15px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.05);
+            margin-bottom: 25px;
+            height: 400px;
+            transition: all var(--transition-speed) ease;
+            max-width: 100%;
+        }
+        
+        .sidebar.minimized ~ .main-content .chart-container {
+            padding: 25px 35px;
+            height: 420px;
+        }
+        
+        .chart-container h5 {
+            font-size: 1.1rem;
+            transition: all var(--transition-speed) ease;
+        }
+        
+        .sidebar.minimized ~ .main-content .chart-container h5 {
+            font-size: 1.3rem;
+        }
+        
+        /* CARD STYLES */
         .card {
             border-radius: 15px;
             box-shadow: 0 5px 25px rgba(0, 0, 0, 0.08);
             border: none;
             margin-bottom: 25px;
-            transition: transform 0.3s, box-shadow 0.3s;
+            transition: all var(--transition-speed) ease;
             overflow: hidden;
+            max-width: 100%;
+        }
+        
+        .sidebar.minimized ~ .main-content .card {
+            margin-bottom: 30px;
         }
         
         .card:hover {
@@ -94,54 +396,101 @@
             box-shadow: 0 12px 35px rgba(0, 0, 0, 0.15);
         }
         
-        .header {
-            background: linear-gradient(90deg, var(--primary), var(--secondary));
-            color: white;
-            padding: 25px;
-            border-radius: 15px;
-            margin-bottom: 25px;
-            box-shadow: 0 5px 15px rgba(67, 97, 238, 0.3);
+        .card-header {
+            padding: 20px 25px;
+            transition: all var(--transition-speed) ease;
         }
         
-        .integrated-stats {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 25px;
-            flex-wrap: wrap;
-            gap: 15px;
+        .sidebar.minimized ~ .main-content .card-header {
+            padding: 20px 30px;
         }
         
-        .integrated-stat-card {
-            flex: 1;
-            min-width: 200px;
-            background: white;
-            border-radius: 15px;
-            padding: 20px;
-            box-shadow: 0 5px 20px rgba(0,0,0,0.05);
-            text-align: center;
-            transition: all 0.3s ease;
-            border: 1px solid rgba(0,0,0,0.05);
-        }
-
-        .integrated-stat-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        .card-header h5 {
+            font-size: 1.2rem;
+            transition: all var(--transition-speed) ease;
         }
         
-        .integrated-stat-card h4 {
-            margin: 0;
-            font-size: 2rem;
-            color: var(--primary);
-            font-weight: 700;
+        .sidebar.minimized ~ .main-content .card-header h5 {
+            font-size: 1.4rem;
         }
         
-        .integrated-stat-card p {
-            margin: 8px 0 0;
-            color: var(--gray);
+        .card-body {
+            padding: 20px 25px;
+            transition: all var(--transition-speed) ease;
+        }
+        
+        .sidebar.minimized ~ .main-content .card-body {
+            padding: 20px 30px;
+        }
+        
+        /* TABLE STYLES */
+        .table-responsive {
+            transition: all var(--transition-speed) ease;
+        }
+        
+        .sidebar.minimized ~ .main-content .table-responsive {
             font-size: 0.95rem;
+        }
+        
+        .sidebar.minimized ~ .main-content .table th,
+        .sidebar.minimized ~ .main-content .table td {
+            padding: 12px 15px;
+        }
+        
+        .table-hover tbody tr:hover {
+            background-color: rgba(67, 97, 238, 0.05);
+        }
+        
+        /* INPUT GROUP STYLES */
+        .input-group {
+            transition: all var(--transition-speed) ease;
+        }
+        
+        .sidebar.minimized ~ .main-content .input-group {
+            width: 280px !important;
+        }
+        
+        .input-group-text {
+            background-color: var(--light);
+            border-color: #dee2e6;
+        }
+        
+        /* BUTTON STYLES */
+        .btn {
+            transition: all var(--transition-speed) ease;
+            border-radius: 10px;
+            padding: 10px 20px;
             font-weight: 500;
         }
-
+        
+        .btn-primary {
+            background: var(--primary);
+            border-color: var(--primary);
+        }
+        
+        .btn-primary:hover {
+            background: var(--secondary);
+            border-color: var(--secondary);
+        }
+        
+        .btn-success {
+            background: var(--success);
+            border-color: var(--success);
+        }
+        
+        .btn-light {
+            background: white;
+            border-color: white;
+            color: var(--dark);
+        }
+        
+        .btn-light:hover {
+            background: #f8f9fa;
+            border-color: #f8f9fa;
+            color: var(--dark);
+        }
+        
+        /* LOADING SPINNER */
         .loading-spinner {
             width: 50px;
             height: 50px;
@@ -154,205 +503,791 @@
         @keyframes spin {
             to { transform: rotate(360deg); }
         }
-
-        /* Responsif: tumpuk di mobile */
+        
+        .loading-text {
+            color: var(--gray);
+            margin-top: 10px;
+            font-size: 0.9rem;
+        }
+        
+        /* Mobile Toggle Button */
+        .content-sidebar-toggle {
+            position: fixed;
+            left: 10px;
+            top: 10px;
+            z-index: 1001;
+            background: var(--primary);
+            color: white;
+            border: none;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+        
+        /* STATUS BADGES */
+        .badge {
+            font-size: 0.85em;
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-weight: 500;
+        }
+        
+        /* FOOTER */
+        .dashboard-footer {
+            margin-top: 30px;
+            padding-top: 15px;
+            border-top: 1px solid rgba(0,0,0,0.1);
+            font-size: 0.9rem;
+            color: var(--gray);
+            text-align: center;
+            transition: all var(--transition-speed) ease;
+        }
+        
+        .sidebar.minimized ~ .main-content .dashboard-footer {
+            font-size: 1rem;
+            padding: 20px 0;
+        }
+        
+        /* RESPONSIVE DESIGN */
         @media (max-width: 768px) {
             .sidebar {
                 width: 100%;
                 height: auto;
                 position: relative;
+                overflow-y: hidden;
+                max-height: 70vh;
+                transition: none;
             }
+            
+            .sidebar.minimized {
+                width: 100%;
+                height: 60px;
+                overflow: hidden;
+            }
+            
+            .sidebar.minimized .sidebar-header {
+                padding: 10px 15px;
+            }
+            
+            .sidebar.minimized .sidebar-toggle {
+                right: 15px;
+                transform: translateY(-50%) rotate(180deg);
+            }
+            
+            .sidebar.minimized .nav-links-container {
+                display: none;
+            }
+            
+            .sidebar.minimized .sidebar-footer {
+                display: none;
+            }
+            
             .main-content {
                 margin-left: 0;
                 padding: 15px;
+                width: 100%;
+                max-width: 100%;
+            }
+            
+            .sidebar.minimized ~ .main-content {
+                margin-left: 0;
+                width: 100%;
+                max-width: 100%;
+            }
+            
+            .content-wrapper {
+                max-width: 100%;
+            }
+            
+            .dashboard-header {
+                flex-direction: column;
+                align-items: flex-start !important;
+                gap: 15px;
+            }
+            
+            .dashboard-header h3 {
+                font-size: 1.5rem;
+            }
+            
+            .dashboard-header p {
+                font-size: 0.9rem;
+            }
+            
+            .chart-container {
+                height: 300px;
+                padding: 15px;
+            }
+            
+            .table-responsive {
+                font-size: 0.9rem;
+            }
+            
+            .input-group {
+                width: 100% !important;
+                margin-bottom: 10px;
+            }
+            
+            .content-sidebar-toggle {
+                display: flex;
+            }
+            
+            .sidebar:not(.mobile-open) {
+                transform: translateX(-100%);
+            }
+            
+            .sidebar.mobile-open {
+                transform: translateX(0);
+            }
+            
+            .sidebar.mobile-open.minimized {
+                transform: translateX(0);
             }
         }
+        
+        @media (max-width: 576px) {
+            .chart-container {
+                height: 250px;
+                padding: 15px;
+            }
+            
+            .dashboard-header {
+                padding: 20px 15px;
+            }
+            
+            .dashboard-header .d-flex {
+                flex-direction: column;
+                width: 100%;
+                gap: 10px;
+            }
+            
+            .btn {
+                width: 100%;
+                margin-bottom: 5px;
+            }
+        }
+        
+        /* GRID SYSTEM ADJUSTMENTS */
+        .row {
+            transition: all var(--transition-speed) ease;
+        }
+        
+        .sidebar.minimized ~ .main-content .row {
+            margin-left: -10px;
+            margin-right: -10px;
+        }
+        
+        .sidebar.minimized ~ .main-content .col-md-6,
+        .sidebar.minimized ~ .main-content .col-md-12 {
+            padding-left: 10px;
+            padding-right: 10px;
+        }
+        
+        /* ANIMATIONS */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .fade-in {
+            animation: fadeIn 0.5s ease forwards;
+        }
+        
+        /* UTILITY CLASSES */
+        .text-light {
+            color: rgba(255, 255, 255, 0.9) !important;
+        }
+        
+        .cursor-pointer {
+            cursor: pointer;
+        }
+        
+        .shadow-sm {
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05) !important;
+        }
+        /* Elegant Hover Effects for Sidebar */
+.sidebar .nav-link {
+    position: relative;
+    overflow: hidden;
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
 
-        /* Animasi untuk toast */
-        .toast {
-            transition: opacity 0.15s linear;
-        }
+/* Shimmer effect on hover */
+.sidebar .nav-link:hover {
+    background: rgba(255, 255, 255, 0.18);
+    transform: translateX(6px);
+    padding-left: 20px;
+}
 
-        /* Perbaikan untuk posisi tengah pada logo dan teks Administrator */
-        .sidebar-header {
-            text-align: center;
-            padding: 20px 15px;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-            margin-bottom: 15px;
-        }
-        
-        .sidebar-header i {
-            font-size: 3rem;
-            display: block;
-            margin: 0 auto 10px;
-        }
-        
-        .sidebar-header h4 {
-            margin: 0;
-            font-weight: 600;
-        }
-        
-        .sidebar-header p {
-            margin: 5px 0 0;
-            font-size: 0.85rem;
-            opacity: 0.8;
-        }
+.sidebar .nav-link:hover::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 50%;
+    height: 100%;
+    background: linear-gradient(
+        90deg,
+        transparent,
+        rgba(255, 255, 255, 0.2),
+        transparent
+    );
+    animation: shimmer 0.8s forwards;
+}
 
-        .card {
-            border-radius: 15px;
-            box-shadow: 0 5px 25px rgba(0, 0, 0, 0.08);
-            border: none;
-            margin-bottom: 25px;
-        }
-        .chart-container {
-            background: white;
-            padding: 25px;
-            border-radius: 15px;
-            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.05);
-            margin-bottom: 25px;
-            height: 400px;
-        }
-        
-        .loading-spinner {
-            width: 50px;
-            height: 50px;
-            border: 4px solid rgba(67, 97, 238, 0.2);
-            border-top: 4px solid #4361ee;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-        }
-        
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
+@keyframes shimmer {
+    100% {
+        left: 150%;
+    }
+}
+
+/* Floating effect for active link */
+.sidebar .nav-link.active {
+    background: rgba(255, 255, 255, 0.25);
+    border-left: 4px solid var(--success);
+    transform: translateX(10px);
+    box-shadow: 
+        -8px 0 20px rgba(0, 0, 0, 0.15),
+        inset 0 0 20px rgba(255, 255, 255, 0.1);
+}
+
+/* Icon animations */
+.sidebar .nav-link i {
+    transition: all 0.4s ease;
+    display: inline-block;
+}
+
+.sidebar .nav-link:hover i {
+    color: var(--success);
+    transform: translateX(5px) scale(1.1);
+}
+
+/* Minimized sidebar - circular hover effect */
+.sidebar.minimized .nav-link {
+    border-radius: 12px;
+    margin: 4px 8px;
+}
+
+.sidebar.minimized .nav-link:hover {
+    background: rgba(255, 255, 255, 0.3);
+    transform: scale(1.15) rotate(5deg);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+}
+
+.sidebar.minimized .nav-link.active {
+    background: rgba(255, 255, 255, 0.35);
+    box-shadow: 
+        0 0 20px rgba(76, 201, 240, 0.4),
+        inset 0 0 10px rgba(255, 255, 255, 0.2);
+    transform: scale(1.1);
+}
+
+/* Text fade in on hover (for non-minimized) */
+.sidebar:not(.minimized) .nav-link:hover .nav-text {
+    color: white;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+}
+
+/* Smooth color transition */
+.sidebar .nav-link,
+.sidebar .nav-link .nav-text {
+    transition: all 0.3s ease;
+}
     </style>
 </head>
 <body>
-    <!-- Sidebar -->
-    <div class="sidebar">
-        <div class="sidebar-header">
-            <i class="bi bi-egg-fried" style="font-size: 3rem;"></i>
-            <h4 class="mt-2">EggTrack</h4>
-            <p id="userRoleDisplay" class="text-light small">Administrator</p>
-        </div>
-        
-        <nav class="sidebar-nav">
-            <a href="dashboard.html" class="nav-link">
-                <i class="bi bi-speedometer2"></i>
-                <span>Dashboard Utama</span>
-                   </a>
-            <a href="production.html" class="nav-link">
-                <i class="bi bi-egg-fried"></i>
-                <span>Manajemen Produksi</span>
-                    </a>
-            <a href="sales.html" class="nav-link">
-                <i class="bi bi-cart"></i>
-                <span>Penjualan & Order</span>
-                    </a>
-            <a href="expenses.html" class="nav-link">
-                <i class="bi bi-cash-coin"></i>
-                <span>Pengeluaran</span>
-                    </a>
-            <a href="inventory.html" class="nav-link">
-                <i class="bi bi-box-seam"></i>
-                <span>Inventaris Stok</span>
-                     </a>
-            <a href="customer.html" class="nav-link">
-                <i class="bi bi-people"></i>
-                <span>Manajemen Pelanggan</span>
-                     </a>
-            <a href="reports.html" class="nav-link active">
-                <i class="bi bi-graph-up"></i>
-                <span>Laporan & Analisis</span>
-                     </a>
-            <a href="settings.html" class="nav-link">
-                <i class="bi bi-gear"></i>
-                <span>Pengaturan Sistem</span>
-                     </a>
-            <a href="#" class="nav-link mt-3 logout-btn">
-                <i class="bi bi-box-arrow-right"></i>
-                <span>Keluar Sistem</span>
-            </a>
-        </nav>
+    <!-- Mobile Toggle Button (for mobile only) -->
+    <button class="content-sidebar-toggle" id="mobileSidebarToggle">
+        <i class="bi bi-list"></i>
+    </button>
+    
+    <!-- Loading State -->
+    <div id="loadingState" style="display: none;">
+        <div class="spinner-border text-primary"></div>
+        <div class="loading-text mt-3">Memuat data laporan...</div>
     </div>
     
+    <!-- Sidebar -->
+    <div class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <i class="bi bi-egg-fried sidebar-logo"></i>
+            <h4 class="sidebar-title">EggTrack</h4>
+            <p id="userRoleDisplay" class="sidebar-user-info">Memuat...</p>
+            <small id="userNameDisplay" class="sidebar-user-info"></small>
+            <button class="sidebar-toggle" id="sidebarToggle">
+                <i class="bi bi-chevron-left"></i>
+            </button>
+        </div>
+        
+        <div class="nav-links-container">
+            <nav class="nav flex-column">
+                <a href="dashboard.html" class="nav-link">
+                    <i class="bi bi-speedometer2"></i>
+                    <span class="nav-text">Dashboard Utama</span>
+                </a>
+                <a href="production.html" class="nav-link">
+                    <i class="bi bi-egg-fried"></i>
+                    <span class="nav-text">Manajemen Produksi</span>
+                </a>
+                <a href="sales.html" class="nav-link">
+                    <i class="bi bi-cart"></i>
+                    <span class="nav-text">Penjualan & Order</span>
+                </a>
+                <a href="expenses.html" class="nav-link">
+                    <i class="bi bi-cash-coin"></i>
+                    <span class="nav-text">Pengeluaran</span>
+                </a>
+                <a href="inventory.html" class="nav-link">
+                    <i class="bi bi-box-seam"></i>
+                    <span class="nav-text">Inventaris Stok</span>
+                </a>
+                <a href="customer.html" class="nav-link">
+                    <i class="bi bi-people"></i>
+                    <span class="nav-text">Manajemen Pelanggan</span>
+                </a>
+                <a href="reports.html" class="nav-link active">
+                    <i class="bi bi-graph-up"></i>
+                    <span class="nav-text">Laporan & Analisis</span>
+                </a>
+                <a href="settings.html" class="nav-link">
+                    <i class="bi bi-gear"></i>
+                    <span class="nav-text">Pengaturan Sistem</span>
+                </a>
+                <a href="#" class="nav-link mt-4" id="logoutBtn">
+                    <i class="bi bi-box-arrow-right"></i>
+                    <span class="nav-text">Keluar Sistem</span>
+                </a>
+            </nav>
+        </div>
+        
+        <div class="sidebar-footer">
+            <small>EggTrack v1.0</small>
+        </div>
+    </div>
+    
+    <!-- Main Content -->
     <div class="main-content">
-        <!-- Header -->
-        <div class="dashboard-header d-flex justify-content-between align-items-center mb-4">
-            <div>
-                <h3><i class="bi bi-graph-up me-2"></i>Laporan & Analisis</h3>
-                <p class="text-muted mb-0">Analisis data dan laporan terintegrasi</p>
-            </div>
-            <div class="d-flex">
-                <div class="input-group me-3" style="width: 250px;">
-                    <input type="date" class="form-control" id="reportStartDate">
-                    <span class="input-group-text">s/d</span>
-                    <input type="date" class="form-control" id="reportEndDate">
+        <div class="content-wrapper">
+            <!-- Header -->
+            <div class="dashboard-header d-flex justify-content-between align-items-center">
+                <div>
+                    <h3><i class="bi bi-graph-up me-2"></i>Laporan & Analisis</h3>
+                    <p class="text-light mb-0">Analisis data dan laporan terintegrasi</p>
                 </div>
-                <button class="btn btn-primary me-2" id="exportReport">
-                    <i class="bi bi-download me-2"></i> Export
-                </button>
-                <button class="btn btn-success" id="generateReport">
-                    <i class="bi bi-arrow-clockwise me-2"></i> Generate
-                </button>
-            </div>
-        </div>
-
-        <!-- Charts -->
-        <div class="row mb-4">
-            <div class="col-md-6">
-                <div class="chart-container">
-                    <h5 class="mb-4"><i class="bi bi-bar-chart me-2"></i>Laporan Keuangan</h5>
-                    <canvas id="financialChart"></canvas>
-                </div>
-            </div>
-            <div class="col-md-6">
-                <div class="chart-container">
-                    <h5 class="mb-4"><i class="bi bi-pie-chart me-2"></i>Distribusi Pengeluaran</h5>
-                    <canvas id="expensesChart"></canvas>
-                </div>
-            </div>
-        </div>
-
-        <!-- Tabel Ringkasan -->
-        <div class="row">
-            <div class="col-md-12">
-                <div class="card">
-                    <div class="card-header">
-                        <h5 class="mb-0"><i class="bi bi-table me-2"></i>Ringkasan Laporan</h5>
+                <div class="d-flex align-items-center">
+                    <div class="input-group me-3" style="width: 250px;">
+                        <input type="date" class="form-control" id="reportStartDate">
+                        <span class="input-group-text">s/d</span>
+                        <input type="date" class="form-control" id="reportEndDate">
                     </div>
-                    <div class="card-body">
-                        <div class="table-responsive">
-                            <table class="table table-hover">
-                                <thead>
-                                    <tr>
-                                        <th>Periode</th>
-                                        <th>Produksi</th>
-                                        <th>Penjualan</th>
-                                        <th>Pendapatan</th>
-                                        <th>Pengeluaran</th>
-                                        <th>Keuntungan</th>
-                                        <th>Margin</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="reportSummary">
-                                    <tr>
-                                        <td colspan="7" class="text-center py-4">
-                                            <div class="loading-spinner mx-auto"></div>
-                                            <div class="loading-text mt-2">Memuat data laporan...</div>
-                                        </td>
-                                    </tr>
-                                </tbody>
-                            </table>
+                    <button class="btn btn-light me-2" id="exportReport">
+                        <i class="bi bi-download me-2"></i> Export
+                    </button>
+                    <button class="btn btn-success" id="generateReport">
+                        <i class="bi bi-arrow-clockwise me-2"></i> Generate
+                    </button>
+                </div>
+            </div>
+
+            <!-- Stats Cards -->
+            <div class="row mb-4">
+                <div class="col-md-3">
+                    <div class="card">
+                        <div class="card-body text-center">
+                            <h5 class="text-muted">Total Produksi</h5>
+                            <h2 id="totalProduction" class="text-primary">0</h2>
+                            <small class="text-success"><i class="bi bi-arrow-up"></i> 12% dari bulan lalu</small>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card">
+                        <div class="card-body text-center">
+                            <h5 class="text-muted">Total Penjualan</h5>
+                            <h2 id="totalSales" class="text-primary">0</h2>
+                            <small class="text-success"><i class="bi bi-arrow-up"></i> 8% dari bulan lalu</small>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card">
+                        <div class="card-body text-center">
+                            <h5 class="text-muted">Total Pendapatan</h5>
+                            <h2 id="totalRevenue" class="text-primary">Rp 0</h2>
+                            <small class="text-success"><i class="bi bi-arrow-up"></i> 15% dari bulan lalu</small>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card">
+                        <div class="card-body text-center">
+                            <h5 class="text-muted">Keuntungan Bersih</h5>
+                            <h2 id="netProfit" class="text-primary">Rp 0</h2>
+                            <small class="text-warning"><i class="bi bi-dash"></i> Stabil</small>
                         </div>
                     </div>
                 </div>
             </div>
+
+            <!-- Charts -->
+            <div class="row mb-4">
+                <div class="col-md-6">
+                    <div class="chart-container">
+                        <div class="d-flex justify-content-between align-items-center mb-4">
+                            <h5 class="mb-0"><i class="bi bi-bar-chart me-2"></i>Laporan Keuangan</h5>
+                            <select class="form-select form-select-sm" style="width: 150px;" id="financialChartType">
+                                <option value="bar">Bar Chart</option>
+                                <option value="line">Line Chart</option>
+                            </select>
+                        </div>
+                        <canvas id="financialChart"></canvas>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="chart-container">
+                        <div class="d-flex justify-content-between align-items-center mb-4">
+                            <h5 class="mb-0"><i class="bi bi-pie-chart me-2"></i>Distribusi Pengeluaran</h5>
+                            <select class="form-select form-select-sm" style="width: 150px;" id="expensesChartType">
+                                <option value="pie">Pie Chart</option>
+                                <option value="doughnut">Doughnut Chart</option>
+                            </select>
+                        </div>
+                        <canvas id="expensesChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Production vs Sales Chart -->
+            <div class="row mb-4">
+                <div class="col-md-12">
+                    <div class="chart-container">
+                        <h5 class="mb-4"><i class="bi bi-graph-up me-2"></i>Produksi vs Penjualan (30 Hari Terakhir)</h5>
+                        <canvas id="productionSalesChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tabel Ringkasan -->
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="card">
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                            <h5 class="mb-0"><i class="bi bi-table me-2"></i>Ringkasan Laporan</h5>
+                            <div class="btn-group" role="group">
+                                <button type="button" class="btn btn-sm btn-outline-primary active" data-period="monthly">Bulanan</button>
+                                <button type="button" class="btn btn-sm btn-outline-primary" data-period="weekly">Mingguan</button>
+                                <button type="button" class="btn btn-sm btn-outline-primary" data-period="daily">Harian</button>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th>Periode</th>
+                                            <th>Produksi</th>
+                                            <th>Penjualan</th>
+                                            <th>Pendapatan</th>
+                                            <th>Pengeluaran</th>
+                                            <th>Keuntungan</th>
+                                            <th>Margin</th>
+                                            <th>Trend</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="reportSummary">
+                                        <tr>
+                                            <td colspan="8" class="text-center py-4">
+                                                <div class="loading-spinner mx-auto"></div>
+                                                <div class="loading-text mt-2">Memuat data laporan...</div>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Footer -->
+            <div class="dashboard-footer text-center">
+                <small>
+                    <i class="bi bi-info-circle me-1"></i>
+                    Laporan diperbarui secara real-time | 
+                    <span id="reportDate"></span> | 
+                    <span id="reportTime"></span>
+                </small>
+            </div>
         </div>
     </div>
 
+    <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="reports.js"></script>
-
+    
+    <!-- Sidebar Toggle Script -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const sidebar = document.getElementById('sidebar');
+            const sidebarToggle = document.getElementById('sidebarToggle');
+            const mobileSidebarToggle = document.getElementById('mobileSidebarToggle');
+            const navLinks = document.querySelectorAll('.nav-link');
+            const periodButtons = document.querySelectorAll('[data-period]');
+            
+            // Check localStorage for saved state
+            const isMinimized = localStorage.getItem('sidebarMinimized') === 'true';
+            if (isMinimized) {
+                sidebar.classList.add('minimized');
+                setTimeout(() => expandMainContent(true), 10);
+            }
+            
+            // Desktop toggle
+            sidebarToggle.addEventListener('click', function() {
+                const isMinimizing = !sidebar.classList.contains('minimized');
+                sidebar.classList.toggle('minimized');
+                const isNowMinimized = sidebar.classList.contains('minimized');
+                localStorage.setItem('sidebarMinimized', isNowMinimized);
+                
+                // Update toggle icon rotation
+                const icon = this.querySelector('i');
+                if (isMinimizing) {
+                    icon.style.transform = 'rotate(180deg)';
+                    expandMainContent(true);
+                } else {
+                    icon.style.transform = 'rotate(0deg)';
+                    expandMainContent(false);
+                }
+                
+                // Beri waktu untuk transisi, lalu resize chart jika ada
+                setTimeout(() => {
+                    // Trigger window resize event untuk chart.js
+                    window.dispatchEvent(new Event('resize'));
+                    // Panggil fungsi resize chart jika ada
+                    if (typeof resizeReportCharts === 'function') {
+                        resizeReportCharts();
+                    }
+                    
+                    // Update chart sizes and layouts
+                    adjustLayoutForSidebar(isNowMinimized);
+                }, 300);
+            });
+            
+            // Mobile toggle
+            mobileSidebarToggle.addEventListener('click', function() {
+                sidebar.classList.toggle('mobile-open');
+            });
+            
+            // Close mobile sidebar when clicking outside on mobile
+            document.addEventListener('click', function(event) {
+                if (window.innerWidth <= 768) {
+                    const isClickInsideSidebar = sidebar.contains(event.target);
+                    const isClickOnMobileToggle = mobileSidebarToggle.contains(event.target);
+                    
+                    if (!isClickInsideSidebar && !isClickOnMobileToggle && sidebar.classList.contains('mobile-open')) {
+                        sidebar.classList.remove('mobile-open');
+                    }
+                }
+            });
+            
+            // Add tooltip on hover for minimized sidebar
+            navLinks.forEach(link => {
+                link.addEventListener('mouseenter', function(e) {
+                    if (sidebar.classList.contains('minimized')) {
+                        const tooltip = document.createElement('div');
+                        tooltip.className = 'nav-link-tooltip';
+                        tooltip.textContent = this.querySelector('.nav-text').textContent;
+                        this.appendChild(tooltip);
+                        
+                        // Position tooltip
+                        setTimeout(() => {
+                            tooltip.style.opacity = '1';
+                        }, 10);
+                    }
+                });
+                
+                link.addEventListener('mouseleave', function() {
+                    const tooltip = this.querySelector('.nav-link-tooltip');
+                    if (tooltip) {
+                        tooltip.remove();
+                    }
+                });
+            });
+            
+            // Hide sidebar on mobile when clicking a link
+            navLinks.forEach(link => {
+                link.addEventListener('click', function() {
+                    if (window.innerWidth <= 768 && sidebar.classList.contains('mobile-open')) {
+                        sidebar.classList.remove('mobile-open');
+                    }
+                });
+            });
+            
+            // Period button click handlers
+            periodButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    // Remove active class from all buttons
+                    periodButtons.forEach(btn => btn.classList.remove('active'));
+                    // Add active class to clicked button
+                    this.classList.add('active');
+                    
+                    const period = this.getAttribute('data-period');
+                    // Call function to update report based on period
+                    if (typeof updateReportPeriod === 'function') {
+                        updateReportPeriod(period);
+                    }
+                });
+            });
+            
+            // Initialize layout based on sidebar state
+            adjustLayoutForSidebar(isMinimized);
+            
+            // Adjust layout on window resize
+            window.addEventListener('resize', function() {
+                const isMinimized = sidebar.classList.contains('minimized');
+                adjustLayoutForSidebar(isMinimized);
+            });
+            
+            // Function to expand main content when sidebar is minimized
+            function expandMainContent(expand) {
+                const mainContent = document.querySelector('.main-content');
+                const contentWrapper = document.querySelector('.content-wrapper');
+                const header = document.querySelector('.dashboard-header');
+                const statCards = document.querySelectorAll('.card');
+                const chartContainers = document.querySelectorAll('.chart-container');
+                
+                if (expand && window.innerWidth > 768) {
+                    // Add expanded class to content wrapper
+                    if (contentWrapper) contentWrapper.classList.add('expanded-content');
+                    
+                    // Add full-width class to main elements
+                    if (mainContent) mainContent.classList.add('full-width');
+                    
+                    // Expand header
+                    if (header) {
+                        header.classList.add('full-width');
+                    }
+                    
+                    // Expand stat cards
+                    statCards.forEach(card => {
+                        card.classList.add('expanded-content');
+                    });
+                    
+                    // Expand chart containers
+                    chartContainers.forEach(container => {
+                        container.classList.add('full-width');
+                    });
+                } else {
+                    // Remove expanded class
+                    if (contentWrapper) contentWrapper.classList.remove('expanded-content');
+                    
+                    // Remove full-width class
+                    if (mainContent) mainContent.classList.remove('full-width');
+                    
+                    // Reset header
+                    if (header) {
+                        header.classList.remove('full-width');
+                    }
+                    
+                    // Reset stat cards
+                    statCards.forEach(card => {
+                        card.classList.remove('expanded-content');
+                    });
+                    
+                    // Reset chart containers
+                    chartContainers.forEach(container => {
+                        container.classList.remove('full-width');
+                    });
+                }
+            }
+            
+            // Function to adjust layout based on sidebar state
+            function adjustLayoutForSidebar(isMinimized) {
+                // Adjust grid spacing based on sidebar state
+                const rows = document.querySelectorAll('.row');
+                
+                if (isMinimized && window.innerWidth > 768) {
+                    // When sidebar is minimized on desktop
+                    rows.forEach(row => {
+                        row.style.marginLeft = '-10px';
+                        row.style.marginRight = '-10px';
+                    });
+                    
+                    // Adjust font sizes for better fit
+                    document.querySelectorAll('.card h2').forEach(el => {
+                        el.style.fontSize = '2.2rem';
+                    });
+                    
+                    // Adjust header
+                    const header = document.querySelector('.dashboard-header');
+                    if (header) {
+                        header.querySelector('h3').style.fontSize = '2.2rem';
+                        header.querySelector('p').style.fontSize = '1.1rem';
+                    }
+                    
+                    // Adjust input group width
+                    const inputGroup = document.querySelector('.input-group');
+                    if (inputGroup) {
+                        inputGroup.style.width = '280px';
+                    }
+                } else {
+                    // When sidebar is maximized or on mobile
+                    rows.forEach(row => {
+                        row.style.marginLeft = '';
+                        row.style.marginRight = '';
+                    });
+                    
+                    // Reset font sizes
+                    document.querySelectorAll('.card h2').forEach(el => {
+                        el.style.fontSize = '';
+                    });
+                    
+                    // Reset header
+                    const header = document.querySelector('.dashboard-header');
+                    if (header) {
+                        header.querySelector('h3').style.fontSize = '';
+                        header.querySelector('p').style.fontSize = '';
+                    }
+                    
+                    // Reset input group width
+                    const inputGroup = document.querySelector('.input-group');
+                    if (inputGroup) {
+                        inputGroup.style.width = '';
+                    }
+                }
+            }
+            
+            // Update date and time in footer
+            function updateDateTime() {
+                const now = new Date();
+                const dateElement = document.getElementById('reportDate');
+                const timeElement = document.getElementById('reportTime');
+                
+                if (dateElement) {
+                    dateElement.textContent = now.toLocaleDateString('id-ID', {
+                        weekday: 'long',
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric'
+                    });
+                }
+                
+                if (timeElement) {
+                    timeElement.textContent = now.toLocaleTimeString('id-ID', {
+                        hour: '2-digit',
+                        minute: '2-digit'
+                    });
+                }
+            }
+            
+            // Update date and time every minute
+            updateDateTime();
+            setInterval(updateDateTime, 60000);
+        });
+    </script>
 </body>
 </html>

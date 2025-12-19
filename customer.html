@@ -3,17 +3,21 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Manajemen Pelanggan - EggTrack</title>
+    <title>Manajemen Pelanggan - EggTrack Admin</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
     <style>
-         :root {
+        :root {
             --primary: #4361ee;
             --secondary: #3f37c9;
             --success: #4cc9f0;
             --light: #f8f9fa;
             --dark: #212529;
             --gray: #6c757d;
+            --sidebar-width: 250px;
+            --sidebar-minimized: 70px;
+            --transition-speed: 0.3s;
+            --content-max-width: 1400px;
         }
         
         body {
@@ -23,44 +27,199 @@
             padding: 0;
             min-height: 100vh;
             overflow-x: hidden;
+            transition: margin-left var(--transition-speed) ease;
         }
         
+        /* SIDEBAR STYLES */
         .sidebar {
             background: linear-gradient(180deg, var(--primary), var(--secondary));
             color: white;
             height: 100vh;
             position: fixed;
-            padding-top: 20px;
+            left: 0;
+            top: 0;
             z-index: 1000;
-            width: 250px;
+            width: var(--sidebar-width);
             box-shadow: 5px 0 15px rgba(0, 0, 0, 0.1);
+            overflow-y: auto;
+            overflow-x: hidden;
+            scroll-behavior: smooth;
+            transition: width var(--transition-speed) ease;
         }
         
-        .sidebar .nav-link {
-            color: rgba(255, 255, 255, 0.8);
-            padding: 12px 20px;
-            text-decoration: none;
-            display: block;
-            transition: all 0.3s;
-            border-left: 4px solid transparent;
+        .sidebar.minimized {
+            width: var(--sidebar-minimized);
+        }
+        
+        .sidebar::-webkit-scrollbar {
+            width: 6px;
+        }
+        
+        .sidebar::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+        }
+        
+        .sidebar::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 10px;
+        }
+        
+        .sidebar::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.5);
+        }
+        
+        .sidebar {
+            scrollbar-width: thin;
+            scrollbar-color: rgba(255, 255, 255, 0.3) rgba(255, 255, 255, 0.1);
+        }
+        
+        /* Sidebar Header */
+        .sidebar-header {
+            padding: 20px 15px;
+            text-align: center;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            transition: padding var(--transition-speed) ease;
             position: relative;
         }
         
+        .sidebar.minimized .sidebar-header {
+            padding: 15px 5px;
+        }
+        
+        .sidebar-logo {
+            font-size: 3rem;
+            margin-bottom: 10px;
+            transition: all var(--transition-speed) ease;
+        }
+        
+        .sidebar.minimized .sidebar-logo {
+            font-size: 2.5rem;
+            margin-bottom: 0;
+        }
+        
+        .sidebar-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin: 5px 0;
+            white-space: nowrap;
+            overflow: hidden;
+            transition: all var(--transition-speed) ease;
+        }
+        
+        .sidebar.minimized .sidebar-title {
+            display: none;
+        }
+        
+        .sidebar-user-info {
+            font-size: 0.9rem;
+            opacity: 0.8;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            transition: all var(--transition-speed) ease;
+        }
+        
+        .sidebar.minimized .sidebar-user-info {
+            display: none;
+        }
+        
+        /* Toggle Button */
+        .sidebar-toggle {
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            color: white;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .sidebar-toggle:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateY(-50%) scale(1.1);
+        }
+        
+        .sidebar.minimized .sidebar-toggle {
+            right: 50%;
+            transform: translate(50%, -50%) rotate(180deg);
+        }
+        
+        /* Navigation Links */
+        .sidebar .nav-link {
+            color: rgba(255, 255, 255, 0.8);
+            padding: 12px 15px;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            transition: all var(--transition-speed) ease;
+            border-left: 4px solid transparent;
+            white-space: nowrap;
+            overflow: hidden;
+            margin: 2px 8px;
+            border-radius: 8px;
+            position: relative;
+        }
+        
+        .sidebar.minimized .nav-link {
+            padding: 12px 5px;
+            justify-content: center;
+        }
+        
         .sidebar .nav-link:hover, .sidebar .nav-link.active {
-            background: rgba(255, 255, 255, 0.1);
+            background: linear-gradient(90deg, rgba(255, 255, 255, 0.15), rgba(255, 255, 255, 0.1));
             color: white;
             border-left: 4px solid var(--success);
+            transform: translateX(5px);
+            box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        
+        .sidebar.minimized .nav-link:hover, 
+        .sidebar.minimized .nav-link.active {
+            border-left: none;
+            border-radius: 8px;
         }
         
         .sidebar .nav-link i {
+            font-size: 1.2rem;
+            min-width: 24px;
+            text-align: center;
+            transition: margin var(--transition-speed) ease;
+        }
+        
+        .sidebar:not(.minimized) .nav-link i {
             margin-right: 15px;
-            font-size: 1.1rem;
+        }
+        
+        .sidebar.minimized .nav-link i {
+            margin-right: 0;
+            font-size: 1.4rem;
+        }
+        
+        .nav-text {
+            transition: all var(--transition-speed) ease;
+            opacity: 1;
+        }
+        
+        .sidebar.minimized .nav-text {
+            opacity: 0;
+            width: 0;
+            height: 0;
+            overflow: hidden;
         }
         
         .sidebar .nav-link .notification-badge {
             position: absolute;
             top: 5px;
-            right: 10px;
+            right: 15px;
             background-color: #dc3545;
             color: white;
             border-radius: 50%;
@@ -70,58 +229,175 @@
             display: flex;
             align-items: center;
             justify-content: center;
+            transition: all var(--transition-speed) ease;
         }
         
+        .sidebar.minimized .nav-link .notification-badge {
+            top: 2px;
+            right: 2px;
+            font-size: 0.6rem;
+            width: 18px;
+            height: 18px;
+        }
+        
+        /* Sidebar Footer */
+        .sidebar-footer {
+            padding: 15px;
+            text-align: center;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            font-size: 0.8rem;
+            opacity: 0.7;
+            white-space: nowrap;
+            overflow: hidden;
+            transition: all var(--transition-speed) ease;
+        }
+        
+        .sidebar.minimized .sidebar-footer {
+            padding: 10px 5px;
+            font-size: 0;
+        }
+        
+        .sidebar.minimized .sidebar-footer::after {
+            content: "v1.0";
+            font-size: 0.7rem;
+        }
+        
+        /* Tooltip for minimized sidebar */
+        .nav-link-tooltip {
+            position: absolute;
+            left: calc(var(--sidebar-minimized) + 10px);
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            white-space: nowrap;
+            z-index: 9999;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.2s ease;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            animation: fadeInUp 0.2s ease-out;
+        }
+        
+        .nav-link-tooltip::after {
+            content: '';
+            position: absolute;
+            left: -5px;
+            top: 50%;
+            transform: translateY(-50%);
+            border-width: 5px;
+            border-style: solid;
+            border-color: transparent rgba(0, 0, 0, 0.8) transparent transparent;
+        }
+        
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(5px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        /* MAIN CONTENT */
         .main-content {
-            margin-left: 250px;
+            margin-left: var(--sidebar-width);
             padding: 20px;
             min-height: 100vh;
             background: #f8f9fa;
+            transition: all var(--transition-speed) ease;
+            width: calc(100% - var(--sidebar-width));
+            max-width: calc(100% - var(--sidebar-width));
+            overflow-x: hidden;
         }
         
-        .card {
-            border-radius: 15px;
-            box-shadow: 0 5px 25px rgba(0, 0, 0, 0.08);
-            border: none;
-            margin-bottom: 25px;
-            transition: transform 0.3s, box-shadow 0.3s;
-            overflow: hidden;
+        .sidebar.minimized ~ .main-content {
+            margin-left: var(--sidebar-minimized);
+            width: calc(100% - var(--sidebar-minimized));
+            max-width: calc(100% - var(--sidebar-minimized));
         }
         
-        .card:hover {
-            transform: translateY(-8px);
-            box-shadow: 0 12px 35px rgba(0, 0, 0, 0.15);
+        /* Content Wrapper */
+        .content-wrapper {
+            max-width: var(--content-max-width);
+            margin: 0 auto;
+            width: 100%;
+            transition: all var(--transition-speed) ease;
         }
         
+        .sidebar.minimized ~ .main-content .content-wrapper {
+            max-width: calc(var(--content-max-width) + 180px);
+        }
+        
+        /* Header */
         .header {
             background: linear-gradient(90deg, var(--primary), var(--secondary));
             color: white;
-            padding: 25px;
+            padding: 25px 30px;
             border-radius: 15px;
             margin-bottom: 25px;
             box-shadow: 0 5px 15px rgba(67, 97, 238, 0.3);
+            transition: all var(--transition-speed) ease;
+            max-width: 100%;
         }
         
+        .sidebar.minimized ~ .main-content .header {
+            padding: 25px 40px;
+        }
+        
+        .header h2 {
+            font-size: 1.8rem;
+            transition: font-size var(--transition-speed) ease;
+        }
+        
+        .sidebar.minimized ~ .main-content .header h2 {
+            font-size: 2.2rem;
+        }
+        
+        .header p {
+            font-size: 1rem;
+            transition: font-size var(--transition-speed) ease;
+        }
+        
+        .sidebar.minimized ~ .main-content .header p {
+            font-size: 1.1rem;
+        }
+        
+        /* INTEGRATED STATS */
         .integrated-stats {
             display: flex;
             justify-content: space-between;
             margin-bottom: 25px;
             flex-wrap: wrap;
             gap: 15px;
+            transition: all var(--transition-speed) ease;
+        }
+        
+        .sidebar.minimized ~ .main-content .integrated-stats {
+            gap: 20px;
         }
         
         .integrated-stat-card {
             flex: 1;
-            min-width: 200px;
+            min-width: 180px;
             background: white;
             border-radius: 15px;
-            padding: 20px;
+            padding: 20px 15px;
             box-shadow: 0 5px 20px rgba(0,0,0,0.05);
             text-align: center;
-            transition: all 0.3s ease;
+            transition: all var(--transition-speed) ease;
             border: 1px solid rgba(0,0,0,0.05);
         }
-
+        
+        .sidebar.minimized ~ .main-content .integrated-stat-card {
+            min-width: 200px;
+            padding: 25px 20px;
+            flex: 1 0 calc(16.666% - 20px);
+        }
+        
         .integrated-stat-card:hover {
             transform: translateY(-5px);
             box-shadow: 0 10px 30px rgba(0,0,0,0.1);
@@ -129,9 +405,14 @@
         
         .integrated-stat-card h4 {
             margin: 0;
-            font-size: 2rem;
+            font-size: 1.8rem;
             color: var(--primary);
             font-weight: 700;
+            transition: all var(--transition-speed) ease;
+        }
+        
+        .sidebar.minimized ~ .main-content .integrated-stat-card h4 {
+            font-size: 2.2rem;
         }
         
         .integrated-stat-card p {
@@ -139,87 +420,102 @@
             color: var(--gray);
             font-size: 0.95rem;
             font-weight: 500;
-        }
-
-        .loading-spinner {
-            width: 50px;
-            height: 50px;
-            border: 4px solid rgba(67, 97, 238, 0.2);
-            border-top: 4px solid var(--primary);
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
+            transition: all var(--transition-speed) ease;
         }
         
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
-
-        /* Responsif: tumpuk di mobile */
-        @media (max-width: 768px) {
-            .sidebar {
-                width: 100%;
-                height: auto;
-                position: relative;
-            }
-            .main-content {
-                margin-left: 0;
-                padding: 15px;
-            }
-        }
-
-        /* Animasi untuk toast */
-        .toast {
-            transition: opacity 0.15s linear;
-        }
-
-        /* Perbaikan untuk posisi tengah pada logo dan teks Administrator */
-        .sidebar-header {
-            text-align: center;
-            padding: 20px 15px;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-            margin-bottom: 15px;
+        .sidebar.minimized ~ .main-content .integrated-stat-card p {
+            font-size: 1.05rem;
         }
         
-        .sidebar-header i {
-            font-size: 3rem;
-            display: block;
-            margin: 0 auto 10px;
-        }
-        
-        .sidebar-header h4 {
-            margin: 0;
-            font-weight: 600;
-        }
-        
-        .sidebar-header p {
-            margin: 5px 0 0;
-            font-size: 0.85rem;
-            opacity: 0.8;
-        }
+        /* CARD STYLES */
         .card {
             border-radius: 15px;
             box-shadow: 0 5px 25px rgba(0, 0, 0, 0.08);
             border: none;
             margin-bottom: 25px;
-        }
-        .chart-container {
-            background: white;
-            padding: 25px;
-            border-radius: 15px;
-            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.05);
-            margin-bottom: 25px;
-            height: 400px;
+            transition: all var(--transition-speed) ease;
+            overflow: hidden;
+            max-width: 100%;
         }
         
-        .loading-spinner {
-            width: 50px;
-            height: 50px;
-            border: 4px solid rgba(67, 97, 238, 0.2);
-            border-top: 4px solid #4361ee;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
+        .sidebar.minimized ~ .main-content .card {
+            margin-bottom: 30px;
         }
         
+        .card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 12px 35px rgba(0, 0, 0, 0.15);
+        }
+        
+        .card-header {
+            padding: 20px 25px;
+            transition: all var(--transition-speed) ease;
+        }
+        
+        .sidebar.minimized ~ .main-content .card-header {
+            padding: 20px 30px;
+        }
+        
+        .card-header h5 {
+            font-size: 1.2rem;
+            transition: all var(--transition-speed) ease;
+        }
+        
+        .sidebar.minimized ~ .main-content .card-header h5 {
+            font-size: 1.4rem;
+        }
+        
+        .card-body {
+            padding: 20px 25px;
+            transition: all var(--transition-speed) ease;
+        }
+        
+        .sidebar.minimized ~ .main-content .card-body {
+            padding: 20px 30px;
+        }
+        
+        /* TABLE RESPONSIVENESS */
+        .table-responsive {
+            transition: all var(--transition-speed) ease;
+        }
+        
+        .sidebar.minimized ~ .main-content .table-responsive {
+            font-size: 0.95rem;
+        }
+        
+        .sidebar.minimized ~ .main-content .table th,
+        .sidebar.minimized ~ .main-content .table td {
+            padding: 12px 15px;
+        }
+        
+        /* SEARCH BOX */
+        .search-box {
+            position: relative;
+            transition: all var(--transition-speed) ease;
+            min-width: 300px;
+        }
+        
+        .search-box i {
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--gray);
+            z-index: 2;
+        }
+        
+        .search-box input {
+            padding-left: 40px;
+            border-radius: 10px;
+            transition: all var(--transition-speed) ease;
+            width: 100%;
+        }
+        
+        .sidebar.minimized ~ .main-content .search-box {
+            min-width: 350px;
+        }
+        
+        /* STAT CARD STYLES */
         .stat-card {
             text-align: center;
             padding: 25px 20px;
@@ -228,6 +524,7 @@
             box-shadow: 0 5px 25px rgba(0, 0, 0, 0.08);
             margin-bottom: 25px;
             transition: transform 0.3s, box-shadow 0.3s;
+            background: white;
         }
         
         .stat-card:hover {
@@ -241,29 +538,12 @@
             color: #4361ee;
         }
         
-        .search-box {
-            position: relative;
-        }
-        
-        .search-box i {
-            position: absolute;
-            left: 12px;
-            top: 50%;
-            transform: translateY(-50%);
-            color: #6c757d;
-            z-index: 2;
-        }
-        
-        .search-box input {
-            padding-left: 40px;
-            border-radius: 10px;
-        }
-        
+        /* LOADING SPINNER */
         .loading-spinner {
             width: 50px;
             height: 50px;
             border: 4px solid rgba(67, 97, 238, 0.2);
-            border-top: 4px solid #4361ee;
+            border-top: 4px solid var(--primary);
             border-radius: 50%;
             animation: spin 1s linear infinite;
         }
@@ -271,209 +551,485 @@
         @keyframes spin {
             to { transform: rotate(360deg); }
         }
+        
+        /* Mobile Toggle Button */
+        .content-sidebar-toggle {
+            position: fixed;
+            left: 10px;
+            top: 10px;
+            z-index: 1001;
+            background: var(--primary);
+            color: white;
+            border: none;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+        
+        /* Efek Hover Tambahan untuk Sidebar */
+        .sidebar .nav-link:hover i {
+            color: var(--success);
+            transform: scale(1.1);
+        }
+        
+        .sidebar .nav-link.active {
+            background: linear-gradient(90deg, rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 0.15));
+            box-shadow: 0 0 15px rgba(76, 201, 240, 0.3);
+        }
+        
+        .sidebar .nav-link::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at center, rgba(255, 255, 255, 0.2) 0%, transparent 70%);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            border-radius: 8px;
+        }
+        
+        .sidebar .nav-link:hover::after {
+            opacity: 1;
+        }
+        
+        .sidebar.minimized .nav-link:hover {
+            transform: scale(1.05);
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 10px;
+        }
+        
+        .sidebar.minimized .nav-link:hover i {
+            color: var(--success);
+            animation: pulse 0.6s ease-in-out;
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.2); }
+            100% { transform: scale(1.1); }
+        }
+        
+        .sidebar-logo {
+            transition: all 0.4s ease;
+        }
+        
+        .sidebar-header:hover .sidebar-logo {
+            transform: rotate(15deg) scale(1.1);
+            color: var(--success);
+        }
+        
+        .sidebar-toggle:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateY(-50%) rotate(90deg) scale(1.1);
+            box-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
+        }
+        
+        #logoutBtn:hover {
+            background: rgba(220, 53, 69, 0.2);
+            color: #ff6b6b;
+        }
+        
+        #logoutBtn:hover i {
+            transform: translateX(5px);
+            color: #ff6b6b;
+        }
+        
+        .sidebar-user-info {
+            transition: all 0.3s ease;
+        }
+        
+        .sidebar-header:hover .sidebar-user-info {
+            opacity: 1;
+            transform: translateY(-2px);
+        }
+        
+        .sidebar-footer:hover {
+            opacity: 1;
+            background: rgba(255, 255, 255, 0.05);
+        }
+        
+        .notification-badge {
+            transition: all 0.3s ease;
+        }
+        
+        .nav-link:hover .notification-badge {
+            transform: scale(1.2);
+            background-color: #ff4757;
+            box-shadow: 0 0 10px rgba(255, 71, 87, 0.5);
+        }
+        
+        /* Smooth transitions untuk semua elemen sidebar */
+        .sidebar * {
+            transition-property: color, background-color, transform, opacity, border-color;
+            transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+            transition-duration: 0.3s;
+        }
+        
+        /* Responsive Design */
+        @media (max-width: 1600px) {
+            .sidebar.minimized ~ .main-content .integrated-stat-card {
+                flex: 1 0 calc(33.333% - 20px);
+            }
+        }
+        
+        @media (max-width: 1200px) {
+            .integrated-stat-card {
+                min-width: calc(33.333% - 15px);
+            }
+            
+            .sidebar.minimized ~ .main-content .integrated-stat-card {
+                flex: 1 0 calc(50% - 20px);
+            }
+        }
+        
+        @media (max-width: 992px) {
+            .integrated-stat-card {
+                min-width: calc(50% - 15px);
+            }
+            
+            .sidebar.minimized ~ .main-content .integrated-stat-card {
+                flex: 1 0 calc(50% - 20px);
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 100%;
+                height: auto;
+                position: relative;
+                overflow-y: hidden;
+                max-height: 70vh;
+                transition: none;
+            }
+            
+            .sidebar.minimized {
+                width: 100%;
+                height: 60px;
+                overflow: hidden;
+            }
+            
+            .sidebar.minimized .sidebar-header {
+                padding: 10px 15px;
+            }
+            
+            .sidebar.minimized .sidebar-toggle {
+                right: 15px;
+                transform: translateY(-50%) rotate(180deg);
+            }
+            
+            .sidebar.minimized .nav-links-container {
+                display: none;
+            }
+            
+            .sidebar.minimized .sidebar-footer {
+                display: none;
+            }
+            
+            .main-content {
+                margin-left: 0;
+                padding: 15px;
+                width: 100%;
+                max-width: 100%;
+            }
+            
+            .sidebar.minimized ~ .main-content {
+                margin-left: 0;
+                width: 100%;
+                max-width: 100%;
+            }
+            
+            .content-wrapper {
+                max-width: 100%;
+            }
+            
+            .header h2 {
+                font-size: 1.5rem;
+            }
+            
+            .header p {
+                font-size: 0.9rem;
+            }
+            
+            .integrated-stats {
+                flex-direction: column;
+            }
+            
+            .integrated-stat-card {
+                min-width: 100%;
+            }
+            
+            .search-box {
+                min-width: 100%;
+            }
+            
+            .content-sidebar-toggle {
+                display: flex;
+            }
+            
+            .sidebar:not(.mobile-open) {
+                transform: translateX(-100%);
+            }
+            
+            .sidebar.mobile-open {
+                transform: translateX(0);
+            }
+            
+            .sidebar.mobile-open.minimized {
+                transform: translateX(0);
+            }
+            
+            .stat-card i {
+                font-size: 2.2rem;
+            }
+            
+            .sidebar .nav-link:hover {
+                transform: translateY(-2px);
+                background: rgba(255, 255, 255, 0.15);
+            }
+            
+            .sidebar.mobile-open .nav-link:hover {
+                transform: translateX(5px);
+            }
+        }
+        
+        @media (max-width: 576px) {
+            .header {
+                padding: 20px 15px;
+            }
+            
+            .search-box input {
+                padding-left: 35px;
+            }
+        }
     </style>
 </head>
 <body>
-     <!-- Sidebar -->
-    <div class="sidebar">
-        <div class="sidebar-header">
-            <i class="bi bi-egg-fried" style="font-size: 3rem;"></i>
-            <h4 class="mt-2">EggTrack</h4>
-            <p id="userRoleDisplay" class="text-light small">Administrator</p>
-        </div>
-        
-        <nav class="sidebar-nav">
-            <a href="dashboard.html" class="nav-link">
-                <i class="bi bi-speedometer2"></i>
-                <span>Dashboard Utama</span>
-                   </a>
-            <a href="production.html" class="nav-link">
-                <i class="bi bi-egg-fried"></i>
-                <span>Manajemen Produksi</span>
-                    </a>
-            <a href="sales.html" class="nav-link">
-                <i class="bi bi-cart"></i>
-                <span>Penjualan & Order</span>
-                    </a>
-            <a href="expenses.html" class="nav-link">
-                <i class="bi bi-cash-coin"></i>
-                <span>Pengeluaran</span>
-                    </a>
-            <a href="inventory.html" class="nav-link">
-                <i class="bi bi-box-seam"></i>
-                <span>Inventaris Stok</span>
-                     </a>
-            <a href="customer.html" class="nav-link active">
-                <i class="bi bi-people"></i>
-                <span>Manajemen Pelanggan</span>
-                     </a>
-            <a href="reports.html" class="nav-link">
-                <i class="bi bi-graph-up"></i>
-                <span>Laporan & Analisis</span>
-                     </a>
-            <a href="settings.html" class="nav-link">
-                <i class="bi bi-gear"></i>
-                <span>Pengaturan Sistem</span>
-                     </a>
-            <a href="#" class="nav-link mt-3 logout-btn">
-                <i class="bi bi-box-arrow-right"></i>
-                <span>Keluar Sistem</span>
-            </a>
-        </nav>
+    <!-- Mobile Toggle Button -->
+    <button class="content-sidebar-toggle" id="mobileSidebarToggle">
+        <i class="bi bi-list"></i>
+    </button>
+    
+    <!-- Loading State -->
+    <div id="loadingState" style="display: none;">
+        <div class="spinner-border text-primary"></div>
+        <div class="loading-text">Memuat data pelanggan...</div>
     </div>
     
+    <!-- Sidebar -->
+    <div class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <i class="bi bi-egg-fried sidebar-logo"></i>
+            <h4 class="sidebar-title">EggTrack</h4>
+            <p id="userRoleDisplay" class="sidebar-user-info">Memuat...</p>
+            <small id="userNameDisplay" class="sidebar-user-info"></small>
+            <button class="sidebar-toggle" id="sidebarToggle">
+                <i class="bi bi-chevron-left"></i>
+            </button>
+        </div>
+        
+        <div class="nav-links-container">
+            <nav class="nav flex-column">
+                <a href="dashboard.html" class="nav-link">
+                    <i class="bi bi-speedometer2"></i>
+                    <span class="nav-text">Dashboard Utama</span>
+                </a>
+                <a href="production.html" class="nav-link">
+                    <i class="bi bi-egg-fried"></i>
+                    <span class="nav-text">Manajemen Produksi</span>
+                </a>
+                <a href="sales.html" class="nav-link">
+                    <i class="bi bi-cart"></i>
+                    <span class="nav-text">Penjualan & Order</span>
+                </a>
+                <a href="expenses.html" class="nav-link">
+                    <i class="bi bi-cash-coin"></i>
+                    <span class="nav-text">Pengeluaran</span>
+                </a>
+                <a href="inventory.html" class="nav-link">
+                    <i class="bi bi-box-seam"></i>
+                    <span class="nav-text">Inventaris Stok</span>
+                </a>
+                <a href="customer.html" class="nav-link active">
+                    <i class="bi bi-people"></i>
+                    <span class="nav-text">Manajemen Pelanggan</span>
+                </a>
+                <a href="reports.html" class="nav-link">
+                    <i class="bi bi-graph-up"></i>
+                    <span class="nav-text">Laporan & Analisis</span>
+                </a>
+                <a href="settings.html" class="nav-link">
+                    <i class="bi bi-gear"></i>
+                    <span class="nav-text">Pengaturan Sistem</span>
+                </a>
+                <a href="#" class="nav-link mt-4" id="logoutBtn">
+                    <i class="bi bi-box-arrow-right"></i>
+                    <span class="nav-text">Keluar Sistem</span>
+                </a>
+            </nav>
+        </div>
+        
+        <div class="sidebar-footer">
+            <small>EggTrack v1.0</small>
+        </div>
+    </div>
+    
+    <!-- Main Content -->
     <div class="main-content">
-        <!-- Header -->
-        <div class="dashboard-header d-flex justify-content-between align-items-center mb-4">
-            <div>
-                <h3><i class="bi bi-people me-2"></i>Manajemen Pelanggan</h3>
-                <p class="text-muted mb-0">Kelola data pelanggan dan riwayat transaksi</p>
+        <div class="content-wrapper">
+            <!-- Header -->
+            <div class="header">
+                <h2><i class="bi bi-people me-2"></i>Manajemen Pelanggan Terintegrasi</h2>
+                <p class="mb-0">Kelola data pelanggan, riwayat transaksi, dan analisis perilaku belanja</p>
             </div>
-            <div class="d-flex">
-                <div class="search-box me-3">
-                    <i class="bi bi-search"></i>
-                    <input type="text" class="form-control" id="customerSearch" placeholder="Cari pelanggan...">
-                </div>
-                <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addCustomerModal">
-                    <i class="bi bi-plus-circle me-2"></i> Tambah Pelanggan
-                </button>
-            </div>
-        </div>
 
-        <!-- Info Integrasi -->
-        <div class="alert alert-info mb-4">
-            <i class="bi bi-arrow-left-right me-2"></i>
-            <strong>Data Terintegrasi:</strong> Data pelanggan terhubung dengan riwayat penjualan
-        </div>
+            <!-- Info Integrasi -->
+            <div class="alert alert-info mb-4">
+                <i class="bi bi-arrow-left-right me-2"></i>
+                <strong>Data Terintegrasi:</strong> Data pelanggan terhubung dengan riwayat penjualan dan analisis dashboard
+            </div>
 
-        <!-- Stat Cards -->
-        <div class="row mb-4">
-            <div class="col-md-3 col-6 mb-4">
-                <div class="card text-center stat-card">
-                    <div class="card-body">
-                        <i class="bi bi-people"></i>
-                        <h5>Total Pelanggan</h5>
-                        <h3 id="totalCustomers">0</h3>
-                        <p class="text-muted">Orang</p>
-                    </div>
+            <!-- Stat Cards -->
+            <div class="integrated-stats">
+                <div class="integrated-stat-card">
+                    <h4 id="totalCustomers">0</h4>
+                    <p>Total Pelanggan</p>
+                </div>
+                <div class="integrated-stat-card">
+                    <h4 id="activeCustomers">0</h4>
+                    <p>Pelanggan Aktif</p>
+                </div>
+                <div class="integrated-stat-card">
+                    <h4 id="totalCustomerTransactions">0</h4>
+                    <p>Total Transaksi</p>
+                </div>
+                <div class="integrated-stat-card">
+                    <h4 id="totalCustomerSpent">Rp 0</h4>
+                    <p>Total Belanja</p>
                 </div>
             </div>
-            <div class="col-md-3 col-6 mb-4">
-                <div class="card text-center stat-card">
-                    <div class="card-body">
-                        <i class="bi bi-star"></i>
-                        <h5>Pelanggan Aktif</h5>
-                        <h3 id="activeCustomers">0</h3>
-                        <p class="text-muted">Orang</p>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-3 col-6 mb-4">
-                <div class="card text-center stat-card">
-                    <div class="card-body">
-                        <i class="bi bi-cart"></i>
-                        <h5>Total Transaksi</h5>
-                        <h3 id="totalCustomerTransactions">0</h3>
-                        <p class="text-muted">Order</p>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-3 col-6 mb-4">
-                <div class="card text-center stat-card">
-                    <div class="card-body">
-                        <i class="bi bi-currency-dollar"></i>
-                        <h5>Total Belanja</h5>
-                        <h3 id="totalCustomerSpent">Rp 0</h3>
-                        <p class="text-muted">Keseluruhan</p>
-                    </div>
-                </div>
-            </div>
-        </div>
 
-        <!-- Tabel Pelanggan -->
-        <div class="card">
-            <div class="card-header d-flex justify-content-between align-items-center">
-                <h5 class="mb-0"><i class="bi bi-list-ul me-2"></i>Daftar Pelanggan</h5>
-                <button class="btn btn-outline-primary btn-sm" id="exportCustomers">
-                    <i class="bi bi-download me-1"></i> Export
-                </button>
-            </div>
-            <div class="card-body">
-                <div class="table-responsive">
-                    <table class="table table-hover">
-                        <thead>
-                            <tr>
-                                <th>Nama</th>
-                                <th>Telepon</th>
-                                <th>Email</th>
-                                <th>Alamat</th>
-                                <th>Total Transaksi</th>
-                                <th>Total Belanja</th>
-                                <th>Status</th>
-                                <th>Aksi</th>
-                            </tr>
-                        </thead>
-                        <tbody id="customerTableBody">
-                            <tr>
-                                <td colspan="8" class="text-center py-4">
-                                    <div class="loading-spinner mx-auto"></div>
-                                    <div class="loading-text mt-2">Memuat data pelanggan...</div>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
+            <!-- Tabel Pelanggan -->
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <div>
+                        <h5 class="mb-0"><i class="bi bi-list-ul me-2"></i>Daftar Pelanggan Terintegrasi</h5>
+                        <small class="text-muted">Data otomatis tersinkron dengan transaksi penjualan</small>
+                    </div>
+                    <div class="d-flex">
+                        <div class="search-box me-3">
+                            <i class="bi bi-search"></i>
+                            <input type="text" class="form-control" id="customerSearch" placeholder="Cari pelanggan...">
+                        </div>
+                        <button class="btn btn-primary me-2" data-bs-toggle="modal" data-bs-target="#addCustomerModal">
+                            <i class="bi bi-plus-circle me-2"></i> Tambah Pelanggan
+                        </button>
+                        <button class="btn btn-outline-primary btn-sm" id="exportCustomers">
+                            <i class="bi bi-download me-1"></i> Export
+                        </button>
+                    </div>
                 </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Nama</th>
+                                    <th>Telepon</th>
+                                    <th>Email</th>
+                                    <th>Alamat</th>
+                                    <th>Total Transaksi</th>
+                                    <th>Total Belanja</th>
+                                    <th>Status</th>
+                                    <th>Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody id="customerTableBody">
+                                <tr>
+                                    <td colspan="8" class="text-center py-4">
+                                        <div class="loading-spinner mx-auto"></div>
+                                        <div class="loading-text mt-2">Memuat data pelanggan...</div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Footer -->
+            <div class="dashboard-footer text-center text-muted mt-4">
+                <small>
+                    <i class="bi bi-info-circle me-1"></i>
+                    Data pelanggan terintegrasi dengan sistem penjualan | 
+                    Terakhir diperbarui: <span id="currentDate"></span>
+                </small>
             </div>
         </div>
     </div>
 
     <!-- Modal Tambah Pelanggan -->
     <div class="modal fade" id="addCustomerModal" tabindex="-1">
-        <div class="modal-dialog">
+        <div class="modal-dialog modal-lg">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title"><i class="bi bi-plus-circle me-2"></i>Tambah Pelanggan</h5>
+                    <h5 class="modal-title"><i class="bi bi-plus-circle me-2"></i>Tambah Pelanggan Baru</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
                     <form id="customerForm">
-                        <div class="mb-3">
-                            <label for="customerName" class="form-label">Nama Pelanggan</label>
-                            <input type="text" class="form-control" id="customerName" placeholder="Masukkan nama pelanggan" required>
-                        </div>
-                        <div class="mb-3">
-                            <label for="customerPhone" class="form-label">Nomor Telepon</label>
-                            <input type="text" class="form-control" id="customerPhone" placeholder="Masukkan nomor telepon">
-                        </div>
-                        <div class="mb-3">
-                            <label for="customerEmail" class="form-label">Email</label>
-                            <input type="email" class="form-control" id="customerEmail" placeholder="Masukkan email">
-                        </div>
-                        <div class="mb-3">
-                            <label for="customerAddress" class="form-label">Alamat</label>
-                            <textarea class="form-control" id="customerAddress" rows="3" placeholder="Masukkan alamat"></textarea>
-                        </div>
-                        <div class="mb-3">
-                            <label for="customerType" class="form-label">Jenis Pelanggan</label>
-                            <select class="form-control" id="customerType">
-                                <option value="Retail">Retail</option>
-                                <option value="Reseller">Reseller</option>
-                                <option value="Grosir">Grosir</option>
-                            </select>
-                        </div>
-                        <div class="mb-3">
-                            <label for="customerStatus" class="form-label">Status</label>
-                            <select class="form-control" id="customerStatus">
-                                <option value="Aktif">Aktif</option>
-                                <option value="Tidak Aktif">Tidak Aktif</option>
-                            </select>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="customerName" class="form-label">Nama Pelanggan <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="customerName" placeholder="Masukkan nama lengkap pelanggan" required>
+                                <div class="form-text">Nama akan digunakan dalam transaksi dan laporan</div>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="customerPhone" class="form-label">Nomor Telepon</label>
+                                <input type="text" class="form-control" id="customerPhone" placeholder="Contoh: 081234567890">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="customerEmail" class="form-label">Email</label>
+                                <input type="email" class="form-control" id="customerEmail" placeholder="email@contoh.com">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="customerType" class="form-label">Jenis Pelanggan</label>
+                                <select class="form-select" id="customerType">
+                                    <option value="Retail">Retail</option>
+                                    <option value="Reseller">Reseller</option>
+                                    <option value="Grosir">Grosir</option>
+                                    <option value="Kontrak">Kontrak</option>
+                                </select>
+                            </div>
+                            <div class="col-12 mb-3">
+                                <label for="customerAddress" class="form-label">Alamat Lengkap</label>
+                                <textarea class="form-control" id="customerAddress" rows="3" placeholder="Masukkan alamat lengkap untuk pengiriman"></textarea>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="customerStatus" class="form-label">Status Akun</label>
+                                <select class="form-select" id="customerStatus">
+                                    <option value="Aktif">Aktif</option>
+                                    <option value="Tidak Aktif">Tidak Aktif</option>
+                                    <option value="Trial">Trial</option>
+                                </select>
+                            </div>
                         </div>
                     </form>
+                    <div class="alert alert-info mt-3">
+                        <i class="bi bi-info-circle me-2"></i>
+                        <small>Data pelanggan akan otomatis tersinkron dengan modul penjualan dan laporan</small>
+                    </div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
                     <button type="button" class="btn btn-primary" id="saveCustomer">
-                        <i class="bi bi-check-circle me-2"></i>Simpan Pelanggan
+                        <i class="bi bi-check-circle me-2"></i>Simpan Data Pelanggan
                     </button>
                 </div>
             </div>
@@ -482,6 +1038,154 @@
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="customer.js"></script>
-
+    
+    <!-- Sidebar Toggle Script -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const sidebar = document.getElementById('sidebar');
+            const sidebarToggle = document.getElementById('sidebarToggle');
+            const mobileSidebarToggle = document.getElementById('mobileSidebarToggle');
+            const navLinks = document.querySelectorAll('.nav-link');
+            
+            // Check localStorage for saved state
+            const isMinimized = localStorage.getItem('sidebarMinimized') === 'true';
+            if (isMinimized) {
+                sidebar.classList.add('minimized');
+            }
+            
+            // Desktop toggle
+            sidebarToggle.addEventListener('click', function() {
+                const isMinimizing = !sidebar.classList.contains('minimized');
+                sidebar.classList.toggle('minimized');
+                const isNowMinimized = sidebar.classList.contains('minimized');
+                localStorage.setItem('sidebarMinimized', isNowMinimized);
+                
+                // Update toggle icon rotation
+                const icon = this.querySelector('i');
+                if (isMinimizing) {
+                    icon.style.transform = 'rotate(180deg)';
+                } else {
+                    icon.style.transform = 'rotate(0deg)';
+                }
+                
+                // Trigger window resize for responsive adjustments
+                setTimeout(() => {
+                    window.dispatchEvent(new Event('resize'));
+                }, 300);
+            });
+            
+            // Mobile toggle
+            mobileSidebarToggle.addEventListener('click', function() {
+                sidebar.classList.toggle('mobile-open');
+            });
+            
+            // Close mobile sidebar when clicking outside on mobile
+            document.addEventListener('click', function(event) {
+                if (window.innerWidth <= 768) {
+                    const isClickInsideSidebar = sidebar.contains(event.target);
+                    const isClickOnMobileToggle = mobileSidebarToggle.contains(event.target);
+                    
+                    if (!isClickInsideSidebar && !isClickOnMobileToggle && sidebar.classList.contains('mobile-open')) {
+                        sidebar.classList.remove('mobile-open');
+                    }
+                }
+            });
+            
+            // Enhanced hover effects for sidebar links
+            navLinks.forEach((link, index) => {
+                // Add delay for each link
+                link.style.transitionDelay = `${index * 0.05}s`;
+                
+                // Tooltip on hover for minimized sidebar
+                link.addEventListener('mouseenter', function(e) {
+                    if (sidebar.classList.contains('minimized')) {
+                        const tooltip = document.createElement('div');
+                        tooltip.className = 'nav-link-tooltip';
+                        tooltip.textContent = this.querySelector('.nav-text').textContent;
+                        this.appendChild(tooltip);
+                        
+                        // Position tooltip
+                        setTimeout(() => {
+                            tooltip.style.opacity = '1';
+                        }, 10);
+                    }
+                    
+                    // Enhanced hover effect
+                    this.style.zIndex = '10';
+                    const icon = this.querySelector('i');
+                    if (icon) {
+                        icon.style.transform = 'translateY(-2px)';
+                    }
+                });
+                
+                link.addEventListener('mouseleave', function() {
+                    const tooltip = this.querySelector('.nav-link-tooltip');
+                    if (tooltip) {
+                        tooltip.remove();
+                    }
+                    
+                    // Reset enhanced hover effect
+                    this.style.zIndex = '1';
+                    const icon = this.querySelector('i');
+                    if (icon) {
+                        icon.style.transform = 'translateY(0)';
+                    }
+                });
+            });
+            
+            // Hide sidebar on mobile when clicking a link
+            navLinks.forEach(link => {
+                link.addEventListener('click', function() {
+                    if (window.innerWidth <= 768 && sidebar.classList.contains('mobile-open')) {
+                        sidebar.classList.remove('mobile-open');
+                    }
+                });
+            });
+            
+            // Enhanced hover for sidebar logo
+            const sidebarLogo = document.querySelector('.sidebar-logo');
+            if (sidebarLogo) {
+                sidebarLogo.addEventListener('mouseenter', function() {
+                    this.style.textShadow = '0 0 10px rgba(76, 201, 240, 0.7)';
+                });
+                
+                sidebarLogo.addEventListener('mouseleave', function() {
+                    this.style.textShadow = 'none';
+                });
+            }
+            
+            // Update current date in footer
+            function updateCurrentDate() {
+                const dateElement = document.getElementById('currentDate');
+                if (dateElement) {
+                    const now = new Date();
+                    const options = { 
+                        day: 'numeric', 
+                        month: 'long', 
+                        year: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit'
+                    };
+                    dateElement.textContent = now.toLocaleDateString('id-ID', options);
+                }
+            }
+            
+            updateCurrentDate();
+            
+            // Logout functionality
+            const logoutBtn = document.getElementById('logoutBtn');
+            if (logoutBtn) {
+                logoutBtn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    if (confirm('Apakah Anda yakin ingin logout?')) {
+                        // Clear any session data
+                        localStorage.removeItem('eggUser');
+                        // Redirect to login page
+                        window.location.href = 'login.html';
+                    }
+                });
+            }
+        });
+    </script>
 </body>
 </html>

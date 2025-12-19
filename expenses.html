@@ -3,17 +3,21 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Manajemen Pengeluaran - EggTrack</title>
+    <title>Manajemen Pengeluaran - EggTrack Admin</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
     <style>
-         :root {
+        :root {
             --primary: #4361ee;
             --secondary: #3f37c9;
             --success: #4cc9f0;
             --light: #f8f9fa;
             --dark: #212529;
             --gray: #6c757d;
+            --sidebar-width: 250px;
+            --sidebar-minimized: 70px;
+            --transition-speed: 0.3s;
+            --content-max-width: 1400px;
         }
         
         body {
@@ -23,27 +27,150 @@
             padding: 0;
             min-height: 100vh;
             overflow-x: hidden;
+            transition: margin-left var(--transition-speed) ease;
         }
         
+        /* SIDEBAR STYLES */
         .sidebar {
             background: linear-gradient(180deg, var(--primary), var(--secondary));
             color: white;
             height: 100vh;
             position: fixed;
-            padding-top: 20px;
+            left: 0;
+            top: 0;
             z-index: 1000;
-            width: 250px;
+            width: var(--sidebar-width);
             box-shadow: 5px 0 15px rgba(0, 0, 0, 0.1);
+            overflow-y: auto;
+            overflow-x: hidden;
+            scroll-behavior: smooth;
+            transition: width var(--transition-speed) ease;
         }
         
+        .sidebar.minimized {
+            width: var(--sidebar-minimized);
+        }
+        
+        /* Custom scrollbar untuk sidebar */
+        .sidebar::-webkit-scrollbar {
+            width: 6px;
+        }
+        
+        .sidebar::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+        }
+        
+        .sidebar::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 10px;
+        }
+        
+        .sidebar::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.5);
+        }
+        
+        /* Untuk Firefox */
+        .sidebar {
+            scrollbar-width: thin;
+            scrollbar-color: rgba(255, 255, 255, 0.3) rgba(255, 255, 255, 0.1);
+        }
+        
+        /* Sidebar Header */
+        .sidebar-header {
+            padding: 20px 15px;
+            text-align: center;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            transition: padding var(--transition-speed) ease;
+            position: relative;
+        }
+        
+        .sidebar.minimized .sidebar-header {
+            padding: 15px 5px;
+        }
+        
+        .sidebar-logo {
+            font-size: 3rem;
+            margin-bottom: 10px;
+            transition: all var(--transition-speed) ease;
+        }
+        
+        .sidebar.minimized .sidebar-logo {
+            font-size: 2.5rem;
+            margin-bottom: 0;
+        }
+        
+        .sidebar-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin: 5px 0;
+            white-space: nowrap;
+            overflow: hidden;
+            transition: all var(--transition-speed) ease;
+        }
+        
+        .sidebar.minimized .sidebar-title {
+            display: none;
+        }
+        
+        .sidebar-user-info {
+            font-size: 0.9rem;
+            opacity: 0.8;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            transition: all var(--transition-speed) ease;
+        }
+        
+        .sidebar.minimized .sidebar-user-info {
+            display: none;
+        }
+        
+        /* Toggle Button */
+        .sidebar-toggle {
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            color: white;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .sidebar-toggle:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateY(-50%) scale(1.1);
+        }
+        
+        .sidebar.minimized .sidebar-toggle {
+            right: 50%;
+            transform: translate(50%, -50%) rotate(180deg);
+        }
+        
+        /* Navigation Links */
         .sidebar .nav-link {
             color: rgba(255, 255, 255, 0.8);
-            padding: 12px 20px;
+            padding: 12px 15px;
             text-decoration: none;
-            display: block;
-            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            transition: all var(--transition-speed) ease;
             border-left: 4px solid transparent;
-            position: relative;
+            white-space: nowrap;
+            overflow: hidden;
+        }
+        
+        .sidebar.minimized .nav-link {
+            padding: 12px 5px;
+            justify-content: center;
         }
         
         .sidebar .nav-link:hover, .sidebar .nav-link.active {
@@ -52,95 +179,296 @@
             border-left: 4px solid var(--success);
         }
         
+        .sidebar.minimized .nav-link:hover, 
+        .sidebar.minimized .nav-link.active {
+            border-left: none;
+            border-radius: 8px;
+        }
+        
         .sidebar .nav-link i {
+            font-size: 1.2rem;
+            min-width: 24px;
+            text-align: center;
+            transition: margin var(--transition-speed) ease;
+        }
+        
+        .sidebar:not(.minimized) .nav-link i {
             margin-right: 15px;
-            font-size: 1.1rem;
         }
         
-        .sidebar .nav-link .notification-badge {
-            position: absolute;
-            top: 5px;
-            right: 10px;
-            background-color: #dc3545;
-            color: white;
-            border-radius: 50%;
-            width: 20px;
-            height: 20px;
-            font-size: 0.7rem;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+        .sidebar.minimized .nav-link i {
+            margin-right: 0;
+            font-size: 1.4rem;
         }
         
-        .main-content {
-            margin-left: 250px;
-            padding: 20px;
-            min-height: 100vh;
-            background: #f8f9fa;
+        .nav-text {
+            transition: all var(--transition-speed) ease;
+            opacity: 1;
         }
         
-        .card {
-            border-radius: 15px;
-            box-shadow: 0 5px 25px rgba(0, 0, 0, 0.08);
-            border: none;
-            margin-bottom: 25px;
-            transition: transform 0.3s, box-shadow 0.3s;
+        .sidebar.minimized .nav-text {
+            opacity: 0;
+            width: 0;
+            height: 0;
             overflow: hidden;
         }
         
-        .card:hover {
-            transform: translateY(-8px);
-            box-shadow: 0 12px 35px rgba(0, 0, 0, 0.15);
+        /* Tooltip for minimized sidebar */
+        .nav-link-tooltip {
+            position: absolute;
+            left: calc(var(--sidebar-minimized) + 10px);
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            white-space: nowrap;
+            z-index: 9999;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.2s ease;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
         }
         
+        .nav-link-tooltip::after {
+            content: '';
+            position: absolute;
+            left: -5px;
+            top: 50%;
+            transform: translateY(-50%);
+            border-width: 5px;
+            border-style: solid;
+            border-color: transparent rgba(0, 0, 0, 0.8) transparent transparent;
+        }
+        
+        /* MAIN CONTENT */
+        .main-content {
+            margin-left: var(--sidebar-width);
+            padding: 20px;
+            min-height: 100vh;
+            background: #f8f9fa;
+            transition: all var(--transition-speed) ease;
+            width: calc(100% - var(--sidebar-width));
+            max-width: calc(100% - var(--sidebar-width));
+            overflow-x: hidden;
+        }
+        
+        .sidebar.minimized ~ .main-content {
+            margin-left: var(--sidebar-minimized);
+            width: calc(100% - var(--sidebar-minimized));
+            max-width: calc(100% - var(--sidebar-minimized));
+        }
+        
+        .content-wrapper {
+            max-width: var(--content-max-width);
+            margin: 0 auto;
+            width: 100%;
+            transition: all var(--transition-speed) ease;
+        }
+        
+        /* HEADER STYLES */
         .header {
             background: linear-gradient(90deg, var(--primary), var(--secondary));
             color: white;
-            padding: 25px;
+            padding: 25px 30px;
             border-radius: 15px;
             margin-bottom: 25px;
             box-shadow: 0 5px 15px rgba(67, 97, 238, 0.3);
+            transition: all var(--transition-speed) ease;
         }
         
-        .integrated-stats {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 25px;
-            flex-wrap: wrap;
-            gap: 15px;
+        .sidebar.minimized ~ .main-content .header {
+            padding: 25px 40px;
         }
         
-        .integrated-stat-card {
-            flex: 1;
-            min-width: 200px;
+        .header h2 {
+            font-size: 1.8rem;
+            transition: font-size var(--transition-speed) ease;
+        }
+        
+        .sidebar.minimized ~ .main-content .header h2 {
+            font-size: 2.2rem;
+        }
+        
+        .header p {
+            font-size: 1rem;
+            transition: font-size var(--transition-speed) ease;
+        }
+        
+        .sidebar.minimized ~ .main-content .header p {
+            font-size: 1.1rem;
+        }
+        
+        /* STAT CARDS */
+        .stat-card {
             background: white;
             border-radius: 15px;
             padding: 20px;
             box-shadow: 0 5px 20px rgba(0,0,0,0.05);
             text-align: center;
-            transition: all 0.3s ease;
+            transition: all var(--transition-speed) ease;
             border: 1px solid rgba(0,0,0,0.05);
+            height: 100%;
+            margin-bottom: 20px;
         }
-
-        .integrated-stat-card:hover {
+        
+        .sidebar.minimized ~ .main-content .stat-card {
+            padding: 25px 20px;
+        }
+        
+        .stat-card:hover {
             transform: translateY(-5px);
             box-shadow: 0 10px 30px rgba(0,0,0,0.1);
         }
         
-        .integrated-stat-card h4 {
-            margin: 0;
-            font-size: 2rem;
+        .stat-card i {
+            font-size: 2.5rem;
+            margin-bottom: 15px;
             color: var(--primary);
-            font-weight: 700;
         }
         
-        .integrated-stat-card p {
-            margin: 8px 0 0;
+        .sidebar.minimized ~ .main-content .stat-card i {
+            font-size: 2.8rem;
+        }
+        
+        .stat-card h3 {
+            margin: 0;
+            font-size: 1.8rem;
+            color: var(--primary);
+            font-weight: 700;
+            transition: all var(--transition-speed) ease;
+        }
+        
+        .sidebar.minimized ~ .main-content .stat-card h3 {
+            font-size: 2.2rem;
+        }
+        
+        .stat-card h5 {
             color: var(--gray);
             font-size: 0.95rem;
             font-weight: 500;
+            margin-top: 8px;
+            transition: all var(--transition-speed) ease;
         }
-
+        
+        .sidebar.minimized ~ .main-content .stat-card h5 {
+            font-size: 1.05rem;
+        }
+        
+        /* CARD STYLES */
+        .card {
+            border-radius: 15px;
+            box-shadow: 0 5px 25px rgba(0, 0, 0, 0.08);
+            border: none;
+            margin-bottom: 25px;
+            transition: all var(--transition-speed) ease;
+            overflow: hidden;
+        }
+        
+        .sidebar.minimized ~ .main-content .card {
+            margin-bottom: 30px;
+        }
+        
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 35px rgba(0, 0, 0, 0.15);
+        }
+        
+        .card-header {
+            padding: 20px 25px;
+            background: white;
+            border-bottom: 1px solid rgba(0,0,0,0.05);
+            transition: all var(--transition-speed) ease;
+        }
+        
+        .sidebar.minimized ~ .main-content .card-header {
+            padding: 20px 30px;
+        }
+        
+        .card-header h5 {
+            font-size: 1.2rem;
+            transition: all var(--transition-speed) ease;
+        }
+        
+        .sidebar.minimized ~ .main-content .card-header h5 {
+            font-size: 1.4rem;
+        }
+        
+        .card-body {
+            padding: 20px 25px;
+            transition: all var(--transition-speed) ease;
+        }
+        
+        .sidebar.minimized ~ .main-content .card-body {
+            padding: 20px 30px;
+        }
+        
+        /* SEARCH BOX */
+        .search-box {
+            position: relative;
+            transition: all var(--transition-speed) ease;
+            min-width: 300px;
+        }
+        
+        .search-box i {
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--gray);
+            z-index: 2;
+        }
+        
+        .search-box input {
+            padding-left: 40px;
+            border-radius: 10px;
+            border: 1px solid #dee2e6;
+            transition: all var(--transition-speed) ease;
+            width: 100%;
+        }
+        
+        .sidebar.minimized ~ .main-content .search-box {
+            min-width: 350px;
+        }
+        
+        /* TABLE STYLES */
+        .table-responsive {
+            transition: all var(--transition-speed) ease;
+        }
+        
+        .sidebar.minimized ~ .main-content .table-responsive {
+            font-size: 0.95rem;
+        }
+        
+        .table {
+            margin-bottom: 0;
+        }
+        
+        .table thead th {
+            background-color: #f8f9fa;
+            border-bottom: 2px solid #dee2e6;
+            font-weight: 600;
+            color: var(--dark);
+            padding: 12px 15px;
+            white-space: nowrap;
+        }
+        
+        .sidebar.minimized ~ .main-content .table th,
+        .sidebar.minimized ~ .main-content .table td {
+            padding: 12px 15px;
+        }
+        
+        .table tbody td {
+            padding: 12px 15px;
+            vertical-align: middle;
+            border-top: 1px solid #f0f0f0;
+        }
+        
+        .table tbody tr:hover {
+            background-color: rgba(67, 97, 238, 0.03);
+        }
+        
+        /* LOADING SPINNER */
         .loading-spinner {
             width: 50px;
             height: 50px;
@@ -153,267 +481,406 @@
         @keyframes spin {
             to { transform: rotate(360deg); }
         }
-
-        /* Responsif: tumpuk di mobile */
+        
+        /* BUTTON STYLES */
+        .btn-primary {
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            border: none;
+            padding: 10px 20px;
+            border-radius: 10px;
+            font-weight: 500;
+            transition: all 0.3s;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(67, 97, 238, 0.3);
+        }
+        
+        /* BADGE STYLES */
+        .badge {
+            padding: 5px 10px;
+            font-weight: 500;
+            border-radius: 6px;
+        }
+        
+        /* ALERT STYLES */
+        .alert {
+            transition: all var(--transition-speed) ease;
+        }
+        
+        .sidebar.minimized ~ .main-content .alert {
+            padding: 15px 20px;
+        }
+        
+        /* MODAL STYLES */
+        .modal-content {
+            border-radius: 15px;
+            border: none;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+        }
+        
+        .modal-header {
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            color: white;
+            border-radius: 15px 15px 0 0;
+            padding: 20px 25px;
+        }
+        
+        /* Mobile Toggle Button */
+        .content-sidebar-toggle {
+            position: fixed;
+            left: 10px;
+            top: 10px;
+            z-index: 1001;
+            background: var(--primary);
+            color: white;
+            border: none;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+        
+        /* RESPONSIVE DESIGN */
         @media (max-width: 768px) {
             .sidebar {
                 width: 100%;
                 height: auto;
                 position: relative;
+                overflow-y: hidden;
+                max-height: 70vh;
+                transition: none;
             }
+            
+            .sidebar.minimized {
+                width: 100%;
+                height: 60px;
+                overflow: hidden;
+            }
+            
+            .sidebar.minimized .sidebar-header {
+                padding: 10px 15px;
+            }
+            
+            .sidebar.minimized .sidebar-toggle {
+                right: 15px;
+                transform: translateY(-50%) rotate(180deg);
+            }
+            
+            .sidebar.minimized .nav-links-container {
+                display: none;
+            }
+            
+            .sidebar.minimized .sidebar-footer {
+                display: none;
+            }
+            
             .main-content {
                 margin-left: 0;
                 padding: 15px;
+                width: 100%;
+                max-width: 100%;
             }
-        }
-
-        /* Animasi untuk toast */
-        .toast {
-            transition: opacity 0.15s linear;
-        }
-
-        /* Perbaikan untuk posisi tengah pada logo dan teks Administrator */
-        .sidebar-header {
-            text-align: center;
-            padding: 20px 15px;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-            margin-bottom: 15px;
-        }
-        
-        .sidebar-header i {
-            font-size: 3rem;
-            display: block;
-            margin: 0 auto 10px;
-        }
-        
-        .sidebar-header h4 {
-            margin: 0;
-            font-weight: 600;
-        }
-        
-        .sidebar-header p {
-            margin: 5px 0 0;
-            font-size: 0.85rem;
-            opacity: 0.8;
-        }
-        
-        /* Konten utama dengan jarak optimal */
-        .main-content {
-            margin-left: 260px; /* 250px sidebar + 10px jarak */
-            padding: 20px;
-        }
-
-        /* Responsif: tumpuk di mobile */
-        @media (max-width: 768px) {
-            .sidebar {
-                width: 230px;
-            }
-            .main-content {
+            
+            .sidebar.minimized ~ .main-content {
                 margin-left: 0;
-                padding: 15px;
+                width: 100%;
+                max-width: 100%;
+            }
+            
+            .content-wrapper {
+                max-width: 100%;
+            }
+            
+            .header h2 {
+                font-size: 1.5rem;
+            }
+            
+            .header p {
+                font-size: 0.9rem;
+            }
+            
+            .search-box {
+                min-width: 100%;
+                margin-bottom: 15px;
+            }
+            
+            .content-sidebar-toggle {
+                display: flex;
+            }
+            
+            .sidebar:not(.mobile-open) {
+                transform: translateX(-100%);
+            }
+            
+            .sidebar.mobile-open {
+                transform: translateX(0);
+            }
+            
+            .sidebar.mobile-open.minimized {
+                transform: translateX(0);
             }
         }
-        .stat-card {
-            text-align: center;
-            padding: 25px 20px;
-            height: 100%;
-            border-radius: 15px;
-            box-shadow: 0 5px 25px rgba(0, 0, 0, 0.08);
-            margin-bottom: 25px;
-            transition: transform 0.3s, box-shadow 0.3s;
+        
+        @media (max-width: 576px) {
+            .header {
+                padding: 20px 15px;
+            }
+            
+            .stat-card {
+                margin-bottom: 15px;
+            }
         }
         
-        .stat-card:hover {
-            transform: translateY(-8px);
-            box-shadow: 0 12px 35px rgba(0, 0, 0, 0.15);
+        /* GRID SYSTEM ADJUSTMENTS */
+        .row {
+            transition: all var(--transition-speed) ease;
         }
         
-        .stat-card i {
-            font-size: 2.8rem;
-            margin-bottom: 15px;
-            color: #4361ee;
+        .sidebar.minimized ~ .main-content .row {
+            margin-left: -10px;
+            margin-right: -10px;
         }
         
-        .search-box {
-            position: relative;
+        .sidebar.minimized ~ .main-content .col-md-8,
+        .sidebar.minimized ~ .main-content .col-md-4,
+        .sidebar.minimized ~ .main-content .col-md-6,
+        .sidebar.minimized ~ .main-content .col-md-12 {
+            padding-left: 10px;
+            padding-right: 10px;
         }
-        
-        .search-box i {
-            position: absolute;
-            left: 12px;
-            top: 50%;
-            transform: translateY(-50%);
-            color: #6c757d;
-            z-index: 2;
-        }
-        
-        .search-box input {
-            padding-left: 40px;
-            border-radius: 10px;
-        }
-        
-        .loading-spinner {
-            width: 50px;
-            height: 50px;
-            border: 4px solid rgba(67, 97, 238, 0.2);
-            border-top: 4px solid #4361ee;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-        }
-        
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
+        /* Efek Hover Sederhana */
+.sidebar .nav-link {
+    position: relative;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.sidebar .nav-link::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 0;
+    height: 100%;
+    background: rgba(255, 255, 255, 0.15);
+    transition: width 0.3s ease;
+    z-index: 0;
+}
+
+.sidebar .nav-link:hover::before {
+    width: 100%;
+}
+
+.sidebar .nav-link > * {
+    position: relative;
+    z-index: 1;
+}
+
+/* Efek hover khusus untuk link aktif */
+.sidebar .nav-link.active {
+    background: rgba(255, 255, 255, 0.2);
+    transform: scale(1.02);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+/* Efek hover untuk sidebar minimized */
+.sidebar.minimized .nav-link:hover {
+    background: rgba(255, 255, 255, 0.25);
+    transform: scale(1.1);
+}
+
+/* Efek ripple saat diklik */
+.sidebar .nav-link:active::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 50px;
+    height: 50px;
+    background: rgba(255, 255, 255, 0.3);
+    border-radius: 50%;
+    transform: translate(-50%, -50%) scale(0);
+    animation: ripple 0.6s ease-out;
+}
+
+@keyframes ripple {
+    to {
+        transform: translate(-50%, -50%) scale(2);
+        opacity: 0;
+    }
+}
     </style>
 </head>
 <body>
-      <!-- Sidebar -->
-    <div class="sidebar">
+    <!-- Mobile Toggle Button -->
+    <button class="content-sidebar-toggle" id="mobileSidebarToggle">
+        <i class="bi bi-list"></i>
+    </button>
+    
+    <!-- Sidebar -->
+    <div class="sidebar" id="sidebar">
         <div class="sidebar-header">
-            <i class="bi bi-egg-fried" style="font-size: 3rem;"></i>
-            <h4 class="mt-2">EggTrack</h4>
-            <p id="userRoleDisplay" class="text-light small">Administrator</p>
+            <i class="bi bi-egg-fried sidebar-logo"></i>
+            <h4 class="sidebar-title">EggTrack</h4>
+            <p id="userRoleDisplay" class="sidebar-user-info">Memuat...</p>
+            <small id="userNameDisplay" class="sidebar-user-info"></small>
+            <button class="sidebar-toggle" id="sidebarToggle">
+                <i class="bi bi-chevron-left"></i>
+            </button>
         </div>
         
-        <nav class="sidebar-nav">
-            <a href="dashboard.html" class="nav-link">
-                <i class="bi bi-speedometer2"></i>
-                <span>Dashboard Utama</span>
-                   </a>
-            <a href="production.html" class="nav-link">
-                <i class="bi bi-egg-fried"></i>
-                <span>Manajemen Produksi</span>
-                    </a>
-            <a href="sales.html" class="nav-link">
-                <i class="bi bi-cart"></i>
-                <span>Penjualan & Order</span>
-                    </a>
-            <a href="expenses.html" class="nav-link active">
-                <i class="bi bi-cash-coin"></i>
-                <span>Pengeluaran</span>
-                    </a>
-            <a href="inventory.html" class="nav-link">
-                <i class="bi bi-box-seam"></i>
-                <span>Inventaris Stok</span>
-                     </a>
-            <a href="customer.html" class="nav-link">
-                <i class="bi bi-people"></i>
-                <span>Manajemen Pelanggan</span>
-                     </a>
-            <a href="reports.html" class="nav-link">
-                <i class="bi bi-graph-up"></i>
-                <span>Laporan & Analisis</span>
-                     </a>
-            <a href="settings.html" class="nav-link">
-                <i class="bi bi-gear"></i>
-                <span>Pengaturan Sistem</span>
-                     </a>
-            <a href="#" class="nav-link mt-3 logout-btn">
-                <i class="bi bi-box-arrow-right"></i>
-                <span>Keluar Sistem</span>
-            </a>
-        </nav>
+        <div class="nav-links-container">
+            <nav class="nav flex-column">
+                <a href="dashboard.html" class="nav-link">
+                    <i class="bi bi-speedometer2"></i>
+                    <span class="nav-text">Dashboard Utama</span>
+                </a>
+                <a href="production.html" class="nav-link">
+                    <i class="bi bi-egg-fried"></i>
+                    <span class="nav-text">Manajemen Produksi</span>
+                </a>
+                <a href="sales.html" class="nav-link">
+                    <i class="bi bi-cart"></i>
+                    <span class="nav-text">Penjualan & Order</span>
+                </a>
+                <a href="expenses.html" class="nav-link active">
+                    <i class="bi bi-cash-coin"></i>
+                    <span class="nav-text">Pengeluaran</span>
+                </a>
+                <a href="inventory.html" class="nav-link">
+                    <i class="bi bi-box-seam"></i>
+                    <span class="nav-text">Inventaris Stok</span>
+                </a>
+                <a href="customer.html" class="nav-link">
+                    <i class="bi bi-people"></i>
+                    <span class="nav-text">Manajemen Pelanggan</span>
+                </a>
+                <a href="reports.html" class="nav-link">
+                    <i class="bi bi-graph-up"></i>
+                    <span class="nav-text">Laporan & Analisis</span>
+                </a>
+                <a href="settings.html" class="nav-link">
+                    <i class="bi bi-gear"></i>
+                    <span class="nav-text">Pengaturan Sistem</span>
+                </a>
+                <a href="logout.html" class="nav-link mt-4" id="logoutBtn">
+                    <i class="bi bi-box-arrow-right"></i>
+                    <span class="nav-text">Keluar Sistem</span>
+                </a>
+            </nav>
+        </div>
+        
+        <div class="sidebar-footer">
+            <small>EggTrack v1.0</small>
+        </div>
     </div>
-
+    
+    <!-- Main Content -->
     <div class="main-content">
-        <!-- Header -->
-        <div class="dashboard-header d-flex justify-content-between align-items-center mb-4">
-            <div>
-                <h3><i class="bi bi-cash-coin me-2"></i>Manajemen Pengeluaran</h3>
-                <p class="text-muted mb-0">Kelola data pengeluaran operasional</p>
+        <div class="content-wrapper">
+            <!-- Header -->
+            <div class="header">
+                <h2><i class="bi bi-cash-coin me-2"></i>Manajemen Pengeluaran</h2>
+                <p class="mb-0">Kelola semua pengeluaran operasional bisnis secara terintegrasi</p>
             </div>
-            <div class="d-flex">
-                <div class="search-box me-3">
-                    <i class="bi bi-search"></i>
-                    <input type="text" class="form-control" id="expensesSearch" placeholder="Cari pengeluaran...">
+
+            <!-- Info Integrasi -->
+            <div class="alert alert-info mb-4 d-flex align-items-center">
+                <i class="bi bi-arrow-left-right fs-4 me-3"></i>
+                <div>
+                    <strong>Data Terintegrasi:</strong> Pengeluaran akan mempengaruhi margin keuntungan secara otomatis dan langsung tersinkronisasi dengan dashboard utama
                 </div>
-                <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addExpensesModal">
-                    <i class="bi bi-plus-circle me-2"></i> Tambah Pengeluaran
-                </button>
             </div>
-        </div>
 
-        <!-- Info Integrasi -->
-        <div class="alert alert-info mb-4">
-            <i class="bi bi-arrow-left-right me-2"></i>
-            <strong>Data Terintegrasi:</strong> Pengeluaran akan mempengaruhi margin keuntungan secara otomatis
-        </div>
-
-        <!-- Stat Cards -->
-        <div class="row mb-4">
-            <div class="col-md-3 col-6 mb-4">
-                <div class="card text-center stat-card">
-                    <div class="card-body">
+            <!-- Stat Cards -->
+            <div class="row mb-4">
+                <div class="col-md-3 col-sm-6 mb-4">
+                    <div class="stat-card">
                         <i class="bi bi-calendar-check"></i>
-                        <h5>Pengeluaran Hari Ini</h5>
+                        <h5 class="mb-2">Pengeluaran Hari Ini</h5>
                         <h3 id="todayExpenses">Rp 0</h3>
-                        <p class="text-muted">Total</p>
                     </div>
                 </div>
-            </div>
-            <div class="col-md-3 col-6 mb-4">
-                <div class="card text-center stat-card">
-                    <div class="card-body">
+                <div class="col-md-3 col-sm-6 mb-4">
+                    <div class="stat-card">
                         <i class="bi bi-calendar-week"></i>
-                        <h5>Pengeluaran Minggu Ini</h5>
+                        <h5 class="mb-2">Pengeluaran Minggu Ini</h5>
                         <h3 id="weekExpenses">Rp 0</h3>
-                        <p class="text-muted">Total</p>
                     </div>
                 </div>
-            </div>
-            <div class="col-md-3 col-6 mb-4">
-                <div class="card text-center stat-card">
-                    <div class="card-body">
+                <div class="col-md-3 col-sm-6 mb-4">
+                    <div class="stat-card">
                         <i class="bi bi-calendar-month"></i>
-                        <h5>Pengeluaran Bulan Ini</h5>
+                        <h5 class="mb-2">Pengeluaran Bulan Ini</h5>
                         <h3 id="monthExpenses">Rp 0</h3>
-                        <p class="text-muted">Total</p>
                     </div>
                 </div>
-            </div>
-            <div class="col-md-3 col-6 mb-4">
-                <div class="card text-center stat-card">
-                    <div class="card-body">
+                <div class="col-md-3 col-sm-6 mb-4">
+                    <div class="stat-card">
                         <i class="bi bi-graph-down"></i>
-                        <h5>Total Pengeluaran</h5>
+                        <h5 class="mb-2">Total Pengeluaran</h5>
                         <h3 id="totalExpensesCard">Rp 0</h3>
-                        <p class="text-muted">Keseluruhan</p>
                     </div>
                 </div>
             </div>
-        </div>
 
-        <!-- Tabel Pengeluaran -->
-        <div class="card">
-            <div class="card-header d-flex justify-content-between align-items-center">
-                <h5 class="mb-0"><i class="bi bi-list-ul me-2"></i>Daftar Pengeluaran</h5>
-                <button class="btn btn-outline-primary btn-sm" id="exportExpenses">
-                    <i class="bi bi-download me-1"></i> Export
-                </button>
+            <!-- Search and Add Button -->
+            <div class="row mb-4">
+                <div class="col-md-8">
+                    <div class="search-box">
+                        <i class="bi bi-search"></i>
+                        <input type="text" class="form-control" id="expensesSearch" placeholder="Cari pengeluaran berdasarkan kategori, deskripsi, atau tanggal...">
+                    </div>
+                </div>
+                <div class="col-md-4 text-end">
+                    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addExpensesModal">
+                        <i class="bi bi-plus-circle me-2"></i> Tambah Pengeluaran
+                    </button>
+                </div>
             </div>
-            <div class="card-body">
-                <div class="table-responsive">
-                    <table class="table table-hover">
-                        <thead>
-                            <tr>
-                                <th>Tanggal</th>
-                                <th>Kategori</th>
-                                <th>Deskripsi</th>
-                                <th>Jumlah</th>
-                                <th>Metode Bayar</th>
-                                <th>Status</th>
-                                <th>Aksi</th>
-                            </tr>
-                        </thead>
-                        <tbody id="expensesTableBody">
-                            <tr>
-                                <td colspan="7" class="text-center py-4">
-                                    <div class="loading-spinner mx-auto"></div>
-                                    <div class="loading-text mt-2">Memuat data pengeluaran...</div>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
+
+            <!-- Tabel Pengeluaran -->
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0"><i class="bi bi-list-ul me-2"></i>Daftar Pengeluaran</h5>
+                    <div class="d-flex gap-2">
+                        <button class="btn btn-outline-primary btn-sm" id="exportExpenses">
+                            <i class="bi bi-download me-1"></i> Export
+                        </button>
+                        <button class="btn btn-outline-secondary btn-sm" id="refreshExpenses">
+                            <i class="bi bi-arrow-clockwise"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Tanggal</th>
+                                    <th>Kategori</th>
+                                    <th>Deskripsi</th>
+                                    <th>Jumlah</th>
+                                    <th>Metode Bayar</th>
+                                    <th>Status</th>
+                                    <th>Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody id="expensesTableBody">
+                                <tr>
+                                    <td colspan="7" class="text-center py-4">
+                                        <div class="loading-spinner mx-auto"></div>
+                                        <div class="loading-text mt-2">Memuat data pengeluaran...</div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
         </div>
@@ -421,7 +888,7 @@
 
     <!-- Modal Tambah Pengeluaran -->
     <div class="modal fade" id="addExpensesModal" tabindex="-1">
-        <div class="modal-dialog">
+        <div class="modal-dialog modal-lg">
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title"><i class="bi bi-plus-circle me-2"></i>Tambah Pengeluaran</h5>
@@ -429,34 +896,48 @@
                 </div>
                 <div class="modal-body">
                     <form id="expensesForm">
-                        <div class="mb-3">
-                            <label for="expensesDate" class="form-label">Tanggal Pengeluaran</label>
-                            <input type="date" class="form-control" id="expensesDate" required>
-                        </div>
-                        <div class="mb-3">
-                            <label for="expensesCategory" class="form-label">Kategori</label>
-                            <select class="form-control" id="expensesCategory" required>
-                                <option value="">Pilih Kategori</option>
-                                <option value="Bahan Baku">Bahan Baku</option>
-                                <option value="Operasional">Operasional</option>
-                                <option value="Peralatan">Peralatan</option>
-                                <option value="Lainnya">Lainnya</option>
-                            </select>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="expensesDate" class="form-label">Tanggal Pengeluaran</label>
+                                <input type="date" class="form-control" id="expensesDate" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="expensesCategory" class="form-label">Kategori</label>
+                                <select class="form-control" id="expensesCategory" required>
+                                    <option value="">Pilih Kategori</option>
+                                    <option value="Bahan Baku">Bahan Baku</option>
+                                    <option value="Operasional">Operasional</option>
+                                    <option value="Peralatan">Peralatan</option>
+                                    <option value="Gaji Karyawan">Gaji Karyawan</option>
+                                    <option value="Transportasi">Transportasi</option>
+                                    <option value="Lainnya">Lainnya</option>
+                                </select>
+                            </div>
                         </div>
                         <div class="mb-3">
                             <label for="expensesDescription" class="form-label">Deskripsi</label>
-                            <input type="text" class="form-control" id="expensesDescription" placeholder="Masukkan deskripsi pengeluaran" required>
+                            <textarea class="form-control" id="expensesDescription" rows="2" placeholder="Masukkan deskripsi pengeluaran" required></textarea>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="expensesAmount" class="form-label">Jumlah Pengeluaran</label>
+                                <div class="input-group">
+                                    <span class="input-group-text">Rp</span>
+                                    <input type="number" class="form-control" id="expensesAmount" placeholder="Masukkan jumlah" required>
+                                </div>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="expensesPayment" class="form-label">Metode Pembayaran</label>
+                                <select class="form-control" id="expensesPayment">
+                                    <option value="Tunai">Tunai</option>
+                                    <option value="Transfer Bank">Transfer Bank</option>
+                                    <option value="E-Wallet">E-Wallet</option>
+                                </select>
+                            </div>
                         </div>
                         <div class="mb-3">
-                            <label for="expensesAmount" class="form-label">Jumlah Pengeluaran</label>
-                            <input type="number" class="form-control" id="expensesAmount" placeholder="Masukkan jumlah" required>
-                        </div>
-                        <div class="mb-3">
-                            <label for="expensesPayment" class="form-label">Metode Pembayaran</label>
-                            <select class="form-control" id="expensesPayment">
-                                <option value="Tunai">Tunai</option>
-                                <option value="Transfer Bank">Transfer Bank</option>
-                            </select>
+                            <label for="expensesNotes" class="form-label">Catatan (Opsional)</label>
+                            <textarea class="form-control" id="expensesNotes" rows="2" placeholder="Tambahkan catatan jika diperlukan"></textarea>
                         </div>
                     </form>
                 </div>
@@ -471,7 +952,107 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="auth-check.js"></script>
     <script src="expenses.js"></script>
-
+    
+    <!-- Sidebar Toggle Script -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const sidebar = document.getElementById('sidebar');
+            const sidebarToggle = document.getElementById('sidebarToggle');
+            const mobileSidebarToggle = document.getElementById('mobileSidebarToggle');
+            const navLinks = document.querySelectorAll('.nav-link');
+            
+            // Check localStorage for saved state
+            const isMinimized = localStorage.getItem('sidebarMinimized') === 'true';
+            if (isMinimized) {
+                sidebar.classList.add('minimized');
+                const icon = sidebarToggle.querySelector('i');
+                icon.style.transform = 'rotate(180deg)';
+            }
+            
+            // Desktop toggle
+            sidebarToggle.addEventListener('click', function() {
+                sidebar.classList.toggle('minimized');
+                const isNowMinimized = sidebar.classList.contains('minimized');
+                localStorage.setItem('sidebarMinimized', isNowMinimized);
+                
+                // Update toggle icon rotation
+                const icon = this.querySelector('i');
+                icon.style.transform = isNowMinimized ? 'rotate(180deg)' : 'rotate(0deg)';
+                
+                // Trigger window resize for responsive adjustments
+                setTimeout(() => {
+                    window.dispatchEvent(new Event('resize'));
+                }, 300);
+            });
+            
+            // Mobile toggle
+            mobileSidebarToggle.addEventListener('click', function() {
+                sidebar.classList.toggle('mobile-open');
+            });
+            
+            // Add tooltip on hover for minimized sidebar
+            navLinks.forEach(link => {
+                link.addEventListener('mouseenter', function(e) {
+                    if (sidebar.classList.contains('minimized')) {
+                        const tooltip = document.createElement('div');
+                        tooltip.className = 'nav-link-tooltip';
+                        tooltip.textContent = this.querySelector('.nav-text').textContent;
+                        this.appendChild(tooltip);
+                        
+                        setTimeout(() => {
+                            tooltip.style.opacity = '1';
+                        }, 10);
+                    }
+                });
+                
+                link.addEventListener('mouseleave', function() {
+                    const tooltip = this.querySelector('.nav-link-tooltip');
+                    if (tooltip) {
+                        tooltip.remove();
+                    }
+                });
+            });
+            
+            // Mobile click outside to close sidebar
+            document.addEventListener('click', function(event) {
+                if (window.innerWidth <= 768) {
+                    const isClickInsideSidebar = sidebar.contains(event.target);
+                    const isClickOnMobileToggle = mobileSidebarToggle.contains(event.target);
+                    
+                    if (!isClickInsideSidebar && !isClickOnMobileToggle && sidebar.classList.contains('mobile-open')) {
+                        sidebar.classList.remove('mobile-open');
+                    }
+                }
+            });
+            
+            // Mobile: hide sidebar when clicking a link
+            navLinks.forEach(link => {
+                link.addEventListener('click', function() {
+                    if (window.innerWidth <= 768 && sidebar.classList.contains('mobile-open')) {
+                        sidebar.classList.remove('mobile-open');
+                    }
+                });
+            });
+            
+            // Load user data
+            const userData = JSON.parse(localStorage.getItem('eggUser') || '{}');
+            if (userData) {
+                const roleMap = { 'admin': 'Administrator', 'manager': 'Manager', 'staff': 'Staff' };
+                document.getElementById('userRoleDisplay').textContent = roleMap[userData.role] || userData.role;
+                document.getElementById('userNameDisplay').textContent = userData.name || userData.username;
+            }
+            
+            // Logout button
+            document.getElementById('logoutBtn').addEventListener('click', function(e) {
+                e.preventDefault();
+                if (confirm('Apakah Anda yakin ingin logout?')) {
+                    localStorage.removeItem('eggUser');
+                    window.location.href = 'login.html';
+                }
+            });
+        });
+    </script>
 </body>
 </html>
